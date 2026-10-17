@@ -13,3 +13,4 @@ bundle.tar.gz
 .zscripts/*.log
 .zscripts/*.pid
 dev-gate.log*
+.vercel/

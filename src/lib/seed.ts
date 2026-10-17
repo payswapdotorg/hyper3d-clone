@@ -1,14 +1,12 @@
 /**
  * Idempotent seeding: the demo account (demo@hyper3d.clone / demo1234) and
  * a featured gallery of 8 real, spec-backed tasks. Posters are rendered
- * from the actual specs on first seed (deterministic, cached on disk).
+ * from the actual specs on first seed (deterministic, stored as
+ * Task.posterBytes — blob-in-DB, serverless-safe).
  *
  * Seed task ids are fixed strings so re-seeding after test cleanup is
- * stable and poster files remain valid.
+ * stable and stored posters remain valid.
  */
-import { existsSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { db } from "./db";
 import { hashPassword } from "./auth";
 import { buildScene } from "./mesh-builder";
@@ -179,10 +177,6 @@ const SEED_TASKS: FeaturedSeed[] = [
   },
 ];
 
-function posterPath(taskId: string): string {
-  return path.join(process.cwd(), "db", "generated", taskId, "poster.png");
-}
-
 export interface SeedOptions {
   /** Render poster PNGs (skipped in tests). */
   posters?: boolean;
@@ -237,13 +231,24 @@ export async function ensureSeeded(options: SeedOptions = {}): Promise<void> {
   }
 
   if (posters) {
+    // Blob-in-DB (serverless-safe): render each featured poster once and
+    // store it on the task row — no filesystem involved (a lambda's disk is
+    // read-only/ephemeral, which is exactly what broke the first deploy).
+    const rows = await db.task.findMany({
+      where: { id: { in: SEED_TASKS.map((s) => s.id) } },
+      select: { id: true, posterBytes: true },
+    });
+    const withPoster = new Set(
+      rows.filter((r) => r.posterBytes && r.posterBytes.length > 0).map((r) => r.id),
+    );
     for (const seed of SEED_TASKS) {
-      const target = posterPath(seed.id);
-      if (existsSync(target)) continue;
+      if (withPoster.has(seed.id)) continue;
       const spec = parseSceneSpec(seed.spec) as SceneSpec;
       const png = renderPoster(buildScene(spec));
-      await mkdir(path.dirname(target), { recursive: true });
-      await writeFile(target, png);
+      await db.task.update({
+        where: { id: seed.id },
+        data: { posterBytes: new Uint8Array(png) },
+      });
     }
   }
 }
