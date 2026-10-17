@@ -1,0 +1,8 @@
+node_modules/
+.next/
+out/
+dev.log*
+.env*
+*.tsbuildinfo
+public/images/generated/
+.DS_Store
