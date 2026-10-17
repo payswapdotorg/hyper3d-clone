@@ -78,6 +78,8 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
       body: JSON.stringify(sanitized),
     });
     if (!response.ok) {
+      const detail = (await response.text().catch(() => "")).slice(0, 300);
+      console.error(`[ai-clients] openrouter ${model} responded ${response.status}: ${detail}`);
       throw new Error(`openrouter ${model} responded ${response.status}`);
     }
     return (await response.json()) as unknown;
@@ -96,8 +98,6 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
 }
 
 /* ------------------------------ backends ------------------------------ */
-
-type ZaiInstance = Awaited<ReturnType<typeof ZAI.create>>;
 
 async function zaiBackend(): Promise<Backend> {
   const zai = await ZAI.create();
@@ -128,16 +128,46 @@ function openRouterBackend(): Backend {
 
 async function getBackend(): Promise<Backend> {
   if (!backendPromise) {
-    backendPromise = zaiBackend().catch(() => openRouterBackend());
+    let zaiError: unknown = null;
+    backendPromise = zaiBackend().catch((err: unknown) => {
+      zaiError = err;
+      return openRouterBackend();
+    });
     // A total failure (no backend at all) must not be negatively cached —
     // callers catch per-call and fall back deterministically; the next
-    // generation attempt retries backend resolution.
+    // generation attempt retries backend resolution. Log loudly: a silent
+    // backend loss means every generation degrades to fallback specs.
     backendPromise = backendPromise.catch((err: unknown) => {
+      console.error(
+        `[ai-clients] backend resolution failed — zai: ${String(zaiError instanceof Error ? zaiError.message : zaiError)}; fallback: ${String(err instanceof Error ? err.message : err)}`,
+      );
       backendPromise = null;
       throw err;
     });
   }
   return backendPromise;
+}
+
+/** Ops probe: which AI backends are configured in this runtime (no secrets). */
+export async function backendStatus(): Promise<{
+  backend: "zai" | "openrouter" | "none";
+  zaiConfigPresent: boolean;
+  openRouterKeyPresent: boolean;
+}> {
+  const openRouterKeyPresent = Boolean(process.env.OPENROUTER_API_KEY);
+  try {
+    const backend = await getBackend();
+    return { backend: backend.kind, zaiConfigPresent: backend.kind === "zai", openRouterKeyPresent };
+  } catch {
+    let zaiConfigPresent = false;
+    try {
+      await zaiBackend();
+      zaiConfigPresent = true;
+    } catch {
+      zaiConfigPresent = false;
+    }
+    return { backend: "none", zaiConfigPresent, openRouterKeyPresent };
+  }
 }
 
 export async function getChatClient(): Promise<ChatClient> {
