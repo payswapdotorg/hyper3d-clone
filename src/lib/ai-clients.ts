@@ -61,27 +61,54 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
   const visionModel = options.visionModel ?? DEFAULT_VISION_MODEL;
   const doFetch = options.fetchImpl ?? fetch;
 
-  const post = async (model: string, body: { messages: unknown[]; [key: string]: unknown }): Promise<unknown> => {
-    const sanitized: Record<string, unknown> = {
-      model,
-      messages: body.messages,
+  const post = async (
+    model: string,
+    body: { messages: unknown[]; [key: string]: unknown },
+    defaultCap = 1024,
+  ): Promise<unknown> => {
+    const requestFor = (maxTokens: number): { url: string; init: RequestInit } => {
+      const sanitized: Record<string, unknown> = {
+        model,
+        messages: body.messages,
+        // Always cap completions: OpenRouter pre-authorizes max_tokens
+        // against the key's credit budget — an unset max_tokens (the model's
+        // full context, e.g. 32768) is rejected with 402 on credit-limited
+        // keys even though the actual completion is only a few hundred
+        // tokens.
+        max_tokens: maxTokens,
+      };
+      if (typeof body.temperature === "number") sanitized.temperature = body.temperature;
+      return {
+        url: `${baseUrl}/chat/completions`,
+        init: {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${apiKey}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(sanitized),
+        },
+      };
     };
-    // Always cap completions: OpenRouter pre-authorizes max_tokens against
-    // the key's credit budget — an unset max_tokens (the model's full
-    // context, e.g. 32768) is rejected with 402 on credit-limited keys even
-    // though the actual completion is only a few hundred tokens.
-    sanitized.max_tokens =
-      typeof body.max_tokens === "number" && body.max_tokens > 0 ? body.max_tokens : 1024;
-    if (typeof body.temperature === "number") sanitized.temperature = body.temperature;
+    const cap =
+      typeof body.max_tokens === "number" && body.max_tokens > 0 ? body.max_tokens : defaultCap;
 
-    const response = await doFetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(sanitized),
-    });
+    let response = await doFetch(requestFor(cap).url, requestFor(cap).init);
+
+    // Credit-budget adaptation: on 402 "can only afford N tokens", retry
+    // once within the key's exact remaining budget — SceneSpec/caption
+    // completions are a few hundred tokens, so a smaller cap usually fits.
+    if (response.status === 402) {
+      const detail = await response.text().catch(() => "");
+      const afford = /can only afford (\d+)/.exec(detail);
+      const n = afford ? parseInt(afford[1], 10) : 0;
+      if (n >= 200 && n < cap) {
+        console.error(`[ai-clients] openrouter ${model} credit-capped (requested ${cap}, budget ${n}) — retrying within budget`);
+        const retry = requestFor(n);
+        response = await doFetch(retry.url, retry.init);
+      }
+    }
+
     if (!response.ok) {
       const detail = (await response.text().catch(() => "")).slice(0, 300);
       console.error(`[ai-clients] openrouter ${model} responded ${response.status}: ${detail}`);
@@ -96,8 +123,10 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
     },
     vision: {
       // The caller passes a platform model slug ("glm-4.5v") — the adapter
-      // deliberately overrides it with the configured OpenRouter vision model.
-      createVision: (body) => post(visionModel, body),
+      // deliberately overrides it with the configured OpenRouter vision
+      // model. Caption completions are small (~300 tokens); a tighter
+      // default cap reduces 402 credit rejections on budget-limited keys.
+      createVision: (body) => post(visionModel, body, 512),
     },
   };
 }

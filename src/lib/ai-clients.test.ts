@@ -107,6 +107,33 @@ describe("createOpenRouterClients", () => {
     );
   });
 
+  it("retries once within the key's remaining budget on 402 'can only afford N'", async () => {
+    let call = 0;
+    const bodies: Record<string, unknown>[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+        call += 1;
+        if (call === 1) {
+          return new Response(
+            JSON.stringify({ error: { message: "You requested up to 1024 tokens, but can only afford 456." } }),
+            { status: 402 },
+          );
+        }
+        bodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+        return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 });
+      }),
+    );
+    const clients = createOpenRouterClients({ apiKey: "k", textModel: "t/m" });
+    const result = (await clients.chat.create({ messages: [{ role: "user", content: "x" }] })) as {
+      choices: { message: { content: string } }[];
+    };
+
+    expect(result.choices[0].message.content).toBe("ok");
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0].max_tokens).toBe(456);
+  });
+
   it("defaults to the production text/vision models when unconfigured", async () => {
     const { calls } = stubFetch();
     const clients = createOpenRouterClients({ apiKey: "k" });
