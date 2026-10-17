@@ -8,8 +8,6 @@
  * pipeline without the network; pacing can be disabled (setPacing) so tests
  * complete immediately.
  */
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { db } from "./db";
 import { buildScene } from "./mesh-builder";
@@ -91,16 +89,10 @@ export function setPacing(enabled: boolean): void {
 }
 
 /* ------------------------------ file layout ------------------------------ */
-
-export function generatedDir(taskId: string): string {
-  return path.join(process.cwd(), "db", "generated", taskId);
-}
-
-async function writePoster(taskId: string, png: Uint8Array): Promise<void> {
-  const dir = generatedDir(taskId);
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, "poster.png"), png);
-}
+/* Deployment adaptation: posters/inputs are persisted as Prisma Bytes
+ * (Task.posterBytes / Task.inputBytes) so the pipeline has zero filesystem
+ * dependencies — identical behavior on a laptop and on a serverless host
+ * (Vercel) with an ephemeral disk. */
 
 /* ------------------------------ runner ------------------------------ */
 
@@ -109,6 +101,8 @@ const running = new Set<string>();
 export interface EnqueueOptions {
   imageBase64?: string;
   imageMime?: string;
+  /** Skip artificial pacing — serverless resume path (complete fast). */
+  fast?: boolean;
 }
 
 /** Fire-and-forget: run the generation pipeline for a task row. */
@@ -137,24 +131,95 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
   const machine = new TaskMachine(task.userState as never);
   const settings = (task.settings as Record<string, unknown> | null) ?? {};
   const effort = typeof settings.effort === "string" ? settings.effort : "medium";
-  const paceMs = effortPaceMs(effort);
+  // Serverless deployment adaptation: cap the artificial effort pacing so a
+  // single maxDuration-bounded invocation (Vercel) can carry the whole
+  // pipeline; local/standalone keeps the faithful pace. The resume path
+  // (options.fast) skips pacing entirely — the task already lived through
+  // its pacing window before its invocation died.
+  const serverless = typeof process !== "undefined" && Boolean(process.env.VERCEL);
+  const paceMs = options.fast ? 0 : serverless ? Math.min(effortPaceMs(effort), 40_000) : effortPaceMs(effort);
   const messages = task.type === "RodinAgentic" ? AGENTIC_MESSAGES : STANDARD_MESSAGES;
 
+  // Self-healing image inputs (serverless resume): the reference image is
+  // persisted on the task row (inputBytes), so a resumed run rebuilds the
+  // engine inputs from storage instead of relying on the original request.
+  const imageBase64 =
+    options.imageBase64 ?? (task.inputBytes ? Buffer.from(task.inputBytes).toString("base64") : undefined);
+  const imageMime =
+    options.imageMime ?? (typeof settings.input_mime === "string" ? settings.input_mime : undefined);
+
+  /** Finalize: poster render + DonePreview persist (idempotent by state). */
+  const finalize = async (spec: SceneSpec, usedTokens: number, wallStart: number): Promise<void> => {
+    // Render the poster from the real geometry.
+    const group = buildScene(spec);
+    const poster = renderPoster(group);
+
+    const elapsedSeconds = Math.max(0.05, (Date.now() - wallStart) / 1000);
+    const usage = {
+      elapsed_seconds: Number(elapsedSeconds.toFixed(3)),
+      used_tokens: usedTokens,
+    };
+    if (machine.can("DonePreview")) machine.to("DonePreview");
+    machine.recordUsage(usage);
+
+    await db.task.update({
+      where: { id: taskId },
+      data: {
+        previewImageUrl: `/api/task/${taskId}/preview`,
+        modelUrl: `/api/task/${taskId}/export?format=glb`,
+        videoUrl: null, // documented deviation: no turntable webm in the clone
+        usage: usage as unknown as Prisma.InputJsonValue,
+        userState: "DonePreview",
+        generationUuid: randomUUID(),
+        generateTime: new Date(),
+        posterBytes: new Uint8Array(poster), // blob-in-DB (serverless-safe): Prisma Bytes field takes Uint8Array
+      },
+    });
+    await updateSettings(taskId, (s) => {
+      delete s.progress;
+    });
+  };
+
   try {
-    machine.to("queued");
-    await db.task.update({ where: { id: taskId }, data: { userState: "queued" } });
+    // Re-entry safe (serverless freeze recovery): a resumed task may already
+    // sit in queued/processing — only advance states the machine allows.
+    if (machine.can("queued")) {
+      machine.to("queued");
+      await db.task.update({ where: { id: taskId }, data: { userState: "queued" } });
+    }
+    if (machine.can("processing")) {
+      machine.to("processing");
+      await db.task.update({ where: { id: taskId }, data: { userState: "processing", step: "ModelGenerate" } });
+    }
 
-    machine.to("processing");
-    await db.task.update({ where: { id: taskId }, data: { userState: "processing", step: "ModelGenerate" } });
+    // COMPLETION-RESUME: a previous invocation already persisted the
+    // generated spec (spec-first persistence below) but died before
+    // finalizing. Finish from the stored spec — deterministic, no re-billing
+    // of the AI pipeline. used_tokens was parked in settings.spec_tokens.
+    if (task.spec) {
+      const stored = safeParseSceneSpec(task.spec);
+      if (stored.ok) {
+        await finalize(
+          stored.spec,
+          typeof settings.spec_tokens === "number" ? settings.spec_tokens : 0,
+          startedAt,
+        );
+        return;
+      }
+      // A stored spec that no longer validates is a genuine bug; fall
+      // through to a fresh engine run rather than failing the task.
+    }
 
-    // Progress ticker: paced messages while the engine works.
+    // Progress ticker: paced messages while the engine works. `at` is the
+    // liveness heartbeat consumed by resumeStaleTask (serverless recovery).
     let ticker: ReturnType<typeof setInterval> | null = null;
     const tick = async () => {
       const elapsed = Date.now() - startedAt;
-      const percent = Math.min(95, Math.round((elapsed / paceMs) * 100));
-      const messageIndex = Math.min(messages.length - 1, Math.floor((elapsed / paceMs) * messages.length));
+      const ratio = paceMs > 0 ? elapsed / paceMs : Infinity;
+      const percent = Math.min(95, Math.round(ratio * 100));
+      const messageIndex = Math.min(messages.length - 1, Math.floor(ratio * messages.length));
       await updateSettings(taskId, (s) => {
-        s.progress = { message: messages[messageIndex], percent };
+        s.progress = { message: messages[messageIndex], percent, at: Date.now() };
       });
     };
 
@@ -164,11 +229,11 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
       type: task.type,
       prompt: task.prompt,
       effort,
-      imageBase64: options.imageBase64,
-      imageMime: options.imageMime,
+      imageBase64,
+      imageMime,
     });
 
-    if (pacingEnabled) {
+    if (pacingEnabled && paceMs > 0) {
       await tick();
       ticker = setInterval(() => {
         void tick();
@@ -180,7 +245,7 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
     }
 
     const pacingPromise = new Promise<void>((resolve) => {
-      if (!pacingEnabled) return resolve();
+      if (!pacingEnabled || paceMs <= 0) return resolve();
       const remaining = Math.max(0, paceMs - (Date.now() - startedAt));
       setTimeout(resolve, remaining);
     });
@@ -217,35 +282,19 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
     }
     const spec = parsed.spec;
 
-    // Render the poster from the real geometry.
-    const group = buildScene(spec);
-    const poster = renderPoster(group);
-    await writePoster(taskId, poster);
-
-    const elapsedSeconds = Math.max(0.05, (Date.now() - startedAt) / 1000);
-    const usage = {
-      elapsed_seconds: Number(elapsedSeconds.toFixed(3)),
-      used_tokens: engineResult.r.usage.used_tokens,
-    };
-    machine.to("DonePreview");
-    machine.recordUsage(usage);
-
+    // Spec-first persistence: the moment the spec validates it is written to
+    // the task row (with used_tokens parked in settings), so a frozen/killed
+    // serverless invocation can complete the task from storage on the next
+    // poll — see COMPLETION-RESUME above.
     await db.task.update({
       where: { id: taskId },
-      data: {
-        spec: spec as unknown as Prisma.InputJsonValue,
-        previewImageUrl: `/api/task/${taskId}/preview`,
-        modelUrl: `/api/task/${taskId}/export?format=glb`,
-        videoUrl: null, // documented deviation: no turntable webm in the clone
-        usage: usage as unknown as Prisma.InputJsonValue,
-        userState: "DonePreview",
-        generationUuid: randomUUID(),
-        generateTime: new Date(),
-      },
+      data: { spec: spec as unknown as Prisma.InputJsonValue },
     });
     await updateSettings(taskId, (s) => {
-      delete s.progress;
+      s.spec_tokens = engineResult.r.usage.used_tokens;
     });
+
+    await finalize(spec, engineResult.r.usage.used_tokens, startedAt);
   } catch (err) {
     const message = err instanceof Error ? err.message : "generation failed";
     try {
@@ -257,4 +306,34 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
       /* best effort */
     }
   }
+}
+
+/* --------------------------- serverless resume --------------------------- */
+
+const RESUME_STALE_MS = 10_000;
+
+/**
+ * Serverless freeze recovery — called by the task-card poll. A live
+ * pipeline heartbeats settings.progress.at every ~1-3s; a task stuck in a
+ * non-terminal state with a stale (or absent) heartbeat means its
+ * invocation died (Vercel function freeze/eviction). Drive it to completion
+ * here: runTask re-reads the row and either finishes from the stored spec
+ * (spec-first persistence) or re-runs the engine with self-healed image
+ * inputs. `fast` skips the artificial pacing — the task already lived
+ * through its pacing window.
+ *
+ * Local dev: same-process `running` guard makes this a no-op while the
+ * original enqueue is alive. Serverless: two instances may briefly race on
+ * a dead task; both converge on the same deterministic spec/poster (bounded
+ * double engine call, last-write-wins) — documented in DECISIONS.md.
+ */
+export async function resumeStaleTask(taskId: string): Promise<void> {
+  if (running.has(taskId)) return;
+  const task = await db.task.findUnique({ where: { id: taskId } });
+  if (!task || isComplete(task.userState as never) || task.userState === "failed") return;
+  const settings = (task.settings as Record<string, unknown> | null) ?? {};
+  const progress = settings.progress as { at?: unknown } | undefined;
+  const at = typeof progress?.at === "number" ? progress.at : 0;
+  if (Date.now() - at < RESUME_STALE_MS) return; // actively progressing
+  enqueue(taskId, { fast: true });
 }

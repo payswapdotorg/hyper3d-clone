@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -42,6 +42,8 @@ model Task {
   error           String?
   generationUuid  String?
   generateTime    DateTime?
+  posterBytes     Bytes? // rasterized poster PNG (deployment adaptation: blob-in-DB so serverless has no filesystem dependency)
+  inputBytes      Bytes? // uploaded reference image bytes
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   creditEntries   CreditEntry[]

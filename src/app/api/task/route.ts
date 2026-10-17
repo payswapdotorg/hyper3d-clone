@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -11,6 +9,9 @@ import { enqueue } from "@/lib/queue";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Serverless: the paced pipeline (effort pace capped at 40s in queue.ts)
+// runs post-response inside after() — keep the invocation alive for it.
+export const maxDuration = 60;
 
 const CreateTaskSchema = z.object({
   type: z.enum(["RodinAgentic", "RodinStandard"]),
@@ -78,14 +79,14 @@ export async function POST(req: NextRequest) {
   let inputImageUrl: string | undefined;
   let inputMime: string | undefined;
 
+  let inputBytes: Buffer | undefined;
   if (image) {
     const parsedImage = parseImageRef(image);
     if (!parsedImage) {
       return NextResponse.json({ error: "invalid_image" }, { status: 400 });
     }
-    const dir = path.join(process.cwd(), "db", "generated", taskId);
-    await mkdir(dir, { recursive: true });
-    await writeFile(path.join(dir, `input.${parsedImage.ext}`), parsedImage.bytes);
+    // blob-in-DB (serverless-safe): reference image persisted on the task row.
+    inputBytes = parsedImage.bytes;
     inputImageUrl = `/api/task/${taskId}/input`;
     inputMime = parsedImage.mime;
     imageBase64 = parsedImage.bytes.toString("base64");
@@ -109,6 +110,7 @@ export async function POST(req: NextRequest) {
         ...(inputMime ? { input_mime: inputMime } : {}),
       },
       creditsSpent: cost,
+      ...(inputBytes ? { inputBytes: new Uint8Array(inputBytes) } : {}), // blob-in-DB (serverless-safe)
     },
   });
 
@@ -131,7 +133,17 @@ export async function POST(req: NextRequest) {
     throw err;
   }
 
-  enqueue(taskId, { imageBase64, imageMime });
+  // Kick the pipeline. Serverless (Vercel): after() keeps this invocation
+  // alive post-response so the paced pipeline can run to completion (or be
+  // resumed by the card poll's resumeStaleTask if this invocation dies —
+  // spec-first persistence means no re-billed AI calls on resume). Local
+  // dev / tests: plain fire-and-forget, unchanged behavior.
+  const kick = () => enqueue(taskId, { imageBase64, imageMime });
+  if (typeof process !== "undefined" && process.env.VERCEL) {
+    after(kick);
+  } else {
+    kick();
+  }
 
   return NextResponse.json({
     uuid: taskId,

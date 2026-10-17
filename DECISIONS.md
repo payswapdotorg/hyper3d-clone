@@ -107,3 +107,42 @@ reasons. Everything not listed here follows the work order or the
     (`scripts/make-fixture-image.ts`) — the work order explicitly allows "a
     canvas png fixture" as the alternative to an SDK-generated image. The
     captioning and generation calls in the e2e were REAL ZAI VLM/LLM calls.
+
+## Deployment adaptations (serverless / Vercel)
+
+The worker's build targeted a long-lived node process (dev/standalone). The
+Vercel deployment required the following honest adaptations, all verified by
+the same test suites plus a live golden-path run:
+
+21. **PostgreSQL + blob-in-DB.** sqlite/filesystem storage (Task rows plus
+    `db/generated/{uuid}/` poster+input files) does not survive on serverless
+    (ephemeral disk, no shared local state). Schema switched to Postgres
+    (Neon); posters and reference inputs persist as Prisma `Bytes` columns
+    (`Task.posterBytes` / `Task.inputBytes`) served through the same stable
+    API routes. `postinstall: prisma generate` covers the Vercel build.
+22. **AI backend selection (ai-clients.ts).** z-ai-web-dev-sdk requires a
+    platform `.z-ai-config` (absent on Vercel). Backend chain: ZAI →
+    OpenRouter (`OPENROUTER_API_KEY`; text =
+    `meta-llama/llama-3.3-70b-instruct`, vision =
+    `deepseek/deepseek-v4-flash-vision-exp`, both verified live: valid
+    SceneSpec JSON / caption JSON) → deterministic fallback specs. When no
+    backend resolves, `generateSpecFromPrompt` / `analyzeImage` degrade to
+    their deterministic fallbacks — generation never hard-fails, and it is
+    never faked (the fallback still builds real geometry).
+23. **Queue is serverless-safe.** The fire-and-forget runner cannot rely on
+    a warm process. Three mechanisms: (a) POST /api/task kicks the pipeline
+    inside `after()` with `maxDuration = 60`; (b) the card poll runs
+    `resumeStaleTask` — a task with a stale progress heartbeat (>10s) gets
+    driven to completion by the poll itself; (c) **spec-first persistence**
+    — the generated SceneSpec is written to the task row the moment it
+    validates, so a resumed task finalizes (poster + DonePreview) from
+    storage without re-billing the AI pipeline. Image inputs self-heal from
+    `Task.inputBytes`. Cross-instance resume races are bounded: both racers
+    converge on the same deterministic spec/poster (last-write-wins).
+24. **Pace cap on serverless.** The artificial effort pacing (up to 80s for
+    Extreme-High) is capped at 40s when `process.env.VERCEL` is set so one
+    invocation can finish the pipeline; local dev keeps the faithful pace.
+    The resume path skips pacing entirely.
+25. **Test database**: dedicated Postgres (`TEST_DATABASE_URL`, wiped on
+    every run by the vitest global setup) — the sqlite test DB from the
+    worker's build was replaced together with the storage switch (#19).

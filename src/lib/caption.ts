@@ -211,10 +211,13 @@ export async function analyzeImage(
   input: { imageBase64: string; mime?: string },
   client?: VisionClient,
 ): Promise<CaptionResult> {
-  const vision = client ?? (await getVisionClient());
   const mime = input.mime && input.mime.startsWith("image/") ? input.mime : "image/png";
   const dataUrl = `data:${mime};base64,${input.imageBase64}`;
   try {
+    // Client resolution inside the guard: when no vision backend is
+    // available at all (no .z-ai-config, no OPENROUTER_API_KEY), degrade to
+    // the deterministic fallback instead of failing the generation.
+    const vision = client ?? (await getVisionClient());
     const response = await vision.createVision({
       model: "glm-4.5v",
       messages: [

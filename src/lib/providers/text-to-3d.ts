@@ -151,10 +151,14 @@ export async function generateSpecFromPrompt(
   prompt: string,
   chat?: ChatClient,
 ): Promise<ProviderResult> {
-  const client = chat ?? (await getChatClient());
   let usedTokens = 0;
+  let client = chat;
 
   const attempt = async (userContent: string): Promise<{ content: string | null; tokens: number | null }> => {
+    // Client resolution inside the caller's try: when no chat backend is
+    // available at all (no .z-ai-config, no OPENROUTER_API_KEY), the error
+    // is caught below and the deterministic fallback runs instead.
+    client = client ?? (await getChatClient());
     const response = await client.create({
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
