@@ -66,7 +66,12 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
       model,
       messages: body.messages,
     };
-    if (typeof body.max_tokens === "number") sanitized.max_tokens = body.max_tokens;
+    // Always cap completions: OpenRouter pre-authorizes max_tokens against
+    // the key's credit budget — an unset max_tokens (the model's full
+    // context, e.g. 32768) is rejected with 402 on credit-limited keys even
+    // though the actual completion is only a few hundred tokens.
+    sanitized.max_tokens =
+      typeof body.max_tokens === "number" && body.max_tokens > 0 ? body.max_tokens : 1024;
     if (typeof body.temperature === "number") sanitized.temperature = body.temperature;
 
     const response = await doFetch(`${baseUrl}/chat/completions`, {

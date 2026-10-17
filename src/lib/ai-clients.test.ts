@@ -72,7 +72,7 @@ describe("createOpenRouterClients", () => {
     expect(Array.isArray(body.messages)).toBe(true);
   });
 
-  it("forwards max_tokens and temperature when provided", async () => {
+  it("forwards max_tokens and temperature when provided, defaults max_tokens otherwise", async () => {
     const { calls } = stubFetch();
     const clients = createOpenRouterClients({ apiKey: "k", textModel: "t/m" });
 
@@ -82,11 +82,17 @@ describe("createOpenRouterClients", () => {
       temperature: 0.2,
       other_junk: true,
     });
+    await clients.chat.create({ messages: [{ role: "user", content: "x" }] });
 
-    const body = JSON.parse(String(calls[0].init.body)) as Record<string, unknown>;
-    expect(body.max_tokens).toBe(512);
-    expect(body.temperature).toBe(0.2);
-    expect("other_junk" in body).toBe(false);
+    const withCap = JSON.parse(String(calls[0].init.body)) as Record<string, unknown>;
+    const defaulted = JSON.parse(String(calls[1].init.body)) as Record<string, unknown>;
+    expect(withCap.max_tokens).toBe(512);
+    expect(withCap.temperature).toBe(0.2);
+    expect("other_junk" in withCap).toBe(false);
+    // Unset max_tokens must default to a bounded cap — OpenRouter
+    // pre-authorizes max_tokens against the key's credit budget, and an
+    // unset value (model max) 402s on credit-limited keys.
+    expect(defaulted.max_tokens).toBe(1024);
   });
 
   it("throws on non-OK responses so callers can degrade", async () => {
