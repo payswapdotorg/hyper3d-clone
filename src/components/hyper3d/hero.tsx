@@ -40,9 +40,8 @@ export interface DemoGenerateRequest {
 const PROMPT_PLACEHOLDERS: Record<GenMode, string> = {
   "image-to-3d": "a battle-worn knight helmet, ornate steel…",
   "text-to-3d": "a rugged sci-fi cargo drone, matte panels, worn metal…",
-  "remix-gen": "blend a katana with a vine plant, glowing edges…",
-  "turbo-gen": "a chunky low-poly treasure chest…",
   "editing-3d": "split into parts, refine the hilt, add gold trim…",
+  worldgen: "a floating island village, waterfalls, rope bridges…",
 };
 
 export function DemoPanel({

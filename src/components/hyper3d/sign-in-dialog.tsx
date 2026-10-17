@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Box, Loader2, LogIn, ShieldCheck, UserRound } from "lucide-react";
+import { Box, Loader2, LogIn, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,36 +15,49 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
 export function SignInDialog({
   open,
   onOpenChange,
   onSuccess,
-  onGuest,
   intent,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: (email: string) => void;
-  onGuest: () => void;
+  onSuccess: () => void;
   intent?: string;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    // Mock auth: any credentials are accepted (clone demo contract).
-    window.setTimeout(() => {
-      setBusy(false);
-      const finalEmail = email.trim() || "creator@hyper3d.clone";
-      onSuccess(finalEmail);
-      onOpenChange(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/sign-in", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(body.error === "invalid_credentials" ? "Wrong email or password." : `Sign-in failed (${res.status}).`);
+        return;
+      }
       setPassword("");
-    }, 600);
+      // Gate-found fix: do NOT close via onOpenChange here — the parent clears
+      // the pending afterSignIn action on close, which raced this handler's
+      // `await refresh()` and dropped the "open studio" callback. The parent
+      // now closes the dialog after running that callback.
+      onSuccess();
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -72,7 +85,7 @@ export function SignInDialog({
               id="h3d-email"
               type="email"
               autoComplete="email"
-              placeholder="you@studio.com"
+              placeholder="demo@hyper3d.clone"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -88,12 +101,20 @@ export function SignInDialog({
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               className="h-11 border-white/12 bg-white/5"
             />
             <p className="text-xs text-h3d-muted">
-              Clone demo — any credentials are accepted.
+              Demo account: <span className="font-mono text-h3d-violet">demo@hyper3d.clone</span> /{" "}
+              <span className="font-mono text-h3d-violet">demo1234</span> — 50 starter credits.
             </p>
           </div>
+
+          {error && (
+            <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+              {error}
+            </p>
+          )}
 
           <Button
             type="submit"
@@ -112,30 +133,10 @@ export function SignInDialog({
           </Button>
         </form>
 
-        <div className="flex items-center gap-3 py-1">
-          <Separator className="flex-1 bg-white/10" />
-          <span className="text-xs text-h3d-muted">or</span>
-          <Separator className="flex-1 bg-white/10" />
-        </div>
-
-        <DialogFooter className="flex-col gap-3 sm:flex-col">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 w-full border-white/15 bg-white/5 text-sm font-medium hover:bg-white/10"
-            onClick={() => {
-              onGuest();
-              onOpenChange(false);
-              toast.info("Continuing as guest", {
-                description: "Generation previews are free — sign in anytime to keep assets.",
-              });
-            }}
-          >
-            <UserRound className="size-4" /> Continue as guest
-          </Button>
+        <DialogFooter className="sm:flex-col sm:items-center">
           <p className="flex items-center justify-center gap-1.5 text-center text-xs text-h3d-muted">
             <ShieldCheck className="size-3.5 text-h3d-purple" aria-hidden="true" />
-            Sessions are stored locally in this browser only.
+            Sessions use an httpOnly signed cookie, stored server-side verified.
           </p>
         </DialogFooter>
       </DialogContent>

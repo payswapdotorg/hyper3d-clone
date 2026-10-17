@@ -1,177 +1,110 @@
-"use client";
-
 /**
- * Mock auth matching the real site's contract (PRODUCT_FACTS §f):
- * localStorage keys `token` + `user_uuid`, window event `hyper3d-auth-change`,
- * and a `__HYPER3D_AUTH__` global for inspection.
+ * Server-side session auth — HMAC-signed httpOnly cookie.
  *
- * State is exposed through useSyncExternalStore so React 19 subscribes to the
- * localStorage "store" without setState-in-effect cascades.
+ * Passwords: scrypt (node:crypto) with per-hash random salt.
+ * Sessions: base64url(JSON payload).base64url(HMAC-SHA256) with the
+ * SESSION_SECRET; stateless verification, no session store needed.
+ *
+ * Route handlers read the cookie straight from the request (never through
+ * next/headers) so they stay directly invocable under vitest.
  */
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import type { NextRequest } from "next/server";
+import { db } from "./db";
 
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
-import { INITIAL_CREDITS } from "@/lib/hyper3d";
+export const SESSION_COOKIE = "h3d_session";
+export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
-export interface Hyper3dAuth {
-  token: string;
-  user_uuid: string;
+const SECRET = process.env.SESSION_SECRET ?? "hyper3d-clone-dev-secret-change-me";
+
+export interface SessionPayload {
+  uid: string;
+  iat: number;
 }
 
-export const AUTH_EVENT = "hyper3d-auth-change";
-export const EMAIL_KEY = "hyper3d-email";
-const CREDITS_KEY = "hyper3d-credits";
+/* ------------------------------ passwords ------------------------------ */
 
-export const INITIAL_CREDITS_VALUE = INITIAL_CREDITS;
+export function hashPassword(password: string): string {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `scrypt:${salt}:${hash}`;
+}
 
-/* ------------------------------ store plumbing ------------------------------ */
-
-function ls(key: string): string | null {
+export function verifyPassword(password: string, stored: string): boolean {
+  const parts = stored.split(":");
+  if (parts.length !== 3 || parts[0] !== "scrypt") return false;
+  const [, salt, hash] = parts;
   try {
-    return window.localStorage.getItem(key);
+    const candidate = scryptSync(password, salt, 64);
+    const expected = Buffer.from(hash, "hex");
+    return candidate.length === expected.length && timingSafeEqual(candidate, expected);
+  } catch {
+    return false;
+  }
+}
+
+/* ------------------------------ session tokens ------------------------------ */
+
+function b64url(input: Buffer | string): string {
+  return Buffer.from(input).toString("base64url");
+}
+
+function sign(data: string): string {
+  return createHmac("sha256", SECRET).update(data).digest("base64url");
+}
+
+export function createSessionToken(userId: string): string {
+  const payload: SessionPayload = { uid: userId, iat: Math.floor(Date.now() / 1000) };
+  const body = b64url(JSON.stringify(payload));
+  return `${body}.${sign(body)}`;
+}
+
+export function verifySessionToken(token: string): SessionPayload | null {
+  if (typeof token !== "string" || !token.includes(".")) return null;
+  const [body, signature] = token.split(".");
+  if (!body || !signature) return null;
+  const expected = sign(body);
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as SessionPayload;
+    if (typeof payload.uid !== "string" || typeof payload.iat !== "number") return null;
+    return payload;
   } catch {
     return null;
   }
 }
 
-function lsSet(key: string, value: string) {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {
-    /* non-fatal */
-  }
+/* ------------------------------ cookie headers ------------------------------ */
+
+export function sessionCookieHeader(token: string, maxAgeSec: number = SESSION_MAX_AGE): string {
+  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSec}`;
 }
 
-function lsRemove(key: string) {
-  try {
-    window.localStorage.removeItem(key);
-  } catch {
-    /* non-fatal */
-  }
+export function clearSessionCookieHeader(): string {
+  return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 }
 
-function notify() {
-  window.dispatchEvent(new CustomEvent(AUTH_EVENT, { detail: readAuthRaw() }));
-}
+/* ------------------------------ request helper ------------------------------ */
 
-export function subscribeHyper3d(callback: () => void): () => void {
-  window.addEventListener(AUTH_EVENT, callback);
-  window.addEventListener("storage", callback);
-  return () => {
-    window.removeEventListener(AUTH_EVENT, callback);
-    window.removeEventListener("storage", callback);
-  };
-}
+export type SessionUser = {
+  id: string;
+  email: string;
+  username: string;
+  balance: number;
+  preferences: unknown;
+  referralCode: string;
+  createdAt: Date;
+};
 
-function readAuthRaw(): Hyper3dAuth | null {
-  const token = ls("token");
-  const user_uuid = ls("user_uuid");
-  if (token && user_uuid) return { token, user_uuid };
-  return null;
-}
-
-function getAuthSnapshot(): string {
-  return JSON.stringify([ls("token"), ls("user_uuid"), ls(EMAIL_KEY)]);
-}
-
-function getServerAuthSnapshot(): string {
-  return JSON.stringify([null, null, null]);
-}
-
-function getCreditsSnapshot(): number {
-  const raw = ls(CREDITS_KEY);
-  if (raw === null) return INITIAL_CREDITS;
-  const n = Number.parseInt(raw, 10);
-  return Number.isFinite(n) ? n : INITIAL_CREDITS;
-}
-
-function getServerCreditsSnapshot(): number {
-  return INITIAL_CREDITS;
-}
-
-/* ------------------------------ auth actions ------------------------------ */
-
-export function readAuth(): Hyper3dAuth | null {
-  if (typeof window === "undefined") return null;
-  return readAuthRaw();
-}
-
-export function signIn(email: string): Hyper3dAuth {
-  const token = `demo_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-  const user_uuid =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-  lsSet("token", token);
-  lsSet("user_uuid", user_uuid);
-  lsSet(EMAIL_KEY, email);
-  if (ls(CREDITS_KEY) === null) lsSet(CREDITS_KEY, String(INITIAL_CREDITS));
-  const auth: Hyper3dAuth = { token, user_uuid };
-  try {
-    (window as unknown as Record<string, unknown>).__HYPER3D_AUTH__ = auth;
-  } catch {
-    /* non-fatal */
-  }
-  notify();
-  return auth;
-}
-
-export function signOut(): void {
-  lsRemove("token");
-  lsRemove("user_uuid");
-  lsRemove(EMAIL_KEY);
-  lsRemove(CREDITS_KEY);
-  try {
-    (window as unknown as Record<string, unknown>).__HYPER3D_AUTH__ = null;
-  } catch {
-    /* non-fatal */
-  }
-  notify();
-}
-
-export function writeCredits(n: number): void {
-  if (typeof window === "undefined") return;
-  lsSet(CREDITS_KEY, String(n));
-  notify();
-}
-
-/* ------------------------------ hooks ------------------------------ */
-
-export function useHyper3dAuth(): {
-  authed: boolean;
-  token: string | null;
-  userUuid: string | null;
-  email: string | null;
-} {
-  const snapshot = useSyncExternalStore(
-    subscribeHyper3d,
-    getAuthSnapshot,
-    getServerAuthSnapshot,
-  );
-  const parsed = useMemo(
-    () => JSON.parse(snapshot) as [string | null, string | null, string | null],
-    [snapshot],
-  );
-  return {
-    authed: Boolean(parsed[0] && parsed[1]),
-    token: parsed[0],
-    userUuid: parsed[1],
-    email: parsed[2],
-  };
-}
-
-export function useHyper3dCredits(): number {
-  return useSyncExternalStore(
-    subscribeHyper3d,
-    getCreditsSnapshot,
-    getServerCreditsSnapshot,
-  );
-}
-
-/** Keeps a ref updated with the latest callback without writing during render. */
-export function useLatest<T>(value: T): React.RefObject<T> {
-  const ref = useRef(value);
-  useEffect(() => {
-    ref.current = value;
-  }, [value]);
-  return ref;
+/** Read + verify the session cookie on a request, then load the user. */
+export async function getSessionUser(req: NextRequest): Promise<SessionUser | null> {
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+  const payload = verifySessionToken(token);
+  if (!payload) return null;
+  const user = await db.user.findUnique({ where: { id: payload.uid } });
+  if (!user) return null;
+  return user;
 }

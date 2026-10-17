@@ -3,20 +3,17 @@
  * All strings/tiers/numbers sourced from /home/z/h3d-capture/PRODUCT_FACTS.md.
  */
 
-export type GenMode =
-  | "image-to-3d"
-  | "text-to-3d"
-  | "remix-gen"
-  | "turbo-gen"
-  | "editing-3d";
+export type GenMode = "image-to-3d" | "text-to-3d" | "editing-3d" | "worldgen";
 
 export const GEN_MODES: { id: GenMode; label: string; hint: string }[] = [
   { id: "image-to-3d", label: "Image to 3D", hint: "One image is enough for most objects" },
   { id: "text-to-3d", label: "Text to 3D", hint: "From text prompt to 3D object — instantly" },
-  { id: "remix-gen", label: "Remix Gen", hint: "Blend references into a new asset" },
-  { id: "turbo-gen", label: "Turbo Gen", hint: "Draft results in seconds" },
   { id: "editing-3d", label: "3D Editing", hint: "Parts / Refine / Modify on .obj .fbx .glb" },
+  { id: "worldgen", label: "WorldGen", hint: "Turn images into editable 3D worlds" },
 ];
+
+/** Tabs with a REAL generation pipeline in this clone. */
+export const GENERATING_MODES: GenMode[] = ["image-to-3d", "text-to-3d"];
 
 export type ControlNetId = "bbox" | "voxel" | "pointcloud";
 
@@ -28,34 +25,26 @@ export const CONTROLNETS: { id: ControlNetId; label: string; blurb: string }[] =
 
 export type EffortId = "extreme-low" | "low" | "medium" | "high" | "extreme-high";
 
-export const EFFORTS: { id: EffortId; label: string; seconds: number; demoMs: number }[] = [
-  { id: "extreme-low", label: "Extreme-Low", seconds: 4, demoMs: 4000 },
-  { id: "low", label: "Low", seconds: 9, demoMs: 7000 },
-  { id: "medium", label: "Medium", seconds: 20, demoMs: 10000 },
-  { id: "high", label: "High", seconds: 40, demoMs: 14000 },
-  { id: "extreme-high", label: "Extreme-High", seconds: 80, demoMs: 20000 },
+export const EFFORTS: { id: EffortId; label: string; seconds: number; blurb: string }[] = [
+  { id: "extreme-low", label: "Extreme-Low", seconds: 4, blurb: "Fastest drafts, minimal refinement" },
+  { id: "low", label: "Low", seconds: 9, blurb: "Quick iterations with basic detail" },
+  { id: "medium", label: "Medium", seconds: 20, blurb: "Balanced quality and turnaround" },
+  { id: "high", label: "High", seconds: 40, blurb: "Detailed geometry and materials" },
+  { id: "extreme-high", label: "Extreme-High", seconds: 80, blurb: "Maximum fidelity, full pass" },
 ];
 
-export const EXPORT_FORMATS = ["GLB", "GLTF", "FBX", "OBJ", "STL", "USDZ"] as const;
+export const EXPORT_FORMATS = ["GLB", "GLTF", "OBJ", "STL", "USDZ"] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 export const FORMAT_USES: Record<(typeof EXPORT_FORMATS)[number], string> = {
   GLB: "Web & AR",
   GLTF: "Web & AR",
-  FBX: "Engines",
   OBJ: "Editing",
   STL: "Printing",
   USDZ: "Apple AR",
 };
 
-export const GEN_VERSION = "Gen-2.5";
-
-export const PIPELINE_STAGES = [
-  "Understanding prompt",
-  "Generating geometry",
-  "Retopology",
-  "PBR texturing",
-] as const;
+export const GEN_VERSION = "Gen-2.5 Agent-Ready";
 
 /* ------------------------------ nav data ------------------------------ */
 
@@ -357,22 +346,6 @@ export const FAQS = [
 
 /* ------------------------------ studio ------------------------------ */
 
-export interface HistoryEntry {
-  id: string;
-  prompt: string;
-  mode: GenMode;
-  effort: EffortId;
-  archetype: string;
-  seed: number;
-  createdAt: number;
-  renderUrl?: string;
-  fallback?: boolean;
-}
-
-export const STUDIO_HISTORY_KEY = "hyper3d-history";
-export const CREDITS_KEY = "hyper3d-credits";
-export const INITIAL_CREDITS = 30;
-
 export function hashString(input: string): number {
   let h = 2166136261;
   for (let i = 0; i < input.length; i++) {
@@ -380,13 +353,6 @@ export function hashString(input: string): number {
     h = Math.imul(h, 16777619);
   }
   return Math.abs(h >>> 0);
-}
-
-export const ARCHETYPES = ["torus-knot", "ico-cluster", "crystal", "gear-stack"] as const;
-export type Archetype = (typeof ARCHETYPES)[number];
-
-export function archetypeForPrompt(prompt: string): Archetype {
-  return ARCHETYPES[hashString(prompt.toLowerCase().trim()) % ARCHETYPES.length];
 }
 
 export function nameForPrompt(prompt: string): string {

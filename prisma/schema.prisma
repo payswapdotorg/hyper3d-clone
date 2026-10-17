@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,19 +8,54 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(uuid())
+  email        String        @unique
+  username     String
+  passwordHash String
+  balance      Int           @default(50)
+  preferences  Json?
+  referralCode String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tasks        Task[]
+  creditEntries CreditEntry[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+model Task {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String // "RodinAgentic" | "RodinStandard"
+  prompt          String
+  step            String        @default("ModelGenerate")
+  userState       String        @default("created")
+  spec            Json?
+  inputImageUrl   String?
+  previewImageUrl String?
+  modelUrl        String?
+  videoUrl        String?
+  usage           Json?
+  settings        Json?
+  creditsSpent    Int           @default(0)
+  isFeatured      Boolean       @default(false)
+  isPrivate       Boolean       @default(false)
+  error           String?
+  generationUuid  String?
+  generateTime    DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  creditEntries   CreditEntry[]
+}
+
+model CreditEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta     Int
+  reason    String
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
 }

@@ -2,7 +2,14 @@ node_modules/
 .next/
 out/
 dev.log*
+server.log*
 .env*
 *.tsbuildinfo
 public/images/generated/
+db/*.db
+db/generated/
 .DS_Store
+bundle.tar.gz
+.zscripts/*.log
+.zscripts/*.pid
+dev-gate.log*

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { SiteHeader } from "./site-header";
@@ -19,49 +19,31 @@ import { Faq } from "./sections/faq";
 import { Pricing } from "./sections/pricing";
 import { SignInDialog } from "./sign-in-dialog";
 import { Studio, type StudioInitial } from "./studio/studio";
-import {
-  signIn as mockSignIn,
-  signOut as mockSignOut,
-  useHyper3dAuth,
-  useHyper3dCredits,
-  writeCredits,
-} from "@/lib/auth";
-import { INITIAL_CREDITS, type EffortId, type GenMode } from "@/lib/hyper3d";
+import { useSession } from "@/lib/use-session";
+import type { EffortId, GenMode } from "@/lib/hyper3d";
 
 interface StudioSeed {
   prompt: string;
   mode: GenMode;
   effort: EffortId;
-  controlNet: DemoGenerateRequest["controlNet"];
-  free: boolean;
 }
-
-type PendingAuth = "studio" | "generate" | null;
 
 const DEFAULT_SEED: StudioSeed = {
   prompt: "",
   mode: "text-to-3d",
   effort: "medium",
-  controlNet: null,
-  free: false,
 };
 
 export function Hyper3DApp() {
   const [view, setView] = useState<"landing" | "studio">("landing");
-  const { authed, email } = useHyper3dAuth();
-  const credits = useHyper3dCredits();
-  const [guestAck, setGuestAck] = useState(false);
+  const { user, refresh, signOut } = useSession();
   const [signInOpen, setSignInOpen] = useState(false);
   const [signInIntent, setSignInIntent] = useState<string | undefined>(undefined);
-  const [resumeSignal, setResumeSignal] = useState(0);
+  const [afterSignIn, setAfterSignIn] = useState<(() => void) | null>(null);
   const [studioInitial, setStudioInitial] = useState<StudioInitial>({
     ...DEFAULT_SEED,
-    freePreview: false,
     nonce: 0,
   });
-
-  const pendingKindRef = useRef<PendingAuth>(null);
-  const pendingStudioReqRef = useRef<StudioSeed | null>(null);
 
   /* ---------- lock body scroll while studio is open ---------- */
   useEffect(() => {
@@ -73,109 +55,56 @@ export function Hyper3DApp() {
 
   /* ---------- studio navigation ---------- */
   const openStudio = useCallback((seed: StudioSeed) => {
-    setStudioInitial({
-      prompt: seed.prompt,
-      mode: seed.mode,
-      effort: seed.effort,
-      controlNet: seed.controlNet,
-      freePreview: seed.free,
-      nonce: Date.now(),
-    });
+    setStudioInitial({ ...seed, nonce: Date.now() });
     setView("studio");
   }, []);
 
   /* ---------- auth flows ---------- */
   const requestAuth = useCallback(
-    (intent: string, kind: Exclude<PendingAuth, null>, seed?: StudioSeed) => {
-      pendingKindRef.current = kind;
-      pendingStudioReqRef.current = seed ?? null;
+    (intent: string, then?: () => void) => {
       setSignInIntent(intent);
+      setAfterSignIn(then ? () => then : null);
       setSignInOpen(true);
     },
     [],
   );
 
-  const resolvePending = useCallback(
-    (via: "auth" | "guest") => {
-      const kind = pendingKindRef.current;
-      const seed = pendingStudioReqRef.current;
-      pendingKindRef.current = null;
-      pendingStudioReqRef.current = null;
-      if (via === "guest") setGuestAck(true);
-      if (kind === "studio" && seed) {
-        openStudio(seed);
-      } else if (kind === "generate") {
-        setResumeSignal((n) => n + 1);
-      }
-    },
-    [openStudio],
-  );
+  const handleSignInSuccess = useCallback(async () => {
+    const info = await refresh();
+    setAfterSignIn((fn) => {
+      if (fn) fn();
+      return null;
+    });
+    // Gate-found fix: the dialog no longer closes itself on success (it used
+    // to clear afterSignIn mid-flight); we own the close here, AFTER the
+    // pending action (e.g. open the studio) has run.
+    setSignInOpen(false);
+    setSignInIntent(undefined);
+    toast.success(`Welcome, ${info?.username ?? "creator"}`, {
+      description: "Session started · 50 starter credits on the demo account.",
+    });
+  }, [refresh]);
 
-  const handleSignInSuccess = useCallback(
-    (userEmail: string) => {
-      mockSignIn(userEmail);
-      toast.success(`Welcome, ${userEmail.split("@")[0]}`, {
-        description: `${INITIAL_CREDITS} starter credits loaded · Free 7-day trial active.`,
-      });
-      resolvePending("auth");
-    },
-    [resolvePending],
-  );
-
-  const handleGuest = useCallback(() => {
-    resolvePending("guest");
-  }, [resolvePending]);
-
-  const handleSignOut = useCallback(() => {
-    mockSignOut();
-    setGuestAck(false);
-    toast.info("Signed out", { description: "Local session and credits cleared." });
-  }, []);
-
-  /* ---------- credits ---------- */
-  const consumeCredit = useCallback((): boolean => {
-    if (credits <= 0) {
-      toast.error("Out of credits", {
-        description: "Upgrade your plan or add a credit pack to keep generating.",
-      });
-      return false;
-    }
-    writeCredits(credits - 1);
-    return true;
-  }, [credits]);
+  const handleSignOut = useCallback(async () => {
+    await signOut();
+    toast.info("Signed out", { description: "Session cookie cleared." });
+  }, [signOut]);
 
   /* ---------- landing intents ---------- */
   const handleHeroGenerate = useCallback(
     (req: DemoGenerateRequest) => {
-      const wantsGeneration = req.prompt.trim().length > 0 && !req.free;
-      if (!authed && !guestAck && wantsGeneration) {
-        requestAuth(
-          "Sign in to generate — or continue as a guest (previews stay free).",
-          "studio",
-          {
-            prompt: req.prompt,
-            mode: req.mode,
-            effort: req.effort,
-            controlNet: req.controlNet,
-            free: req.free,
-          },
-        );
-        return;
-      }
-      openStudio({
-        prompt: req.prompt,
-        mode: req.mode,
-        effort: req.effort,
-        controlNet: req.controlNet,
-        free: req.free,
-      });
+      openStudio({ prompt: req.prompt, mode: req.mode, effort: req.effort });
     },
-    [authed, guestAck, openStudio, requestAuth],
+    [openStudio],
   );
 
   const handleStartCreating = useCallback(() => {
+    if (!user) {
+      requestAuth("Sign in to open your Rodin workspace.", () => openStudio(DEFAULT_SEED));
+      return;
+    }
     openStudio(DEFAULT_SEED);
-  }, [openStudio]);
+  }, [user, requestAuth, openStudio]);
 
   const handleGalleryOpen = useCallback(
     (prompt: string) => {
@@ -193,14 +122,10 @@ export function Hyper3DApp() {
         Skip to main content
       </a>
       <SiteHeader
-        authed={authed}
-        userEmail={email}
-        credits={credits}
-        onSignIn={() => {
-          pendingKindRef.current = null;
-          setSignInIntent(undefined);
-          setSignInOpen(true);
-        }}
+        authed={Boolean(user)}
+        userEmail={user?.email ?? null}
+        credits={user?.balance ?? 0}
+        onSignIn={() => requestAuth("Access your Rodin workspace, credits, and generated assets.")}
         onSignOut={handleSignOut}
         onStartCreating={handleStartCreating}
       />
@@ -227,28 +152,21 @@ export function Hyper3DApp() {
         onOpenChange={(open) => {
           setSignInOpen(open);
           if (!open) {
-            pendingKindRef.current = null;
-            pendingStudioReqRef.current = null;
+            setSignInIntent(undefined);
+            setAfterSignIn(null);
           }
         }}
-        onSuccess={handleSignInSuccess}
-        onGuest={handleGuest}
+        onSuccess={() => void handleSignInSuccess()}
         intent={signInIntent}
       />
 
       {view === "studio" && (
         <Studio
           initial={studioInitial}
-          authed={authed}
-          credits={credits}
-          guestAcknowledged={guestAck}
-          onRequestAuth={(intent) => {
-            // generation gate: resumed via resumeSignal after auth/guest
-            requestAuth(intent, "generate");
-          }}
-          onConsumeCredit={consumeCredit}
+          user={user}
+          onNeedAuth={requestAuth}
+          onSessionRefresh={() => void refresh()}
           onClose={() => setView("landing")}
-          resumeSignal={resumeSignal}
         />
       )}
     </div>
