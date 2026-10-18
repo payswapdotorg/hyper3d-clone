@@ -246,7 +246,14 @@ export async function analyzeImage(
     const content = extractContent(response);
     if (content === null) return structuredCloneSafe(FALLBACK_RESULT);
     return parseCaptionOutput(content);
-  } catch {
+  } catch (err) {
+    // Degrade silently to the deterministic fallback (generation must never
+    // fail), but surface the real cause in the runtime log — silent catches
+    // made production caption failures undiagnosable.
+    console.error(
+      "[caption] vision chain failed — degrading to fallback:",
+      err instanceof Error ? `${err.name}: ${err.message}`.slice(0, 300) : String(err).slice(0, 300),
+    );
     return structuredCloneSafe(FALLBACK_RESULT);
   }
 }
