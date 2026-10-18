@@ -7,6 +7,7 @@ server.log*
 *.tsbuildinfo
 public/images/generated/
 db/*.db
+prisma/db/
 db/generated/
 .DS_Store
 bundle.tar.gz
