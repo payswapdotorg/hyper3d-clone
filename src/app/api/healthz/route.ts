@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ai, db: { reachable: dbOk } });
   }
 
-  // 1x1 transparent PNG — the smallest possible legal vision payload.
-  const pixel =
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+  // 64x64 solid PNG — small but legal for every vision model (a 1x1 pixel
+  // is rejected by qwen-vl with a 400 image-size error).
+  const PROBE_IMAGE = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAeklEQVR4nO3PUQkAIBTAwNfJCsY3lCH8OITBAtzmrP11wwUNaEEDWtCAFjSgBQ1oQQNa0IAWNKAFDWhBA1rQgBY0oAUNaEEDWtCAFjSgBQ1oQQNa0IAWNKAFDWhBA1rQgBY0oAUNaEEDWtCAFjSgBQ1oQQNa0IAWPHYBO8UxLSaOK4IAAAAASUVORK5CYII=";
   let vision: { ok: boolean; error?: string; contentPreview?: string; latencyMs?: number };
   const t0 = Date.now();
   try {
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
           role: "user",
           content: [
             { type: "text", text: "Reply with the single word: ok" },
-            { type: "image_url", image_url: { url: `data:image/png;base64,${pixel}` } },
+            { type: "image_url", image_url: { url: `data:image/png;base64,${PROBE_IMAGE}` } },
           ],
         },
       ],

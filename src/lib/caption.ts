@@ -248,8 +248,18 @@ export async function analyzeImage(
       thinking: { type: "disabled" },
     });
     const content = extractContent(response);
-    if (content === null) return structuredCloneSafe(FALLBACK_RESULT);
-    return parseCaptionOutput(content);
+    if (content === null) {
+      console.error("[caption] vision response carried no content:", JSON.stringify(response).slice(0, 300));
+      return { ...structuredCloneSafe(FALLBACK_RESULT), degraded: `vision response carried no content: ${JSON.stringify(response).slice(0, 200)}` };
+    }
+    const parsed = parseCaptionOutput(content);
+    if (parsed.prompt === FALLBACK_RESULT.prompt) {
+      // The model answered but the answer did not parse into the caption
+      // schema — surface a preview of the raw answer for diagnosis.
+      console.error("[caption] unparseable vision answer:", content.slice(0, 300));
+      return { ...parsed, degraded: `unparseable vision answer: ${content.slice(0, 200)}` };
+    }
+    return parsed;
   } catch (err) {
     // Degrade silently to the deterministic fallback (generation must never
     // fail), but surface the real cause: in the runtime log AND on the result
