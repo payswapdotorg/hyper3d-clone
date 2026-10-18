@@ -182,7 +182,7 @@ describe("credits / confirm-gate (pay-by-result)", () => {
       routeCtx({ uuid }),
     );
 
-    const { GET as meshGet } = await import("@/app/api/task/[uuid]/mesh/route");
+    const { GET: meshGet } = await import("@/app/api/task/[uuid]/mesh/route");
     const res = await meshGet(new NextRequest(`${BASE}/api/task/${uuid}/mesh`), routeCtx({ uuid }));
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("model/gltf-binary");
