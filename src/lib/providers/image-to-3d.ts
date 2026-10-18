@@ -59,6 +59,21 @@ function componentToNode(component: CaptionResult["components"][number]): SceneO
     if (value !== undefined) params[key] = value;
   }
 
+  // Attachment-proportion clamp (deterministic, 2026-10-18): vision models
+  // sometimes emit stems/handles as wide flat disks ("a lid on the body"),
+  // which reads as a modeling bug. A SHORT cylinder/cone (height <= 0.6) is
+  // by construction an attachment — clamp its radii to stem-like proportions
+  // regardless of what the model emitted.
+  if (component.primitive === "cylinder" || component.primitive === "cone") {
+    const h = typeof params.height === "number" ? params.height : 1;
+    if (h <= 0.6) {
+      const MAX_ATTACHMENT_RADIUS = 0.09;
+      if (typeof params.radiusTop === "number") params.radiusTop = Math.min(params.radiusTop, MAX_ATTACHMENT_RADIUS);
+      if (typeof params.radiusBottom === "number") params.radiusBottom = Math.min(params.radiusBottom, MAX_ATTACHMENT_RADIUS);
+      if (typeof params.radius === "number") params.radius = Math.min(params.radius, MAX_ATTACHMENT_RADIUS);
+    }
+  }
+
   // Assemble with optional transform/material, then validate through zod.
   const candidate: Record<string, unknown> = { type: component.primitive, params };
   if (component.position || component.rotation || component.scale !== undefined) {
