@@ -19,6 +19,13 @@ const CreateTaskSchema = z.object({
   effort: z.enum(["extreme-low", "low", "medium", "high", "extreme-high"]).optional().default("medium"),
   image: z.string().min(8).max(8_000_000).optional(), // data URL or bare base64
   settings: z.object({ height: z.number().finite().min(1).max(100) }).partial().optional(),
+  // ---- engine2 recovery: free neural engine + pay-by-result ----
+  /** Tier: "neural" (client-direct Hunyuan3D-2.1) or "fast" (in-house lathe). */
+  engine: z.enum(["neural", "fast"]).optional(),
+  /** 0..65535 — card-visible reproducibility (both tiers; lathe jitters by it). */
+  seed: z.number().int().min(0).max(65535).optional(),
+  /** Up to 4 extra view images (data URLs) for the neural multiview params. */
+  mvImages: z.array(z.string().min(8).max(4_000_000)).max(4).optional(),
 });
 
 const MIME_BY_EXT: Record<string, string> = {
@@ -66,12 +73,16 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Validation failed", issues: parsed.error.issues.map((i) => i.message) }, { status: 400 });
   }
-  const { type, prompt, effort, image, settings } = parsed.data;
+  const { type, prompt, effort, image, settings, engine, seed, mvImages } = parsed.data;
 
-  // Only the user's own generations count toward the free-preview rule —
-  // seeded featured gallery rows (demo-authored) are not generation history.
-  const taskCount = await db.task.count({ where: { userId: user.id, isFeatured: false } });
-  const cost = computeTaskCost({ type, taskCount });
+  // Pay-by-result (engine2): engine-tagged tasks are billed ONLY at confirm —
+  // generation + preview are free (mirrors the reference free tier). The old
+  // billing (creation-time charge, first task free) stays for non-engine tasks.
+  const payByResult = engine !== undefined;
+  const taskCount = payByResult
+    ? 0
+    : await db.task.count({ where: { userId: user.id, isFeatured: false } });
+  const cost = payByResult ? 0 : computeTaskCost({ type, taskCount });
 
   const taskId = randomUUID();
   let imageBase64: string | undefined;
@@ -108,46 +119,56 @@ export async function POST(req: NextRequest) {
         version: "v3",
         type: "model_generate",
         ...(inputMime ? { input_mime: inputMime } : {}),
+        ...(engine ? { engine } : {}),
+        ...(seed !== undefined ? { seed } : {}),
+        ...(engine ? { pay_by_result: true } : {}),
+        ...(mvImages ? { mv_image_count: mvImages.length } : {}),
       },
       creditsSpent: cost,
+      ...(engine ? { engine } : {}),
+      ...(seed !== undefined ? { seed } : {}),
       ...(inputBytes ? { inputBytes: new Uint8Array(inputBytes) } : {}), // blob-in-DB (serverless-safe)
     },
   });
 
-  try {
-    await ledger.spend({
-      userId: user.id,
-      amount: cost,
-      reason: cost === 0 ? "free_preview" : type === "RodinAgentic" ? "agentic_generation" : "standard_generation",
-      taskId,
-    });
-  } catch (err) {
-    // Roll the task row back — a failed charge must not leave a live task.
-    await db.task.delete({ where: { id: task.id } }).catch(() => undefined);
-    if (err instanceof InsufficientCreditsError) {
-      return NextResponse.json(
-        { error: "insufficient_credits", balance: err.balance, required: err.amount },
-        { status: 402 },
-      );
+  if (!payByResult) {
+    try {
+      await ledger.spend({
+        userId: user.id,
+        amount: cost,
+        reason: cost === 0 ? "free_preview" : type === "RodinAgentic" ? "agentic_generation" : "standard_generation",
+        taskId,
+      });
+    } catch (err) {
+      // Roll the task row back — a failed charge must not leave a live task.
+      await db.task.delete({ where: { id: task.id } }).catch(() => undefined);
+      if (err instanceof InsufficientCreditsError) {
+        return NextResponse.json(
+          { error: "insufficient_credits", balance: err.balance, required: err.amount },
+          { status: 402 },
+        );
+      }
+      throw err;
     }
-    throw err;
   }
 
-  // Kick the pipeline. Serverless (Vercel): after() keeps this invocation
-  // alive post-response so the paced pipeline can run to completion (or be
-  // resumed by the card poll's resumeStaleTask if this invocation dies —
-  // spec-first persistence means no re-billed AI calls on resume). Local
-  // dev / tests: plain fire-and-forget, unchanged behavior.
-  const kick = () => enqueue(taskId, { imageBase64, imageMime });
-  if (typeof process !== "undefined" && process.env.VERCEL) {
-    after(kick);
-  } else {
-    kick();
+  // Kick the pipeline. Neural tasks are CLIENT-driven (the browser calls the
+  // engine directly and POSTs the mesh back) — no server enqueue for them.
+  // Fast-tier and legacy tasks run the server pipeline as before.
+  // Serverless (Vercel): after() keeps this invocation alive post-response.
+  if (engine !== "neural") {
+    const kick = () => enqueue(taskId, { imageBase64, imageMime });
+    if (typeof process !== "undefined" && process.env.VERCEL) {
+      after(kick);
+    } else {
+      kick();
+    }
   }
 
   return NextResponse.json({
     uuid: taskId,
     producer: type === "RodinAgentic" ? "agentic" : "standard",
+    ...(engine ? { engine, pay_by_result: true } : {}),
     job: { uuids: [taskId], subscription_key: "clone-local" },
   });
 }

@@ -38,6 +38,10 @@
   ],
   "exclude": [
     "node_modules",
-    "scripts"
+    "scripts",
+    "skills",
+    "tool-results",
+    "mini-services",
+    "recon"
   ]
 }
