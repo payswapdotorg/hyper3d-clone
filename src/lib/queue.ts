@@ -335,5 +335,23 @@ export async function resumeStaleTask(taskId: string): Promise<void> {
   const progress = settings.progress as { at?: unknown } | undefined;
   const at = typeof progress?.at === "number" ? progress.at : 0;
   if (Date.now() - at < RESUME_STALE_MS) return; // actively progressing
+  // Resume-attempt cap (2026-10-18): a task whose invocations keep dying
+  // (wedged AI call, connection exhaustion) must fail VISIBLY after 3
+  // resume attempts instead of looping forever in a wedged state.
+  const resumeCount = typeof settings.resume_count === "number" ? settings.resume_count : 0;
+  if (resumeCount >= 3) {
+    await db.task.update({
+      where: { id: taskId },
+      data: {
+        userState: "failed",
+        error: "Generation kept stalling — please try again (AI backend or database was unreachable).",
+      },
+    });
+    return;
+  }
+  await db.task.update({
+    where: { id: taskId },
+    data: { settings: { ...settings, resume_count: resumeCount + 1 } as never },
+  });
   enqueue(taskId, { fast: true });
 }

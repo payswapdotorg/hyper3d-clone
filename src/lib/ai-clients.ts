@@ -96,6 +96,10 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
             "content-type": "application/json",
           },
           body: JSON.stringify(sanitized),
+          // Hard request timeout: a hung AI call must reject (and surface)
+          // instead of wedging the pipeline until the serverless invocation
+          // is evicted — the silent-freeze failure mode seen 2026-10-18.
+          signal: AbortSignal.timeout(45_000),
         },
       };
     };
