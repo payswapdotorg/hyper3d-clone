@@ -125,7 +125,11 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
     if (!response.ok) {
       const detail = (await response.text().catch(() => "")).slice(0, 300);
       console.error(`[ai-clients] openrouter ${model} responded ${response.status}: ${detail}`);
-      throw new Error(`openrouter ${model} responded ${response.status}`);
+      // Carry a bounded slice of the provider's error body in the thrown
+      // message: healthz ?probe=vision is the only surface where production
+      // failures become diagnosable (runtime logs are not readable on the
+      // hobby plan), and a bare status code answered nothing.
+      throw new Error(`openrouter ${model} responded ${response.status}: ${detail.slice(0, 200)}`);
     }
     return (await response.json()) as unknown;
   };
