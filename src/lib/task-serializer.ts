@@ -34,6 +34,16 @@ export function buildTaskCard(task: Task, author: Pick<User, "id" | "username" |
   };
   if (typeof settings.effort === "string") settingsOut.effort = settings.effort;
 
+  // Engine2 passthrough: which engine the user picked (settings.engine),
+  // which actually produced the mesh (engineUsed — "neural" vs the lathe
+  // "fast" fallback), why it fell back, the seed, and confirm-gate state.
+  if (typeof settings.engine === "string") settingsOut.engine = settings.engine;
+  if (typeof settings.pay_by_result === "boolean") settingsOut.pay_by_result = settings.pay_by_result;
+  if (task.engineUsed) settingsOut.engine_used = task.engineUsed;
+  if (task.fallbackReason) settingsOut.fallback_reason = task.fallbackReason;
+  if (typeof task.seed === "number" && task.seed !== 0) settingsOut.seed = task.seed;
+  if (task.confirmedAt) settingsOut.confirmed = true;
+
   const versions = complete
     ? {
         v3: {
@@ -111,6 +121,11 @@ export function buildCompactCard(task: Task): Record<string, unknown> {
     time: task.createdAt.toISOString(),
     is_featured: task.isFeatured,
     is_private: task.isPrivate,
+    // Engine2 history badges: engine badge, seed badge, credit badge.
+    engine_used: task.engineUsed ?? (task.engine === "neural" ? "neural" : null),
+    seed: typeof task.seed === "number" && task.seed !== 0 ? task.seed : null,
+    credits_spent: task.creditsSpent,
+    confirmed: Boolean(task.confirmedAt),
   };
 }
 
