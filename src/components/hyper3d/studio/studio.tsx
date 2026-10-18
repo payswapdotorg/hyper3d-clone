@@ -3,22 +3,25 @@
 /**
  * Rodin Studio — wired to the REAL backend.
  *
- * Image to 3D: upload → /api/task/rodin_mesh_image_process (VLM caption,
- * editable prompt + palette) → GENERATE (credits: Free Preview first task,
- * then 1 credit; Agentic toggle ON = 10 credits + effort modal per
- * blueprint §2.3) → agentic progress pills while the job runs → task-card
- * polling → GLB viewer (GLTFLoader + OrbitControls) → REAL exports
- * (GLB/GLTF/OBJ/STL/USDZ) → Mine list.
+ * Image to 3D (Quality tier): upload → VLM caption (editable prompt +
+ * palette) → optional F/B/L/R extra views + seed → GENERATE (engine:
+ * neural, pay-by-result — preview free, confirm to export costs 1 credit) →
+ * client-direct neural run (tencent/Hunyuan3D-2.1 free Space, CORS-open;
+ * progress + elapsed + cancel; stall/error → automatic Fast-engine
+ * fallback with an honest toast) → client-side texture painting (COLOR_0)
+ * → mesh POST (≤2MB decimated) → poster + task-card polling → GLB viewer →
+ * confirm gate → REAL exports (GLB/GLTF/OBJ/STL/USDZ + Turntable WebM).
  *
- * Text to 3D: same pipeline without the upload (prompt → LLM → spec).
- * 3D Editing / WorldGen: honest "coming soon in this clone" states — no
- * fake generation.
+ * Fast tier / Text to 3D: the proven server pipeline (caption/LLM → lathe
+ * mesh), 1 credit at creation (first task free). 3D Editing / WorldGen:
+ * honest "coming soon" states — no fake generation.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Boxes,
   Coins,
+  Dices,
   Download,
   Globe,
   Image as ImageIcon,
@@ -26,6 +29,7 @@ import {
   Palette,
   Pause,
   PencilRuler,
+  Plus,
   RotateCw,
   Triangle,
   Type,
@@ -61,6 +65,19 @@ import {
 } from "@/lib/hyper3d";
 import { cn } from "@/lib/utils";
 import type { TextureMode } from "./model-viewer";
+import {
+  NEURAL_ATTRIBUTION,
+  NEURAL_MAX_STORED_BYTES,
+  NeuralEngineError,
+  generateNeuralMesh,
+  type ViewDirection,
+} from "@/lib/neural-client";
+import { paintVertexColors, type PaintSource } from "@/lib/texture-paint";
+import { VIEW_DIRECTIONS } from "@/lib/direction-picker";
+import { exportModel } from "@/lib/exporters";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { SimplifyModifier } from "three/examples/jsm/modifiers/SimplifyModifier.js";
+import * as THREE from "three";
 
 const ModelViewer = dynamic(() => import("./model-viewer").then((m) => m.ModelViewer), {
   ssr: false,
@@ -91,6 +108,75 @@ const TEXTURE_MODES: { id: TextureMode; label: string }[] = [
   { id: "wireframe", label: "Wireframe" },
   { id: "normal", label: "Normal" },
 ];
+
+/** Live-viewer chunk budget: 50k chunks keeps the painted GLB comfortably
+ * under the 2MB storage cap in practice; a simplify pass is the safety net. */
+const NEURAL_LIVE_CHUNKS = 50_000;
+
+const DIRECTION_LABELS: Record<ViewDirection, string> = {
+  front: "Front",
+  back: "Back",
+  left: "Left",
+  right: "Right",
+};
+
+/** Read a File into the RGBA PaintSource the texture painter samples. */
+async function imageToPaintSource(file: File): Promise<PaintSource> {
+  const bmp = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = bmp.width;
+  canvas.height = bmp.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("2D canvas unavailable");
+  ctx.drawImage(bmp, 0, 0);
+  const data = ctx.getImageData(0, 0, bmp.width, bmp.height);
+  bmp.close();
+  return { width: data.width, height: data.height, rgba: data.data };
+}
+
+function uint8ToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+/** Decimate every mesh in place until the scene stays under `maxFaces`. */
+function simplifySceneTo(root: THREE.Object3D, maxFaces: number): void {
+  const meshes: THREE.Mesh[] = [];
+  root.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.Mesh);
+  });
+  const facesOf = (g: THREE.BufferGeometry) =>
+    Math.floor((g.index ? g.index.count : g.attributes.position?.count ?? 0) / 3);
+  const total = meshes.reduce((n, m) => n + facesOf(m.geometry), 0);
+  if (total <= maxFaces) return;
+  const ratio = Math.min(1, maxFaces / Math.max(1, total));
+  const mod = new SimplifyModifier();
+  for (const m of meshes) {
+    const faces = facesOf(m.geometry);
+    const keep = Math.max(4, Math.floor(faces * ratio));
+    try {
+      m.geometry = mod.modify(m.geometry, Math.max(0, faces - keep));
+    } catch {
+      /* keep the original geometry on simplify failure */
+    }
+  }
+}
+
+function parseGlbBytes(bytes: Uint8Array): Promise<THREE.Group> {
+  const buf = bytes.slice().buffer;
+  return new Promise((resolve, reject) => {
+    new GLTFLoader().parse(
+      buf,
+      "",
+      (gltf) => resolve(gltf.scene as THREE.Group),
+      (err) => reject(err instanceof Error ? err : new Error(String(err))),
+    );
+  });
+}
 
 interface TaskCard {
   task_uuid: string;
@@ -155,6 +241,21 @@ export function Studio({
   const dragRef = useRef<HTMLLabelElement>(null);
   const viewerRef = useRef<ModelViewerHandle | null>(null);
   const [turntableRecording, setTurntableRecording] = useState(false);
+
+  /* ---- engine2: tier / seed / views / neural progress / confirm ---- */
+  const [tier, setTier] = useState<"quality" | "fast">("quality");
+  const [seed, setSeed] = useState(() => Math.floor(Math.random() * 65536));
+  const [lockSeed, setLockSeed] = useState(false);
+  const [extraViews, setExtraViews] = useState<
+    { direction: ViewDirection; dataUrl: string; file: File }[]
+  >([]);
+  const [neuralBusy, setNeuralBusy] = useState(false);
+  const [neuralMessage, setNeuralMessage] = useState<string | null>(null);
+  const [neuralElapsed, setNeuralElapsed] = useState(0);
+  const neuralAbortRef = useRef<AbortController | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
+  const neuralTier = mode === "image-to-3d" && !agentic && tier === "quality";
 
   useEffect(() => {
     return () => {
@@ -261,9 +362,25 @@ export function Studio({
             if (next.user_state === "failed") {
               toast.error("Generation failed", { description: next.error ?? "The pipeline could not finish." });
             } else {
-              setViewerUrl(`/api/task/${uuid}/export?format=glb`);
+              const s = (next.settings ?? {}) as {
+                pay_by_result?: boolean;
+                confirmed?: boolean;
+                engine_used?: string;
+              };
+              const gated = s.pay_by_result === true && s.confirmed !== true;
+              if (!gated) {
+                setViewerUrl(`/api/task/${uuid}/export?format=glb`);
+              }
+              // gated tasks keep the in-session blob mesh (neural runs) or
+              // the poster preview (fallback runs) until confirmed.
+              const engineNote =
+                s.engine_used === "neural"
+                  ? "neural engine"
+                  : s.engine_used === "fast"
+                    ? "fast engine"
+                    : GEN_VERSION;
               toast.success("Model ready", {
-                description: `${nameForPrompt(next.prompt)} · ${next.usage?.elapsed_seconds?.toFixed(1)}s · ${GEN_VERSION}`,
+                description: `${nameForPrompt(next.prompt)} · ${next.usage?.elapsed_seconds?.toFixed(1)}s · ${engineNote}`,
               });
             }
             void refreshMine();
@@ -279,6 +396,128 @@ export function Studio({
     },
     [stopPolling, refreshMine, onSessionRefresh, user],
   );
+
+  const postProgress = useCallback(
+    async (uuid: string, message: string, percent?: number, stage?: string) => {
+      try {
+        await fetch(`/api/task/${uuid}/progress`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ message, ...(percent !== undefined ? { percent } : {}), ...(stage ? { stage } : {}) }),
+        });
+      } catch {
+        /* progress heartbeats are best-effort */
+      }
+    },
+    [],
+  );
+
+  /** Client-direct neural pipeline (Quality tier): free Hunyuan3D-2.1 run,
+   * in-browser texture painting, ≤2MB decimated storage POST. Falls back
+   * to the server Fast engine on any stall/error — honestly, with a toast. */
+  const runNeuralPipeline = useCallback(
+    async (uuid: string, seedUsed: number) => {
+      if (!upload) return;
+      const ac = new AbortController();
+      neuralAbortRef.current = ac;
+      setNeuralBusy(true);
+      setNeuralElapsed(0);
+      setNeuralMessage("Contacting the neural engine…");
+      const t0 = performance.now();
+      const timer = setInterval(() => setNeuralElapsed((performance.now() - t0) / 1000), 500);
+      const finish = () => {
+        clearInterval(timer);
+        setNeuralBusy(false);
+        setNeuralMessage(null);
+        neuralAbortRef.current = null;
+      };
+      try {
+        await postProgress(uuid, "Contacting the neural engine…", 5, "upload");
+        const result = await generateNeuralMesh({
+          image: upload.file,
+          views: extraViews.map((v) => ({ direction: v.direction, blob: v.file })),
+          seed: seedUsed,
+          numChunks: NEURAL_LIVE_CHUNKS,
+          signal: ac.signal,
+          onProgress: (e) => {
+            if (e.type === "stage") {
+              setNeuralMessage(e.message);
+              void postProgress(uuid, e.message, e.stage === "upload" ? 15 : e.stage === "stream" ? 40 : 60, e.stage);
+            }
+          },
+        });
+
+        setNeuralMessage("Painting texture from your image…");
+        await postProgress(uuid, "Painting texture from your image…", 72, "paint");
+        const root = await parseGlbBytes(result.meshBytes);
+        const source = await imageToPaintSource(upload.file);
+        paintVertexColors(root, source, { palette: caption?.palette ?? [] });
+
+        setNeuralMessage("Saving your model…");
+        await postProgress(uuid, "Saving your model…", 88, "save");
+        let stored = (await exportModel(root, "glb")).bytes;
+        if (stored.length > NEURAL_MAX_STORED_BYTES) {
+          simplifySceneTo(root, 14_000);
+          stored = (await exportModel(root, "glb")).bytes;
+        }
+        const elapsedSeconds = (performance.now() - t0) / 1000;
+        const mr = await fetch(`/api/task/${uuid}/mesh`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            mesh: uint8ToBase64(stored),
+            engineUsed: "neural",
+            ...(result.faceCount !== undefined ? { faceCount: result.faceCount } : {}),
+            seed: seedUsed,
+            elapsedSeconds,
+            ...(caption?.palette?.[0] ? { color: caption.palette[0] } : {}),
+          }),
+        });
+        if (!mr.ok) throw new Error(`mesh save failed (${mr.status})`);
+        // Free 3D preview from the in-session painted mesh — exports stay
+        // gated behind the confirm gate (pay-by-result).
+        setViewerUrl(URL.createObjectURL(new Blob([stored.buffer as ArrayBuffer], { type: "model/gltf-binary" })));
+        toast.success("Neural mesh ready", {
+          description: `Hunyuan3D-2.1 · ${(elapsedSeconds).toFixed(1)}s${result.faceCount ? ` · ~${result.faceCount.toLocaleString("en-US")} faces` : ""} — preview is free, confirm to export.`,
+        });
+      } catch (err) {
+        const aborted = ac.signal.aborted || (err instanceof DOMException && err.name === "AbortError");
+        if (aborted) {
+          void fetch(`/api/task/${uuid}/cancel`, { method: "POST" }).catch(() => undefined);
+          stopPolling();
+          setActiveTask(null);
+          setCard(null);
+          setViewerUrl(null);
+          toast.info("Neural run canceled", { description: "No credits were used." });
+          void refreshMine();
+        } else {
+          const reason = err instanceof NeuralEngineError ? err.message : err instanceof Error ? err.message : "unknown";
+          void postProgress(uuid, `Neural engine unavailable (${reason.slice(0, 80)}) — switching to the Fast engine…`, 40, "fallback");
+          try {
+            const fr = await fetch(`/api/task/${uuid}/fallback`, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ reason: reason.slice(0, 280) }),
+            });
+            if (!fr.ok) throw new Error(`fallback failed (${fr.status})`);
+            toast.warning("Neural engine busy — using the Fast engine", {
+              description: "The free neural engine is unavailable right now (quota/queue). Your model is being generated with the always-available Fast engine instead. Press Generate to retry the neural engine.",
+              duration: 9000,
+            });
+          } catch {
+            toast.error("Generation failed", { description: reason });
+          }
+        }
+      } finally {
+        finish();
+      }
+    },
+    [upload, extraViews, caption, postProgress, stopPolling, refreshMine],
+  );
+
+  const cancelNeural = useCallback(() => {
+    neuralAbortRef.current?.abort();
+  }, []);
 
   const createTask = useCallback(
     async (effortForTask: EffortId) => {
@@ -299,6 +538,9 @@ export function Studio({
       }
 
       setCreating(true);
+      const useNeural = neuralTier;
+      const seedUsed = lockSeed ? seed : Math.floor(Math.random() * 65536);
+      if (!lockSeed) setSeed(seedUsed);
       try {
         const res = await fetch("/api/task", {
           method: "POST",
@@ -308,6 +550,12 @@ export function Studio({
             prompt: promptText || "A 3D object from the uploaded reference.",
             effort: effortForTask,
             ...(upload ? { image: upload.dataUrl } : {}),
+            ...(useNeural || tier === "fast"
+              ? { engine: useNeural ? "neural" : "fast", seed: seedUsed }
+              : {}),
+            ...(useNeural && extraViews.length > 0
+              ? { mvImages: extraViews.map((v) => v.dataUrl) }
+              : {}),
           }),
         });
         if (res.status === 401) {
@@ -325,9 +573,13 @@ export function Studio({
         if (!res.ok) throw new Error(`create failed (${res.status})`);
         const body = (await res.json()) as { uuid: string };
         startPolling(body.uuid);
-        toast.success(agentic ? "Agentic task started" : "Task queued", {
-          description: `${EFFORTS.find((e) => e.id === effortForTask)?.label} effort · uuid ${body.uuid.slice(0, 8)}…`,
-        });
+        if (useNeural) {
+          void runNeuralPipeline(body.uuid, seedUsed);
+        } else {
+          toast.success(agentic ? "Agentic task started" : "Task queued", {
+            description: `${EFFORTS.find((e) => e.id === effortForTask)?.label} effort · uuid ${body.uuid.slice(0, 8)}…`,
+          });
+        }
       } catch (err) {
         toast.error("Could not start generation", {
           description: err instanceof Error ? err.message : "Please try again.",
@@ -336,8 +588,46 @@ export function Studio({
         setCreating(false);
       }
     },
-    [user, prompt, upload, mode, agentic, startPolling, onNeedAuth, onSessionRefresh],
+    [user, prompt, upload, mode, agentic, neuralTier, tier, seed, lockSeed, extraViews, startPolling, runNeuralPipeline, onNeedAuth, onSessionRefresh],
   );
+
+  /** Pay-by-result confirm gate: charges exactly 1 credit, unlocks exports. */
+  const handleConfirm = useCallback(async () => {
+    if (!activeTask || confirming) return;
+    setConfirming(true);
+    try {
+      const res = await fetch(`/api/task/${activeTask}/confirm`, { method: "POST" });
+      const body = (await res.json().catch(() => ({}))) as {
+        confirmed?: boolean;
+        already_confirmed?: boolean;
+        charged?: number;
+        balance?: number;
+        required?: number;
+      };
+      if (res.status === 402) {
+        toast.error("Out of credits", {
+          description: `Confirming needs ${body.required ?? 1} credit — your balance is ${body.balance ?? 0}. Generation and preview remain free.`,
+        });
+        onSessionRefresh();
+        return;
+      }
+      if (!res.ok) throw new Error(`confirm failed (${res.status})`);
+      toast.success("Confirmed — exports unlocked", {
+        description: `${body.charged ?? 1} credit · ${body.balance ?? user?.balance ?? "—"} left · thank you!`,
+      });
+      onSessionRefresh();
+      const cardRes = await fetch(`/api/task/card/${activeTask}`, { cache: "no-store" });
+      if (cardRes.ok) setCard((await cardRes.json()) as TaskCard);
+      setViewerUrl(`/api/task/${activeTask}/export?format=glb`);
+      void refreshMine();
+    } catch (err) {
+      toast.error("Could not confirm", {
+        description: err instanceof Error ? err.message : "Please try again.",
+      });
+    } finally {
+      setConfirming(false);
+    }
+  }, [activeTask, confirming, onSessionRefresh, refreshMine, user]);
 
   const handleGenerate = useCallback(() => {
     if (creating) return;
@@ -390,12 +680,20 @@ export function Studio({
   const openRailTask = useCallback((task: RailTask) => {
     stopPolling();
     setActiveTask(task.task_uuid);
-    setViewerUrl(`/api/task/${task.task_uuid}/export?format=glb`);
     setViewerReady(false);
     void fetch(`/api/task/card/${task.task_uuid}`, { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((c) => {
-        if (c) setCard(c as TaskCard);
+        if (!c) return;
+        const next = c as TaskCard;
+        setCard(next);
+        const s = (next.settings ?? {}) as { pay_by_result?: boolean; confirmed?: boolean };
+        if (s.pay_by_result === true && s.confirmed !== true) {
+          // Pay-by-result tasks preview via the poster until confirmed.
+          setViewerUrl(null);
+        } else {
+          setViewerUrl(`/api/task/${task.task_uuid}/export?format=glb`);
+        }
       });
   }, [stopPolling]);
 
@@ -403,6 +701,14 @@ export function Studio({
 
   const generating = Boolean(activeTask && card && (card.user_state === "queued" || card.user_state === "processing"));
   const complete = Boolean(card && (card.user_state === "DonePreview" || card.user_state === "done"));
+  const cardSettings = (card?.settings ?? {}) as {
+    pay_by_result?: boolean;
+    confirmed?: boolean;
+    engine_used?: string;
+    fallback_reason?: string;
+    seed?: number;
+  };
+  const needsConfirm = Boolean(complete && cardSettings.pay_by_result === true && cardSettings.confirmed !== true);
   const effortIndex = EFFORTS.findIndex((e) => e.id === effort);
   const effortInfo = EFFORTS[effortIndex >= 0 ? effortIndex : 2];
   const generateLabel = !user
@@ -624,6 +930,72 @@ export function Studio({
                   </span>
                 </div>
               )}
+
+              {/* direction picker — optional extra views (Quality tier) */}
+              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                    Extra views <span className="text-white/30">(optional)</span>
+                  </p>
+                  <span className="font-mono text-[10px] text-white/35">{extraViews.length}/4</span>
+                </div>
+                <div className="mt-2 grid grid-cols-4 gap-1.5">
+                  {VIEW_DIRECTIONS.map((dir) => {
+                    const existing = extraViews.find((v) => v.direction === dir);
+                    return existing ? (
+                      <div key={dir} className="group relative">
+                        <img
+                          src={existing.dataUrl}
+                          alt={`${DIRECTION_LABELS[dir]} view`}
+                          className="h-12 w-full rounded-md border border-h3d-purple/50 object-cover"
+                        />
+                        <span className="absolute inset-x-0 bottom-0 rounded-b-md bg-black/70 px-1 py-0.5 text-center font-mono text-[8px] uppercase text-white/80">
+                          {DIRECTION_LABELS[dir]}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label={`Remove ${DIRECTION_LABELS[dir]} view`}
+                          onClick={() => setExtraViews((vs) => vs.filter((v) => v.direction !== dir))}
+                          className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full border border-white/20 bg-black/80 text-white/80 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                        >
+                          <X className="size-2.5" aria-hidden="true" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        key={dir}
+                        className="flex h-12 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-white/15 text-white/40 transition-colors hover:border-h3d-purple/50 hover:text-white/70"
+                        title={`Add a ${DIRECTION_LABELS[dir]} view (improves neural reconstruction)`}
+                      >
+                        <Plus className="size-3.5" aria-hidden="true" />
+                        <span className="font-mono text-[8px] uppercase">{DIRECTION_LABELS[dir]}</span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          className="sr-only"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              const dataUrl = String(reader.result);
+                              setExtraViews((vs) => [
+                                ...vs.filter((v) => v.direction !== dir),
+                                { direction: dir, dataUrl, file },
+                              ]);
+                            };
+                            void reader.readAsDataURL(file);
+                          }}
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="mt-1.5 font-mono text-[9px] leading-relaxed text-white/30">
+                  More views = better neural reconstruction. Skip for the pose-free single-image flow.
+                </p>
+              </div>
             </div>
           )}
 
@@ -642,8 +1014,93 @@ export function Studio({
             />
           </div>
 
-          {/* generate */}
+          {/* engine tier + seed + generate */}
           <div className="space-y-2 pt-1">
+            {mode === "image-to-3d" && !agentic && (
+              <div
+                className="flex rounded-xl border border-white/10 bg-white/[0.03] p-1"
+                role="radiogroup"
+                aria-label="Engine tier"
+              >
+                {([
+                  { id: "quality", label: "Quality", hint: "neural · ~1-2 min" },
+                  { id: "fast", label: "Fast", hint: "lathe · ~15s" },
+                ] as const).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={tier === t.id}
+                    onClick={() => setTier(t.id)}
+                    className={cn(
+                      "flex min-h-11 flex-1 flex-col items-center justify-center rounded-lg px-2 transition-colors",
+                      tier === t.id ? "bg-h3d-purple/25 text-white" : "text-white/50 hover:text-white",
+                    )}
+                  >
+                    <span className="text-xs font-semibold">{t.label}</span>
+                    <span className="font-mono text-[9px] text-white/40">{t.hint}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Label
+                htmlFor="studio-seed"
+                className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-h3d-muted"
+              >
+                <Dices className="size-3.5" aria-hidden="true" />
+                Seed
+              </Label>
+              <input
+                id="studio-seed"
+                type="number"
+                min={0}
+                max={65535}
+                value={seed}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setSeed(Number.isFinite(n) ? Math.max(0, Math.min(65535, Math.floor(n))) : 0);
+                  setLockSeed(true);
+                }}
+                className="h-10 min-w-0 flex-1 rounded-lg border border-white/12 bg-white/4 px-2.5 font-mono text-xs text-white/85 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label={lockSeed ? "Seed locked — click to randomize each run" : "Seed randomizes each run — click to lock"}
+                aria-pressed={lockSeed}
+                title={lockSeed ? "Locked — click to randomize" : "Random each run — click to lock"}
+                onClick={() => {
+                  if (lockSeed) {
+                    setLockSeed(false);
+                  } else {
+                    setLockSeed(true);
+                  }
+                }}
+                className={cn("size-10 shrink-0 border-white/12 bg-white/4", lockSeed && "border-h3d-purple/60 bg-h3d-purple/15")}
+              >
+                <Dices className={cn("size-4", lockSeed ? "text-h3d-purple" : "text-white/50")} aria-hidden="true" />
+              </Button>
+            </div>
+            {neuralBusy && (
+              <div className="flex items-center gap-2 rounded-lg border border-h3d-purple/30 bg-h3d-purple/8 px-3 py-2">
+                <Loader2 className="size-3.5 shrink-0 animate-spin text-h3d-purple" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-white/85">{neuralMessage ?? "Working…"}</p>
+                  <p className="font-mono text-[10px] text-white/40">{neuralElapsed.toFixed(1)}s · Hunyuan3D-2.1</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={cancelNeural}
+                  className="h-8 shrink-0 border-white/15 bg-white/5 px-2.5 font-mono text-[10px] text-white/75"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
             {user && mine.length === 0 && (
               <p className="rounded-lg border border-h3d-gold/30 bg-h3d-gold/10 px-3 py-2 font-mono text-[11px] text-h3d-gold">
                 Free preview — your first generation charges no credits
@@ -777,12 +1234,17 @@ export function Studio({
               </div>
             )}
           </div>
+        </main>
 
-          {/* ---------- right panel ---------- */}
-          <aside
-            className="h3d-scroll w-full shrink-0 space-y-4 border-t border-white/8 p-4 sm:p-5 lg:w-[300px] lg:overflow-y-auto lg:border-t-0 lg:border-l"
-            aria-label="Model details and export"
-          >
+        {/* ---------- right panel ---------- */}
+        {/* NOTE: this aside must be a DIRECT child of the body flex-row (a
+            sibling of <main>), not nested inside it — nested, its 1200px+
+            shrink-0 content stacked under the viewer and crushed the
+            flex-basis-0 viewer to 0px on lg screens. */}
+        <aside
+          className="h3d-scroll w-full shrink-0 space-y-4 border-t border-white/8 p-4 sm:p-5 lg:w-[300px] lg:overflow-y-auto lg:border-t-0 lg:border-l"
+          aria-label="Model details and export"
+        >
             <div className="h3d-glass rounded-2xl p-4">
               <p className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Task</p>
               <h3 className="font-display mt-1.5 truncate text-lg font-semibold text-white">{modelName}</h3>
@@ -807,6 +1269,26 @@ export function Studio({
                   <dt className="text-white/40">triangles</dt>
                   <dd className="text-white/80">{viewerReady ? polys.toLocaleString("en-US") : "—"}</dd>
                 </div>
+                {cardSettings.engine_used && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-white/40">engine</dt>
+                    <dd
+                      className={cn(
+                        "font-mono",
+                        cardSettings.engine_used === "neural" ? "text-h3d-violet" : "text-h3d-gold",
+                      )}
+                    >
+                      {cardSettings.engine_used}
+                      {cardSettings.fallback_reason ? " (fallback)" : ""}
+                    </dd>
+                  </div>
+                )}
+                {typeof cardSettings.seed === "number" && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-white/40">seed</dt>
+                    <dd className="text-white/80">{cardSettings.seed}</dd>
+                  </div>
+                )}
               </dl>
             </div>
 
@@ -830,44 +1312,73 @@ export function Studio({
 
             <div className="h3d-glass rounded-2xl p-4">
               <p className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Export</p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {EXPORT_FORMATS.map((f) => (
+              {needsConfirm ? (
+                <div className="mt-3 space-y-2">
+                  <div className="rounded-xl border border-h3d-gold/30 bg-h3d-gold/8 p-3">
+                    <p className="text-sm font-medium text-white/90">Preview is free — confirm to export</p>
+                    <p className="mt-1 font-mono text-[10px] leading-relaxed text-white/45">
+                      Pay-by-result: generation and the 3D preview cost nothing. Confirming charges
+                      exactly 1 credit and unlocks all downloads for this model.
+                    </p>
+                  </div>
                   <Button
-                    key={f}
+                    className="h-12 w-full h3d-gradient-primary text-sm font-bold text-white"
+                    onClick={() => void handleConfirm()}
+                    disabled={confirming}
+                  >
+                    {confirming ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Confirming…
+                      </>
+                    ) : (
+                      <>
+                        <Coins className="size-4" aria-hidden="true" /> Confirm & Export — 1 credit
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {EXPORT_FORMATS.map((f) => (
+                      <Button
+                        key={f}
+                        variant="outline"
+                        size="sm"
+                        className="min-h-11 border-white/12 bg-white/4 font-mono text-xs font-medium text-white/85 hover:border-h3d-purple/50 hover:bg-h3d-purple/12"
+                        disabled={!complete}
+                        title={complete ? `${f} — ${FORMAT_USES[f]}` : "Available when the model is ready"}
+                        onClick={() => {
+                          if (!activeTask) return;
+                          const a = document.createElement("a");
+                          a.href = `/api/task/${activeTask}/export?format=${f.toLowerCase()}`;
+                          a.download = `${activeTask}.${f.toLowerCase()}`;
+                          document.body.appendChild(a);
+                          a.click();
+                          a.remove();
+                          toast.success(`Downloading ${f}`, {
+                            description: `${modelName}.${f.toLowerCase()} — real file from the export endpoint.`,
+                          });
+                        }}
+                      >
+                        <Download className="size-3.5 text-h3d-purple" aria-hidden="true" />
+                        {f}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
                     variant="outline"
                     size="sm"
-                    className="min-h-11 border-white/12 bg-white/4 font-mono text-xs font-medium text-white/85 hover:border-h3d-purple/50 hover:bg-h3d-purple/12"
-                    disabled={!complete}
-                    title={complete ? `${f} — ${FORMAT_USES[f]}` : "Available when the model is ready"}
-                    onClick={() => {
-                      if (!activeTask) return;
-                      const a = document.createElement("a");
-                      a.href = `/api/task/${activeTask}/export?format=${f.toLowerCase()}`;
-                      a.download = `${activeTask}.${f.toLowerCase()}`;
-                      document.body.appendChild(a);
-                      a.click();
-                      a.remove();
-                      toast.success(`Downloading ${f}`, {
-                        description: `${modelName}.${f.toLowerCase()} — real file from the export endpoint.`,
-                      });
-                    }}
+                    className="mt-2 min-h-11 w-full border-white/12 bg-white/4 font-mono text-xs font-medium text-white/85 hover:border-h3d-purple/50 hover:bg-h3d-purple/12"
+                    disabled={!complete || !viewerReady || turntableRecording}
+                    title={complete ? "Turntable WebM — one full orbit recorded from the live viewer" : "Available when the model is ready"}
+                    onClick={() => void recordTurntable()}
                   >
-                    <Download className="size-3.5 text-h3d-purple" aria-hidden="true" />
-                    {f}
+                    {turntableRecording ? <Loader2 className="size-3.5 animate-spin text-h3d-purple" aria-hidden="true" /> : <Video className="size-3.5 text-h3d-purple" aria-hidden="true" />}
+                    {turntableRecording ? "Recording orbit…" : "Turntable · WebM"}
                   </Button>
-                ))}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2 min-h-11 w-full border-white/12 bg-white/4 font-mono text-xs font-medium text-white/85 hover:border-h3d-purple/50 hover:bg-h3d-purple/12"
-                disabled={!complete || !viewerReady || turntableRecording}
-                title={complete ? "Turntable WebM — one full orbit recorded from the live viewer" : "Available when the model is ready"}
-                onClick={() => void recordTurntable()}
-              >
-                {turntableRecording ? <Loader2 className="size-3.5 animate-spin text-h3d-purple" aria-hidden="true" /> : <Video className="size-3.5 text-h3d-purple" aria-hidden="true" />}
-                {turntableRecording ? "Recording orbit…" : "Turntable · WebM"}
-              </Button>
+                </>
+              )}
               {!complete && (
                 <p className="mt-2 font-mono text-[10px] text-white/35">Exports unlock when the preview is ready.</p>
               )}
@@ -878,7 +1389,13 @@ export function Studio({
               <div className="mt-3 flex items-center justify-between">
                 <span className="flex items-center gap-2 text-sm text-white/85">
                   <Coins className="size-4 text-h3d-gold" aria-hidden="true" />
-                  {agentic ? "10 credits / agentic" : mine.length === 0 ? "Free preview" : "1 credit / standard"}
+                  {neuralTier
+                    ? "Free preview · 1 credit on confirm"
+                    : agentic
+                      ? "10 credits / agentic"
+                      : mine.length === 0
+                        ? "Free preview"
+                        : "1 credit / standard"}
                 </span>
                 {user && (
                   <span className="rounded-full h3d-gradient-primary px-2.5 py-1 font-mono text-[10px] font-semibold text-white">
@@ -888,12 +1405,14 @@ export function Studio({
               </div>
               <p className="mt-2 text-xs leading-relaxed text-h3d-muted">
                 {user
-                  ? "First task is free. Standard generations cost 1 credit; Agentic Mode costs 10."
+                  ? "Quality (neural) generations are pay-by-result: preview free, 1 credit to export. Standard generations cost 1 credit; Agentic Mode costs 10."
                   : "Guests can browse — sign in to generate (first preview is free)."}
+              </p>
+              <p className="mt-2 border-t border-white/8 pt-2 font-mono text-[9px] leading-relaxed text-white/30">
+                {NEURAL_ATTRIBUTION}
               </p>
             </div>
           </aside>
-        </main>
       </div>
 
       {/* ---------- asset rail ---------- */}

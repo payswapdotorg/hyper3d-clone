@@ -258,7 +258,7 @@ export function SiteHeader({
 
           <Button
             size="sm"
-            className="min-h-11 rounded-full h3d-gradient-primary px-4 text-sm font-semibold text-white shadow-[0_0_20px_rgba(133,132,255,0.35)] hover:opacity-90 sm:px-5"
+            className="hidden min-h-11 rounded-full h3d-gradient-primary px-4 text-sm font-semibold text-white shadow-[0_0_20px_rgba(133,132,255,0.35)] hover:opacity-90 sm:inline-flex sm:px-5"
             onClick={onStartCreating}
           >
             Start Creating

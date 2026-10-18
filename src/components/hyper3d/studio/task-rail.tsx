@@ -16,6 +16,10 @@ export interface RailTask {
   user_state: string;
   time: string;
   is_featured: boolean;
+  /** engine2 fields — present on task cards serialized with the engine layer */
+  engine_used?: string | null;
+  seed?: number | null;
+  confirmed?: boolean;
 }
 
 export function TaskRail({
@@ -89,6 +93,23 @@ export function TaskRail({
                   {task.user_state}
                 </span>
               )}
+              <span className="absolute left-1.5 top-1.5 flex gap-1">
+                {task.engine_used && (
+                  <span
+                    className={cn(
+                      "rounded bg-black/55 px-1.5 py-0.5 font-mono text-[8px] uppercase backdrop-blur-sm",
+                      task.engine_used === "neural" ? "text-h3d-violet" : "text-h3d-gold",
+                    )}
+                  >
+                    {task.engine_used}
+                  </span>
+                )}
+                {task.confirmed && (
+                  <span className="rounded bg-black/55 px-1.5 py-0.5 font-mono text-[8px] text-white/60 backdrop-blur-sm">
+                    1 cr
+                  </span>
+                )}
+              </span>
             </button>
           ))}
         </div>

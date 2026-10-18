@@ -173,6 +173,11 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
         generationUuid: randomUUID(),
         generateTime: new Date(),
         posterBytes: new Uint8Array(poster), // blob-in-DB (serverless-safe): Prisma Bytes field takes Uint8Array
+        // engine2 stamp: a server-run completion of a neural task is by
+        // definition a fallback run (the neural path is client-driven and
+        // POSTs its mesh via /mesh, which sets engineUsed itself); fast-tier
+        // tasks stamp "fast" for the card badge. Legacy tasks stay null.
+        engineUsed: settings.engine === "neural" || settings.engine === "fast" ? "fast" : null,
       },
     });
     await updateSettings(taskId, (s) => {
@@ -332,6 +337,16 @@ export async function resumeStaleTask(taskId: string): Promise<void> {
   const task = await db.task.findUnique({ where: { id: taskId } });
   if (!task || isComplete(task.userState as never) || task.userState === "failed") return;
   const settings = (task.settings as Record<string, unknown> | null) ?? {};
+  // engine2 (2026-10-18 race fix): neural tasks are CLIENT-DRIVEN — the
+  // browser runs the free Hunyuan3D-2.1 pipeline and POSTs the painted mesh.
+  // The server must NEVER steal them via stale-resume: the neural engine's
+  // quiet SSE phases regularly exceed RESUME_STALE_MS, which raced a lathe
+  // run into DonePreview and discarded the client's mesh POST. The ONLY
+  // legit server run for a neural task is the explicit /fallback route,
+  // which sets settings.fallback_reason before enqueueing.
+  if (settings.engine === "neural" && typeof settings.fallback_reason !== "string") {
+    return;
+  }
   const progress = settings.progress as { at?: unknown } | undefined;
   const at = typeof progress?.at === "number" ? progress.at : 0;
   if (Date.now() - at < RESUME_STALE_MS) return; // actively progressing

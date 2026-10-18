@@ -25,6 +25,13 @@ export default function vitestGlobalSetup() {
   const raw = url.slice("file:".length);
   const file = raw.startsWith("/") ? raw : join(process.cwd(), raw);
   rmSync(file, { force: true });
+  // Tests run the sqlite flavor: regenerate the client so a dev/postgres
+  // client (from postinstall with a postgres DATABASE_URL) cannot leak in.
+  execSync("node_modules/.bin/prisma generate --schema=prisma/schema.prisma", {
+    cwd: process.cwd(),
+    env: { ...process.env, DATABASE_URL: url },
+    stdio: "inherit",
+  });
   execSync(
     "node_modules/.bin/prisma db push --skip-generate --accept-data-loss --schema=prisma/schema.prisma",
     {

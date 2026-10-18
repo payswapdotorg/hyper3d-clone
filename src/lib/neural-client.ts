@@ -463,7 +463,11 @@ async function uploadFile(
  */
 export async function generateNeuralMesh(input: NeuralGenerateInput): Promise<NeuralResult> {
   const baseUrl = (input.baseUrl ?? NEURAL_ENGINE_BASE).replace(/\/$/, "");
-  const fetchImpl = input.fetchImpl ?? fetch;
+  // Bind to globalThis: a bare `fetch` reference called as `fetchImpl(...)`
+  // runs with this=undefined in strict-mode ES modules, which Chrome rejects
+  // with "Failed to execute 'fetch' on 'Window': Illegal invocation" — the
+  // exact failure that silently forced every browser neural run to fallback.
+  const fetchImpl = input.fetchImpl ?? globalThis.fetch.bind(globalThis);
   const stallMs = input.stallMs ?? NEURAL_STALL_MS;
   const onProgress = input.onProgress;
   const signal = input.signal ?? new AbortController().signal;

@@ -268,7 +268,7 @@ export function Hero({ onGenerate }: { onGenerate: (req: DemoGenerateRequest) =>
     <section id="hero" aria-label="Hero" className="relative overflow-hidden">
       <div className="h3d-hero-glow pointer-events-none absolute inset-0" aria-hidden="true" />
       <div className="h3d-grid-overlay pointer-events-none absolute inset-0" aria-hidden="true" />
-      <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:pb-24 lg:pt-24">
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 pb-16 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:pb-24 lg:pt-24">
         {/* left copy */}
         <div>
           <Reveal>
