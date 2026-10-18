@@ -12,9 +12,10 @@ export default defineConfig({
     include: ["src/**/*.test.ts"],
     globalSetup: ["./scripts/vitest-global-setup.ts"],
     env: {
-      // Dedicated Postgres test database (TEST_DATABASE_URL, e.g. Neon).
-      // Falls back to the dev URL's host so `bun run test` fails loudly if unset.
-      DATABASE_URL: process.env.TEST_DATABASE_URL ?? "postgresql://TEST_DATABASE_URL-required",
+      // Dedicated SQLite test database — wiped on every run by the global
+      // setup (prisma db push recreates the file). Never point tests at the
+      // dev database.
+      DATABASE_URL: process.env.TEST_DATABASE_URL ?? "file:db/test.db",
       SESSION_SECRET: "test-session-secret",
     },
     // Sequential test files: suites share one sqlite file safely.

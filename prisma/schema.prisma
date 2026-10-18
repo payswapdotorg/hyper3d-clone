@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -12,7 +12,7 @@ model User {
   email        String        @unique
   username     String
   passwordHash String
-  balance      Int           @default(50)
+  balance      Int           @default(40) // reference free tier starts at 40 credits
   preferences  Json?
   referralCode String        @unique
   createdAt    DateTime      @default(now())
@@ -44,6 +44,13 @@ model Task {
   generateTime    DateTime?
   posterBytes     Bytes? // rasterized poster PNG (deployment adaptation: blob-in-DB so serverless has no filesystem dependency)
   inputBytes      Bytes? // uploaded reference image bytes
+  // ---- engine2 recovery build: free neural engine + pay-by-result ----
+  engine          String? // requested tier at creation: "neural" | "fast"
+  engineUsed      String? // engine that actually produced the result: "neural" | "fast"
+  fallbackReason  String? // why the neural path fell back to the fast engine
+  seed            Int?    // generation seed (0..65535), shown on the card for reproducibility
+  meshBytes       Bytes?  // stored neural GLB (decimated ≤2MB, painted) — pay-by-result preview
+  confirmedAt     DateTime? // set by the confirm gate (exactly 1 credit, exports unlock)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   creditEntries   CreditEntry[]

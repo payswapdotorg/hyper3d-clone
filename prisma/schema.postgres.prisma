@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  username     String
+  passwordHash String
+  balance      Int           @default(50)
+  preferences  Json?
+  referralCode String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tasks        Task[]
+  creditEntries CreditEntry[]
+}
+
+model Task {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String // "RodinAgentic" | "RodinStandard"
+  prompt          String
+  step            String        @default("ModelGenerate")
+  userState       String        @default("created")
+  spec            Json?
+  inputImageUrl   String?
+  previewImageUrl String?
+  modelUrl        String?
+  videoUrl        String?
+  usage           Json?
+  settings        Json?
+  creditsSpent    Int           @default(0)
+  isFeatured      Boolean       @default(false)
+  isPrivate       Boolean       @default(false)
+  error           String?
+  generationUuid  String?
+  generateTime    DateTime?
+  posterBytes     Bytes? // rasterized poster PNG (deployment adaptation: blob-in-DB so serverless has no filesystem dependency)
+  inputBytes      Bytes? // uploaded reference image bytes
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  creditEntries   CreditEntry[]
+}
+
+model CreditEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta     Int
+  reason    String
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+# ---- engine2 recovery additions (mirror of schema.prisma engine2 fields) ----
+# User.balance @default(40); Task: engine/engineUsed/fallbackReason/seed/meshBytes/confirmedAt
