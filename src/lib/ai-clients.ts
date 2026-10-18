@@ -204,19 +204,31 @@ function openRouterBackend(): Backend {
 async function getBackend(): Promise<Backend> {
   if (!backendPromise) {
     let zaiError: unknown = null;
+    // NOTE: bailianBackend()/openRouterBackend() are SYNCHRONOUS — they
+    // throw when their key is absent and return a plain Backend otherwise.
+    // Returning them from the catch callback resolves the outer promise;
+    // never call .catch() on their (non-Promise) results.
     backendPromise = zaiBackend().catch((err: unknown) => {
       zaiError = err;
       // Bailian first (operator-provisioned live key), OpenRouter as the
       // tertiary link — a funded OpenRouter key keeps the chain alive if
       // Bailian is ever absent or revoked.
-      return bailianBackend().catch((bailianErr: unknown) => {
-        if (!process.env.OPENROUTER_API_KEY) throw bailianErr;
-        return openRouterBackend().catch((openRouterErr: unknown) => {
-          throw new Error(
-            `bailian: ${String(bailianErr instanceof Error ? bailianErr.message : bailianErr)}; openrouter: ${String(openRouterErr instanceof Error ? openRouterErr.message : openRouterErr)}`,
+      try {
+        return bailianBackend();
+      } catch (bailianErr: unknown) {
+        if (!process.env.OPENROUTER_API_KEY) {
+          return Promise.reject(bailianErr);
+        }
+        try {
+          return openRouterBackend();
+        } catch (openRouterErr: unknown) {
+          return Promise.reject(
+            new Error(
+              `bailian: ${String(bailianErr instanceof Error ? bailianErr.message : bailianErr)}; openrouter: ${String(openRouterErr instanceof Error ? openRouterErr.message : openRouterErr)}`,
+            ),
           );
-        });
-      });
+        }
+      }
     });
     void zaiError; // surfaced through the per-call error guards below
     // A total failure (no backend at all) must not be negatively cached —

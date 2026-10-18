@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { createBailianClients, createOpenRouterClients } from "@/lib/ai-clients";
+import { backendStatus, createBailianClients, createOpenRouterClients, resetZai } from "@/lib/ai-clients";
+
+// File-wide SDK mock: ZAI.create() rejects (the serverless reality — no
+// .z-ai-config on Vercel) so the backend-chain tests exercise the fallback
+// order. The pure adapter tests never touch the SDK.
+vi.mock("z-ai-web-dev-sdk", () => ({
+  default: { create: vi.fn(() => Promise.reject(new Error("no .z-ai-config"))) },
+}));
 
 /**
  * OpenRouter adapter (pure) — the off-platform AI backend used when no
@@ -195,5 +202,34 @@ describe("createBailianClients", () => {
     const body = JSON.parse(String(calls[0].init.body)) as Record<string, unknown>;
     expect(calls[0].url).toBe("https://custom.example/v1/chat/completions");
     expect(body.model).toBe("qwen-max");
+  });
+});
+
+describe("backend chain (zai -> bailian -> openrouter)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    resetZai();
+  });
+
+  it("falls through a dead ZAI to Bailian when BAILIAN_API_KEY is set", async () => {
+    vi.stubEnv("BAILIAN_API_KEY", "test-bailian");
+    vi.stubEnv("OPENROUTER_API_KEY", "");
+    const status = await backendStatus();
+    expect(status.backend).toBe("bailian");
+    expect(status.bailianKeyPresent).toBe(true);
+  });
+
+  it("falls through to OpenRouter when only OPENROUTER_API_KEY is set", async () => {
+    vi.stubEnv("BAILIAN_API_KEY", "");
+    vi.stubEnv("OPENROUTER_API_KEY", "test-or");
+    const status = await backendStatus();
+    expect(status.backend).toBe("openrouter");
+  });
+
+  it("reports none when no key exists anywhere", async () => {
+    vi.stubEnv("BAILIAN_API_KEY", "");
+    vi.stubEnv("OPENROUTER_API_KEY", "");
+    const status = await backendStatus();
+    expect(status.backend).toBe("none");
   });
 });
