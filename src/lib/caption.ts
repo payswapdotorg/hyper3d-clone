@@ -27,6 +27,10 @@ export interface CaptionResult {
   components: CaptionComponent[];
   palette: string[];
   form: string;
+  /** Set when the vision chain degraded to the deterministic fallback —
+   * carries the real cause (bounded) so production failures are diagnosable
+   * from the API response instead of only from unreadable runtime logs. */
+  degraded?: string;
 }
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
@@ -248,13 +252,12 @@ export async function analyzeImage(
     return parseCaptionOutput(content);
   } catch (err) {
     // Degrade silently to the deterministic fallback (generation must never
-    // fail), but surface the real cause in the runtime log — silent catches
-    // made production caption failures undiagnosable.
-    console.error(
-      "[caption] vision chain failed — degrading to fallback:",
-      err instanceof Error ? `${err.name}: ${err.message}`.slice(0, 300) : String(err).slice(0, 300),
-    );
-    return structuredCloneSafe(FALLBACK_RESULT);
+    // fail), but surface the real cause: in the runtime log AND on the result
+    // (degraded field) — silent catches made production caption failures
+    // undiagnosable.
+    const cause = err instanceof Error ? `${err.name}: ${err.message}`.slice(0, 300) : String(err).slice(0, 300);
+    console.error("[caption] vision chain failed — degrading to fallback:", cause);
+    return { ...structuredCloneSafe(FALLBACK_RESULT), degraded: cause };
   }
 }
 
