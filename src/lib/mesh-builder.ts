@@ -44,7 +44,23 @@ function buildGeometry(node: PrimitiveNodeSpec): THREE.BufferGeometry {
         node.params.tubularSegments ?? 48,
       );
     case "lathe": {
-      const points = node.params.points.map(([x, y]) => new THREE.Vector2(x, y));
+      let points = node.params.points.map(([x, y]) => new THREE.Vector2(Math.max(0, x), y));
+      // Smooth organic silhouettes: vision models emit SPARSE profiles
+      // (4-10 points), which revolve into faceted bodies. A Catmull-Rom
+      // spline through the same control points (THREE.SplineCurve, 2D)
+      // yields a smooth revolve while passing through every original
+      // point — deterministic, no model cooperation required. Dense
+      // profiles (>20 points) are already smooth and pass through.
+      if (points.length >= 4 && points.length <= 20) {
+        const spline = new THREE.SplineCurve(points);
+        const sampled = spline.getPoints(Math.max(points.length * 3, 24));
+        points = sampled.map((p) => new THREE.Vector2(Math.max(0, p.x), p.y));
+        // Pin the exact original endpoints (spline endpoints coincide,
+        // but re-pinning guards against float drift).
+        points[0] = new THREE.Vector2(Math.max(0, node.params.points[0][0]), node.params.points[0][1]);
+        const last = node.params.points[node.params.points.length - 1];
+        points[points.length - 1] = new THREE.Vector2(Math.max(0, last[0]), last[1]);
+      }
       return new THREE.LatheGeometry(points, node.params.segments ?? 36);
     }
     case "extrude": {

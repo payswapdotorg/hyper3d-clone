@@ -66,7 +66,7 @@ Reconstruction rules:
 - FIRST identify what the object IS, then build it: an apple is a lathe body with dimples plus a thin cylinder stem; a mug is a lathe body plus a torus handle; a table is boxes plus cylinder legs.
 - Organic bodies (fruit, vases, bottles, cups, lamps, character torsos): use "lathe" with a silhouette points array of 8..14 [x, y] pairs [[0, 0], [x, y], ..., [0, top]] — x is the profile radius at height y. Round fruit profiles: height ≈ 0.85..1.05 of the max width (an apple is slightly wider than tall), smooth curvature, small dimples at top and bottom. This revolve profile is how real organic silhouettes are reconstructed; prefer it over spheres.
 - ATTACHMENT MATH (critical): attachments start at the body surface, never buried or floating. If the body's profile reaches top y = 1.2 and the stem is 0.3 tall, the stem's position y = 1.2 + 0.3/2 = 1.35. Same logic for legs under a body and handles beside a body.
-- Stems, handles, legs, limbs, spouts: cylinders or cones with plausible radii, attached per the math above.
+- Stems, handles, legs, limbs, spouts: cylinders or cones attached per the math above. STEMS ARE THIN: radius 0.03..0.06 (never a wide disk); handles/legs proportionate to the body.
 - Hard-surface parts (panels, bases, screens, wings): boxes or extrudes.
 - Colors: sample the ACTUAL colors from the image per component (e.g. a red apple body #C1121F with a brown-green stem), not generic ones.
 - 2 to 8 components; each sized 0.05..4 units; positions within -4..4; palette 2..5 hex colors from the object; ground-level composition (main body starting at y=0).

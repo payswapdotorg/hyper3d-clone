@@ -160,3 +160,68 @@ describe("mesh builder (SceneSpec → three.js Group)", () => {
     expect(signatureOf(a)).toBe(signatureOf(b));
   });
 });
+
+describe("lathe profile smoothing", () => {
+  it("spline-smooths sparse vision profiles into dense organic bodies (x >= 0)", () => {
+    // A sparse 6-point apple-ish profile — what vision models actually emit.
+    const sparse: [number, number][] = [
+      [0, 0],
+      [0.5, 0.1],
+      [0.85, 0.5],
+      [0.8, 0.9],
+      [0.4, 1.1],
+      [0, 1.15],
+    ];
+    const scene = buildScene({
+      name: "smooth test",
+      palette: ["#ff0000"],
+      objects: [{ type: "lathe", params: { points: sparse } }],
+    });
+    let positions = 0;
+    let maxX = 0;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    scene.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const geo = mesh.geometry as THREE.BufferGeometry;
+      const pos = geo.attributes.position as THREE.BufferAttribute;
+      positions = pos.count;
+      for (let i = 0; i < pos.count; i++) {
+        maxX = Math.max(maxX, Math.abs(pos.getX(i)));
+        minY = Math.min(minY, pos.getY(i));
+        maxY = Math.max(maxY, pos.getY(i));
+      }
+    });
+    // 6 control points -> >= 24 spline samples -> smooth revolve rows.
+    expect(positions).toBeGreaterThanOrEqual(24 * 2);
+    // Radii stay non-negative and near-bounded (Catmull-Rom may overshoot
+    // the widest control point by a few percent at sharp curvature).
+    expect(maxX).toBeLessThanOrEqual(0.85 * 1.1);
+    // The body spans the original profile height.
+    expect(minY).toBeCloseTo(0, 1);
+    expect(maxY).toBeCloseTo(1.15, 1);
+  });
+
+  it("passes dense profiles through untouched", () => {
+    const dense: [number, number][] = Array.from({ length: 25 }, (_, i) => [
+      0.5 * Math.sin((i / 24) * Math.PI),
+      i / 24,
+    ]);
+    const scene = buildScene({
+      name: "dense test",
+      palette: ["#00ff00"],
+      objects: [{ type: "lathe", params: { points: dense } }],
+    });
+    let rows = 0;
+    scene.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const geo = mesh.geometry as THREE.BufferGeometry;
+      rows = (geo.attributes.position as THREE.BufferAttribute).count;
+    });
+    // 25 control points + closing ring ≈ 26 rings × 37 vertices ≈ 962 —
+    // pass-through, NOT the ~3× spline subdivision (~2900) of sparse paths.
+    expect(rows).toBeLessThan(1200);
+  });
+});
