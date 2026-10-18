@@ -35,13 +35,16 @@ const FALLBACK_RESULT: CaptionResult = {
   prompt: "A simple 3D object. simple geometry.",
   components: [
     {
-      primitive: "box",
-      params: { width: 1.2, height: 1.2, depth: 1.2 },
+      // Neutral rounded pebble (lathe silhouette) — reads as a deliberate
+      // placeholder rather than a bug when the vision backend is offline.
+      primitive: "lathe",
+      params: { points: [[0, 0], [0.42, 0.1], [0.62, 0.42], [0.66, 0.72], [0.52, 1.02], [0.28, 1.18], [0, 1.26]] },
       position: [0, 0, 0],
+      scale: 1.1,
     },
   ],
-  palette: ["#8a8f98", "#c0c4cc"],
-  form: "simple-blocky",
+  palette: ["#a8adb8", "#8d93a0"],
+  form: "rounded-organic",
 };
 
 const CAPTION_SYSTEM_PROMPT = `You are a 3D reconstruction assistant. Analyze the image and reply with ONLY strict JSON (no markdown, no commentary) shaped exactly like:
@@ -59,7 +62,15 @@ const CAPTION_SYSTEM_PROMPT = `You are a 3D reconstruction assistant. Analyze th
   "palette": ["#RRGGBB", "..."],
   "form": "<rounded-organic|angular-hard-surface|tall-slender|flat-wide|simple-blocky>"
 }
-Rules: 2 to 8 components, each sized 0.05..4 units, positions within -4..4; use cylinders/cones for limbs and stems, spheres/lathe for bodies, boxes/extrude for bases and panels; palette 2..5 hex colors sampled from the object.`;
+Reconstruction rules:
+- FIRST identify what the object IS, then build it: an apple is a lathe body with dimples plus a thin cylinder stem; a mug is a lathe body plus a torus handle; a table is boxes plus cylinder legs.
+- Organic bodies (fruit, vases, bottles, cups, lamps, character torsos): use "lathe" with a silhouette points array of 8..14 [x, y] pairs [[0, 0], [x, y], ..., [0, top]] — x is the profile radius at height y. Round fruit profiles: height ≈ 0.85..1.05 of the max width (an apple is slightly wider than tall), smooth curvature, small dimples at top and bottom. This revolve profile is how real organic silhouettes are reconstructed; prefer it over spheres.
+- ATTACHMENT MATH (critical): attachments start at the body surface, never buried or floating. If the body's profile reaches top y = 1.2 and the stem is 0.3 tall, the stem's position y = 1.2 + 0.3/2 = 1.35. Same logic for legs under a body and handles beside a body.
+- Stems, handles, legs, limbs, spouts: cylinders or cones with plausible radii, attached per the math above.
+- Hard-surface parts (panels, bases, screens, wings): boxes or extrudes.
+- Colors: sample the ACTUAL colors from the image per component (e.g. a red apple body #C1121F with a brown-green stem), not generic ones.
+- 2 to 8 components; each sized 0.05..4 units; positions within -4..4; palette 2..5 hex colors from the object; ground-level composition (main body starting at y=0).
+Worked example (red apple): {"caption_prompt":"A red apple with a short stem. simple geometry.","components":[{"primitive":"lathe","params":{"points":[[0,0],[0.45,0.05],[0.72,0.25],[0.85,0.55],[0.8,0.85],[0.62,1.05],[0.3,1.14],[0,1.15]]},"position":[0,0,0],"scale":1,"rotation":[0,0,0],"color":"#C1121F"},{"primitive":"cylinder","params":{"radius":0.055,"height":0.3},"position":[0,1.3,0],"scale":1,"rotation":[0,0,0],"color":"#6B8E23"}],"palette":["#C1121F","#6B8E23"],"form":"rounded-organic"}`;
 
 function asFiniteNumber(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) return value;

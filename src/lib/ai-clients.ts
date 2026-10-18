@@ -6,11 +6,16 @@
  *  1. ZAI (z-ai-web-dev-sdk) — the platform backend. Available where a
  *     .z-ai-config exists (project/home//etc), e.g. the build sandbox;
  *     absent on serverless deployments (Vercel).
- *  2. OpenRouter — real LLM + VLM for off-platform deployments, activated
- *     by OPENROUTER_API_KEY (models via OPENROUTER_TEXT_MODEL /
- *     OPENROUTER_VISION_MODEL — see DECISIONS.md). OpenAI-compatible
- *     /chat/completions; text and vision share the endpoint.
- *  3. Neither → clients throw; callers degrade to their deterministic
+ *  2. Bailian (Alibaba Model Studio) — OpenAI-compatible live backend for
+ *     off-platform deployments, activated by BAILIAN_API_KEY (defaults:
+ *     intl endpoint, qwen-plus text / qwen3-vl-plus vision — the pairing
+ *     validated live on 2026-10-18: 5.5s apple caption with lathe profile +
+ *     sampled palette; see DECISIONS.md).
+ *  3. OpenRouter — same OpenAI-compatible shape, activated by
+ *     OPENROUTER_API_KEY (models via OPENROUTER_TEXT_MODEL /
+ *     OPENROUTER_VISION_MODEL). Kept as the tertiary chain link — a funded
+ *     OpenRouter key takes over automatically when Bailian is absent.
+ *  4. Neither → clients throw; callers degrade to their deterministic
  *     fallbacks (generation never hard-fails).
  *
  * The client objects are created lazily and cached; tests replace them via
@@ -31,7 +36,7 @@ export interface VisionClient {
   }): Promise<unknown>;
 }
 
-type Backend = { chat: ChatClient; vision: VisionClient; kind: "zai" | "openrouter" };
+type Backend = { chat: ChatClient; vision: VisionClient; kind: "zai" | "bailian" | "openrouter" };
 
 let backendPromise: Promise<Backend> | null = null;
 
@@ -47,6 +52,10 @@ export interface OpenRouterOptions {
 
 const DEFAULT_TEXT_MODEL = "meta-llama/llama-3.3-70b-instruct";
 const DEFAULT_VISION_MODEL = "deepseek/deepseek-v4-flash-vision-exp";
+
+export const BAILIAN_DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+export const BAILIAN_DEFAULT_TEXT_MODEL = "qwen-plus";
+export const BAILIAN_DEFAULT_VISION_MODEL = "qwen3-vl-plus";
 
 /**
  * Pure adapter (unit-tested): maps the shared ChatClient/VisionClient
@@ -131,6 +140,24 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
   };
 }
 
+/**
+ * Bailian adapter — reuses the OpenAI-compatible transport with Bailian's
+ * intl compatible-mode endpoint and the qwen model pairing. The 402
+ * credit-cap retry inside the transport is a no-op on Bailian (different
+ * error semantics), so the reuse is safe.
+ */
+export function createBailianClients(options: Omit<OpenRouterOptions, "baseUrl" | "textModel" | "visionModel"> & Partial<Pick<OpenRouterOptions, "baseUrl" | "textModel" | "visionModel">>): {
+  chat: ChatClient;
+  vision: VisionClient;
+} {
+  return createOpenRouterClients({
+    ...options,
+    baseUrl: options.baseUrl ?? BAILIAN_DEFAULT_BASE_URL,
+    textModel: options.textModel ?? BAILIAN_DEFAULT_TEXT_MODEL,
+    visionModel: options.visionModel ?? BAILIAN_DEFAULT_VISION_MODEL,
+  });
+}
+
 /* ------------------------------ backends ------------------------------ */
 
 async function zaiBackend(): Promise<Backend> {
@@ -146,10 +173,24 @@ async function zaiBackend(): Promise<Backend> {
   };
 }
 
+function bailianBackend(): Backend {
+  const apiKey = process.env.BAILIAN_API_KEY ?? process.env.DASHSCOPE_API_KEY;
+  if (!apiKey) {
+    throw new Error("no bailian backend: BAILIAN_API_KEY not set");
+  }
+  const clients = createBailianClients({
+    apiKey,
+    baseUrl: process.env.BAILIAN_BASE_URL,
+    textModel: process.env.BAILIAN_TEXT_MODEL,
+    visionModel: process.env.BAILIAN_VISION_MODEL,
+  });
+  return { kind: "bailian", ...clients };
+}
+
 function openRouterBackend(): Backend {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    throw new Error("no AI backend available: no .z-ai-config and no OPENROUTER_API_KEY");
+    throw new Error("no AI backend available: no .z-ai-config, no BAILIAN_API_KEY and no OPENROUTER_API_KEY");
   }
   const clients = createOpenRouterClients({
     apiKey,
@@ -165,15 +206,26 @@ async function getBackend(): Promise<Backend> {
     let zaiError: unknown = null;
     backendPromise = zaiBackend().catch((err: unknown) => {
       zaiError = err;
-      return openRouterBackend();
+      // Bailian first (operator-provisioned live key), OpenRouter as the
+      // tertiary link — a funded OpenRouter key keeps the chain alive if
+      // Bailian is ever absent or revoked.
+      return bailianBackend().catch((bailianErr: unknown) => {
+        if (!process.env.OPENROUTER_API_KEY) throw bailianErr;
+        return openRouterBackend().catch((openRouterErr: unknown) => {
+          throw new Error(
+            `bailian: ${String(bailianErr instanceof Error ? bailianErr.message : bailianErr)}; openrouter: ${String(openRouterErr instanceof Error ? openRouterErr.message : openRouterErr)}`,
+          );
+        });
+      });
     });
+    void zaiError; // surfaced through the per-call error guards below
     // A total failure (no backend at all) must not be negatively cached —
     // callers catch per-call and fall back deterministically; the next
     // generation attempt retries backend resolution. Log loudly: a silent
     // backend loss means every generation degrades to fallback specs.
     backendPromise = backendPromise.catch((err: unknown) => {
       console.error(
-        `[ai-clients] backend resolution failed — zai: ${String(zaiError instanceof Error ? zaiError.message : zaiError)}; fallback: ${String(err instanceof Error ? err.message : err)}`,
+        `[ai-clients] backend resolution failed (zai/bailian/openrouter): ${String(err instanceof Error ? err.message : err)}`,
       );
       backendPromise = null;
       throw err;
@@ -184,14 +236,16 @@ async function getBackend(): Promise<Backend> {
 
 /** Ops probe: which AI backends are configured in this runtime (no secrets). */
 export async function backendStatus(): Promise<{
-  backend: "zai" | "openrouter" | "none";
+  backend: "zai" | "bailian" | "openrouter" | "none";
   zaiConfigPresent: boolean;
+  bailianKeyPresent: boolean;
   openRouterKeyPresent: boolean;
 }> {
+  const bailianKeyPresent = Boolean(process.env.BAILIAN_API_KEY ?? process.env.DASHSCOPE_API_KEY);
   const openRouterKeyPresent = Boolean(process.env.OPENROUTER_API_KEY);
   try {
     const backend = await getBackend();
-    return { backend: backend.kind, zaiConfigPresent: backend.kind === "zai", openRouterKeyPresent };
+    return { backend: backend.kind, zaiConfigPresent: backend.kind === "zai", bailianKeyPresent, openRouterKeyPresent };
   } catch {
     let zaiConfigPresent = false;
     try {
@@ -200,7 +254,7 @@ export async function backendStatus(): Promise<{
     } catch {
       zaiConfigPresent = false;
     }
-    return { backend: "none", zaiConfigPresent, openRouterKeyPresent };
+    return { backend: "none", zaiConfigPresent, bailianKeyPresent, openRouterKeyPresent };
   }
 }
 

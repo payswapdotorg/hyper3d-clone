@@ -146,3 +146,49 @@ the same test suites plus a live golden-path run:
 25. **Test database**: dedicated Postgres (`TEST_DATABASE_URL`, wiped on
     every run by the vitest global setup) — the sqlite test DB from the
     worker's build was replaced together with the storage switch (#19).
+
+26. **AI backend chain extended with Bailian (2026-10-18 parity pass).** The
+    operator's live audit found production image-to-3D silently degraded to
+    the deterministic fallback (a grey cube) — root cause: the OpenRouter
+    key's credit budget hit zero (`total_credits: 0`), so every vision and
+    text call 402'd and the catch-alls fired. Fix: a third backend,
+    Bailian/Alibaba Model Studio (operator-provisioned key), reusing the
+    OpenAI-compatible transport with intl-endpoint defaults
+    (qwen-plus text / qwen3-vl-plus vision). Chain order is now
+    ZAI → Bailian → OpenRouter → deterministic fallback, so a funded
+    OpenRouter key still takes over automatically if Bailian is absent.
+    qwen3-vl-plus was validated live: 5.5s apple caption with a lathe
+    silhouette profile and image-sampled palette (#DC143C body, #6B8E23 stem).
+27. **Lathe-first caption prompt.** The reference product's fresh run (same
+    test image) captioned "A shiny red apple with a short stem" and produced
+    a real organic mesh; the old prompt let weak models answer "A simple 3D
+    object". The new CAPTION_SYSTEM_PROMPT demands object identification
+    first, lathe silhouette profiles for organic bodies, cylinders/cones for
+    attachments with explicit colors sampled from the image — matching what
+    the reference's engine does for simple objects, within the clone's
+    procedural pipeline. The deterministic fallback is now a neutral rounded
+    pebble (lathe) instead of a grey box so a backend outage reads as a
+    placeholder rather than a bug.
+28. **Poster auto-framing.** The audit caught the preview poster rendering
+    an "empty dark corner": the fixed camera eye (~3.6 units) was inside the
+    normalized object's angular size for large objects — the render showed
+    the cube's interior faces. The poster camera now derives its distance
+    from the model's bounding sphere (fit + 18% margin), so every object
+    frames correctly regardless of proportions.
+29. **Turntable WebM export (parity feature).** The reference's outputs
+    include a turntable.webm orbit video. The clone now records one full
+    orbit client-side from the live WebGL viewer (canvas.captureStream +
+    MediaRecorder, ~6s at autoRotateSpeed 10, 4 Mbps) and offers it as a
+    "Turntable · WebM" download next to the format exports — a real video
+    artifact of the user's actual model, not a stub. Server-side video
+    encoding was rejected (no headless WebGL / heavy codecs on serverless).
+30. **Rodin public API documented + seam reserved.** Reverse-engineered the
+    reference's engine surface from the live product and docs.hyper3d.ai:
+    api.hyper3d.com/api/v2 (Bearer, multipart /rodin with tier Gen-2.5-*,
+    mesh_mode, quality, texture_mode, geometry_instruct_mode creative|
+    faithful → jobs.subscription_key → /status → /download → GLB/USDZ +
+    render.webp + turntable.webm; /check_balance for API credits). Verified
+    live that API-key creation is subscribe-gated (free accounts get a
+    subscribe-tip), so the clone keeps ProviderA as the engine and the
+    RODIN_API_KEY seam in providers/index.ts documents the exact contract
+    for a future real-engine pass when the operator enables the add-on.

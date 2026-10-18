@@ -2,12 +2,28 @@
  * Generation provider adapter.
  *
  *  GenerationProvider — interface
- *    ProviderA: the ZAI-powered pipeline (LLM text-to-3D / VLM image-to-3D).
- *      Always available; carries the whole golden path in this deployment.
- *    ProviderB: external mesh APIs (Meshy / Tripo / Hyper3D), activated ONLY
- *      when MESHY_API_KEY / TRIPO_API_KEY / HYPER3D_API_KEY is set. When no
- *      key exists (the case in this deployment) it logs once and defers to
- *      ProviderA — never faking a remote call.
+ *    ProviderA: the ZAI/Bailian/OpenRouter-chained pipeline (LLM text-to-3D /
+ *      VLM image-to-3D with lathe-profile reconstruction). Carries the whole
+ *      golden path in this deployment.
+ *    ProviderB: external mesh APIs (Meshy / Tripo / Hyper3D Rodin), activated
+ *      ONLY when MESHY_API_KEY / TRIPO_API_KEY / HYPER3D_API_KEY /
+ *      RODIN_API_KEY is set. When no key exists (the case in this deployment)
+ *      it logs once and defers to ProviderA — never faking a remote call.
+ *
+ *      Hyper3D Rodin engine (reverse-engineered 2026-10-18 from the live
+ *      product + docs.hyper3d.ai): the reference's own image-to-3D engine is
+ *      a public HTTP API — base https://api.hyper3d.com/api/v2, Bearer auth,
+ *      POST /rodin (multipart: images[], prompt?, tier=Gen-2.5-Medium,
+ *      mesh_mode=Raw, quality=medium, texture_mode, geometry_instruct_mode=
+ *      creative|faithful) → {uuid, jobs:{uuids, subscription_key}, consumed};
+ *      POST /status {subscription_key} → jobs[].status Done|Failed (respect
+ *      Retry-After); POST /download {task_uuid} → signed output URLs
+ *      (GLB/USDZ + render.webp + turntable.webm); GET /check_balance
+ *      ?usage_page=N. API keys are issued in the workspace API dashboard and
+ *      are GATED BEHIND THE PAID API ADD-ON (verified live: "Create New API
+ *      Key" on a free account fires only a subscribe-tip event). When the
+ *      operator enables the add-on, set RODIN_API_KEY and the full
+ *      engine-integration pass can wire real Rodin meshes through this seam.
  */
 import type { SceneSpec } from "../spec";
 import { generateSpecFromPrompt, fallbackSpecForPrompt } from "./text-to-3d";
@@ -52,7 +68,7 @@ export const ProviderA: GenerationProvider = {
 
 /* ------------------------------ ProviderB ------------------------------ */
 
-const PROVIDER_B_KEYS = ["MESHY_API_KEY", "TRIPO_API_KEY", "HYPER3D_API_KEY"] as const;
+const PROVIDER_B_KEYS = ["MESHY_API_KEY", "TRIPO_API_KEY", "HYPER3D_API_KEY", "RODIN_API_KEY"] as const;
 let providerBLogged = false;
 
 interface ExternalMeshResponse {
@@ -95,6 +111,15 @@ export const ProviderB: GenerationProvider = {
         }
         if (hyperKey) {
           return await callExternalMeshApi("https://api.hyper3d.com/v1/scene", hyperKey, input);
+        }
+        const rodinKey = process.env.RODIN_API_KEY;
+        if (rodinKey) {
+          // Rodin public API v2 (see the header contract notes). The legacy
+          // /v1/scene stub shape is kept for response parity — the real
+          // engine integration pass (when the API add-on is enabled) maps
+          // the multipart /v2/rodin submit → /status poll → /download
+          // outputs through this same seam.
+          return await callExternalMeshApi("https://api.hyper3d.com/api/v2/rodin", rodinKey, input);
         }
       } catch (err) {
         if (!providerBLogged) {

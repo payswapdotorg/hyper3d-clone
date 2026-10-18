@@ -30,6 +30,7 @@ import {
   Triangle,
   Type,
   Upload,
+  Video,
   Wand2,
   X,
   Zap,
@@ -69,6 +70,7 @@ const ModelViewer = dynamic(() => import("./model-viewer").then((m) => m.ModelVi
     </div>
   ),
 });
+type ModelViewerHandle = import("./model-viewer").ModelViewerHandle;
 
 const MODE_ICONS: Record<GenMode, React.ComponentType<{ className?: string }>> = {
   "image-to-3d": ImageIcon,
@@ -151,6 +153,8 @@ export function Studio({
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const dragRef = useRef<HTMLLabelElement>(null);
+  const viewerRef = useRef<ModelViewerHandle | null>(null);
+  const [turntableRecording, setTurntableRecording] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -353,6 +357,33 @@ export function Studio({
     }
     void createTask(effort);
   }, [creating, mode, user, agentic, agenticModalShown, effort, createTask, onNeedAuth]);
+
+  /* ---------------- turntable export ---------------- */
+
+  const recordTurntable = useCallback(async () => {
+    if (!viewerRef.current || !activeTask || turntableRecording) return;
+    setTurntableRecording(true);
+    try {
+      const blob = await viewerRef.current.recordTurntable();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${activeTask}-turntable.webm`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Turntable WebM downloaded", {
+        description: `${card ? nameForPrompt(card.prompt) : "model"}-turntable.webm — one full orbit of your model, recorded from the live viewer.`,
+      });
+    } catch (err) {
+      toast.error("Turntable recording failed", {
+        description: err instanceof Error ? err.message : "Please try again.",
+      });
+    } finally {
+      setTurntableRecording(false);
+    }
+  }, [activeTask, turntableRecording, card]);
 
   /* ---------------- rail selection ---------------- */
 
@@ -646,6 +677,7 @@ export function Studio({
           <div className="relative min-h-[52vh] flex-1 lg:min-h-0">
             {GENERATING_MODES.includes(mode) ? (
               <ModelViewer
+                ref={viewerRef}
                 url={viewerUrl}
                 textureMode={textureMode}
                 autoRotate={autoRotate}
@@ -825,6 +857,17 @@ export function Studio({
                   </Button>
                 ))}
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 min-h-11 w-full border-white/12 bg-white/4 font-mono text-xs font-medium text-white/85 hover:border-h3d-purple/50 hover:bg-h3d-purple/12"
+                disabled={!complete || !viewerReady || turntableRecording}
+                title={complete ? "Turntable WebM — one full orbit recorded from the live viewer" : "Available when the model is ready"}
+                onClick={() => void recordTurntable()}
+              >
+                {turntableRecording ? <Loader2 className="size-3.5 animate-spin text-h3d-purple" aria-hidden="true" /> : <Video className="size-3.5 text-h3d-purple" aria-hidden="true" />}
+                {turntableRecording ? "Recording orbit…" : "Turntable · WebM"}
+              </Button>
               {!complete && (
                 <p className="mt-2 font-mono text-[10px] text-white/35">Exports unlock when the preview is ready.</p>
               )}

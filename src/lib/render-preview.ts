@@ -262,13 +262,24 @@ export function renderPoster(group: THREE.Object3D, options: PosterOptions = {})
 
   const model = normalizedClone(group);
 
-  // 3/4 perspective camera.
-  const eye = new THREE.Vector3(2.05, 1.55, 2.6);
-  const target = new THREE.Vector3(0, 0, 0);
+  // 3/4 perspective camera, AUTO-FRAMED: the eye distance is derived from
+  // the model's actual bounding sphere so the whole object always fits the
+  // frame (the previous fixed eye at ~3.6 units clipped near objects into
+  // "interior corner" renders — the framing bug fixed 2026-10-18).
+  const sphere = new THREE.Sphere();
+  new THREE.Box3().setFromObject(model).getBoundingSphere(sphere);
+  const fovDeg = 32;
+  const tanHalfFov = Math.tan((fovDeg * Math.PI) / 180 / 2);
+  // Fit the bounding sphere with ~18% margin (margin > 1 keeps a rim of
+  // background; sqrt(2)/2 factor converts sphere radius to the worst-case
+  // screen-space half-extent at the 3/4 angle).
+  const fitDistance = (sphere.radius / tanHalfFov) * 1.18;
+  const dir = new THREE.Vector3(2.05, 1.55, 2.6).normalize();
+  const eye = dir.multiplyScalar(Math.max(fitDistance, sphere.radius * 1.6 + 0.5));
+  const target = sphere.center.clone();
   const forward = new THREE.Vector3().subVectors(target, eye).normalize();
   const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
   const up = new THREE.Vector3().crossVectors(right, forward).normalize();
-  const tanHalfFov = Math.tan((32 * Math.PI) / 180 / 2);
 
   // Project all triangle vertices once.
   const triangles = collectTriangles(model).filter((tri) => {

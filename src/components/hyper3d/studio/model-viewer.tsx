@@ -3,14 +3,17 @@
 /**
  * Real 3D model viewer — loads the generated GLB from the export endpoint
  * (GLTFLoader + OrbitControls), with shaded/wireframe/normal material
- * modes, auto-orbit, and live triangle stats. This displays the exact
- * bytes the download endpoints serve.
+ * modes, auto-orbit, live triangle stats and a client-side turntable
+ * recorder (canvas.captureStream + MediaRecorder → WebM download — the
+ * reference product's turntable.webm artifact, produced from the real
+ * rendered model). This displays the exact bytes the download endpoints
+ * serve.
  *
  * WebGL-safe (gate-found fix): if a WebGL context cannot be created (for
  * example in headless/software-rendered browsers), the viewer degrades to
  * the task's real rasterized poster instead of crashing the React tree.
  */
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -18,6 +21,11 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { cn } from "@/lib/utils";
 
 export type TextureMode = "shaded" | "wireframe" | "normal";
+
+export interface ModelViewerHandle {
+  /** Record one full turntable orbit of the loaded model as a WebM blob. */
+  recordTurntable: () => Promise<Blob>;
+}
 
 interface ViewerState {
   renderer: THREE.WebGLRenderer;
@@ -30,21 +38,24 @@ interface ViewerState {
   originalMaterials: Map<THREE.Mesh, THREE.Material | THREE.Material[]>;
 }
 
-export function ModelViewer({
-  url,
-  textureMode,
-  autoRotate,
-  onStats,
-  onLoaded,
-  className,
-}: {
+export const ModelViewer = forwardRef<ModelViewerHandle, {
   url: string | null;
   textureMode: TextureMode;
   autoRotate: boolean;
   onStats?: (polys: number) => void;
   onLoaded?: (ok: boolean) => void;
   className?: string;
-}) {
+}>(function ModelViewer(
+  {
+    url,
+    textureMode,
+    autoRotate,
+    onStats,
+    onLoaded,
+    className,
+  },
+  ref,
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef<ViewerState | null>(null);
   const onStatsRef = useRef(onStats);
@@ -68,7 +79,6 @@ export function ModelViewer({
       // No WebGL context (headless / software-rendered / locked-down
       // browsers). Degrade to the poster fallback — never crash the app.
       // (One-time probe of an external system; setState here is intentional.)
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time capability probe, not a render loop
       setWebglFailed(true);
       onLoadedRef.current?.(true);
       return;
@@ -264,6 +274,57 @@ export function ModelViewer({
     if (stateRef.current) stateRef.current.controls.autoRotate = autoRotate;
   }, [autoRotate]);
 
+  /* ---------- turntable recorder (imperative handle) ---------- */
+  const recordingRef = useRef(false);
+  useImperativeHandle(
+    ref,
+    () => ({
+      /**
+       * Record one full turntable orbit as a WebM blob. Temporarily boosts
+       * autoRotate for a ~6s orbit, captures the live canvas via
+       * MediaRecorder, then restores the user's rotation settings.
+       */
+      recordTurntable: async (): Promise<Blob> => {
+        const state = stateRef.current;
+        if (!state || !state.model) throw new Error("No model loaded");
+        if (recordingRef.current) throw new Error("A turntable recording is already running");
+        if (typeof MediaRecorder === "undefined" || !MediaRecorder.isTypeSupported("video/webm")) {
+          throw new Error("This browser cannot record WebM video");
+        }
+        recordingRef.current = true;
+        const prevAuto = state.controls.autoRotate;
+        const prevSpeed = state.controls.autoRotateSpeed;
+        try {
+          const canvas = state.renderer.domElement;
+          const stream = canvas.captureStream(30);
+          const recorder = new MediaRecorder(stream, { mimeType: "video/webm", videoBitsPerSecond: 4_000_000 });
+          const chunks: Blob[] = [];
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data);
+          };
+          const stopped = new Promise<void>((resolve) => {
+            recorder.onstop = () => resolve();
+          });
+          recorder.start(200);
+          // autoRotateSpeed 2.0 = 30s/orbit → 10.0 ≈ 6s/orbit. Record a
+          // hair over one full revolution so the loop reads as a turntable.
+          state.controls.autoRotate = true;
+          state.controls.autoRotateSpeed = 10.0;
+          await new Promise((r) => setTimeout(r, 6_300));
+          recorder.stop();
+          stream.getTracks().forEach((t) => t.stop());
+          await stopped;
+          return new Blob(chunks, { type: "video/webm" });
+        } finally {
+          state.controls.autoRotate = prevAuto;
+          state.controls.autoRotateSpeed = prevSpeed;
+          recordingRef.current = false;
+        }
+      },
+    }),
+    [],
+  );
+
   /* ---------- WebGL fallback: real poster of the generated model ---------- */
   const posterUrl = url ? url.replace(/\/export\?format=[a-z]+$/i, "/preview") : null;
 
@@ -306,7 +367,7 @@ export function ModelViewer({
       />
     </div>
   );
-}
+});
 
 function applyTextureMode(model: THREE.Object3D, mode: TextureMode, state: ViewerState): void {
   model.traverse((obj) => {

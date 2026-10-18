@@ -11,7 +11,12 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   const [ai, dbOk] = await Promise.all([
-    backendStatus().catch(() => ({ backend: "none" as const, zaiConfigPresent: false, openRouterKeyPresent: false })),
+    backendStatus().catch(() => ({
+      backend: "none" as const,
+      zaiConfigPresent: false,
+      bailianKeyPresent: false,
+      openRouterKeyPresent: false,
+    })),
     db.$queryRaw`SELECT 1`
       .then(() => true)
       .catch(() => false),

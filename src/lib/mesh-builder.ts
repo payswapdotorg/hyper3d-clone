@@ -45,7 +45,7 @@ function buildGeometry(node: PrimitiveNodeSpec): THREE.BufferGeometry {
       );
     case "lathe": {
       const points = node.params.points.map(([x, y]) => new THREE.Vector2(x, y));
-      return new THREE.LatheGeometry(points, node.params.segments ?? 24);
+      return new THREE.LatheGeometry(points, node.params.segments ?? 36);
     }
     case "extrude": {
       const shape = new THREE.Shape();

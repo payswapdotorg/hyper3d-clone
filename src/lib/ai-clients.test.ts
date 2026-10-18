@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { createOpenRouterClients } from "@/lib/ai-clients";
+import { createBailianClients, createOpenRouterClients } from "@/lib/ai-clients";
 
 /**
  * OpenRouter adapter (pure) — the off-platform AI backend used when no
@@ -144,5 +144,56 @@ describe("createOpenRouterClients", () => {
     const visionBody = JSON.parse(String(calls[1].init.body)) as Record<string, unknown>;
     expect(textBody.model).toBe("meta-llama/llama-3.3-70b-instruct");
     expect(visionBody.model).toBe("deepseek/deepseek-v4-flash-vision-exp");
+  });
+});
+
+describe("createBailianClients", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function stubFetch() {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const fn = vi.fn(async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      calls.push({ url: String(url), init: init ?? {} });
+      return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fn);
+    return { calls };
+  }
+
+  it("defaults to the Bailian intl endpoint and qwen model pairing", async () => {
+    const { calls } = stubFetch();
+    const clients = createBailianClients({ apiKey: "bailian-key" });
+
+    await clients.chat.create({ messages: [{ role: "user", content: "hi" }] });
+    await clients.vision.createVision({
+      model: "glm-4.5v",
+      messages: [{ role: "user", content: [{ type: "text", text: "cap" }] }],
+    });
+
+    expect(calls).toHaveLength(2);
+    expect(calls[0].url).toBe("https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions");
+    expect(calls[1].url).toBe(calls[0].url);
+
+    const textBody = JSON.parse(String(calls[0].init.body)) as Record<string, unknown>;
+    const visionBody = JSON.parse(String(calls[1].init.body)) as Record<string, unknown>;
+    expect(textBody.model).toBe("qwen-plus");
+    expect(visionBody.model).toBe("qwen3-vl-plus"); // platform slug overridden
+    expect((calls[0].init.headers as Record<string, string>).authorization).toBe("Bearer bailian-key");
+  });
+
+  it("honors explicit baseUrl/model overrides", async () => {
+    const { calls } = stubFetch();
+    const clients = createBailianClients({
+      apiKey: "k",
+      baseUrl: "https://custom.example/v1",
+      textModel: "qwen-max",
+      visionModel: "qwen3-vl-max",
+    });
+    await clients.chat.create({ messages: [{ role: "user", content: "x" }] });
+    const body = JSON.parse(String(calls[0].init.body)) as Record<string, unknown>;
+    expect(calls[0].url).toBe("https://custom.example/v1/chat/completions");
+    expect(body.model).toBe("qwen-max");
   });
 });
