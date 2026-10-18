@@ -140,10 +140,12 @@ export function createOpenRouterClients(options: OpenRouterOptions): { chat: Cha
     },
     vision: {
       // The caller passes a platform model slug ("glm-4.5v") — the adapter
-      // deliberately overrides it with the configured OpenRouter vision
-      // model. Caption completions are small (~300 tokens); a tighter
-      // default cap reduces 402 credit rejections on budget-limited keys.
-      createVision: (body) => post(visionModel, body, 512),
+      // deliberately overrides it with the configured vision model. Caption
+      // answers are ~300 tokens compact, but the model often pretty-prints
+      // the JSON schema — which triples the count and truncates mid-object
+      // at 512, making the whole answer unparseable. 1024 fits pretty-
+      // printed answers comfortably (the 402 path still adapts downward).
+      createVision: (body) => post(visionModel, body, 1024),
     },
   };
 }

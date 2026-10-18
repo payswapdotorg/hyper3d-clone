@@ -146,6 +146,31 @@ function sanitizeComponent(value: unknown): CaptionComponent | null {
   return component;
 }
 
+/**
+ * Salvage a usable CaptionResult from a TRUNCATED model answer (the JSON
+ * broke mid-object, e.g. a pretty-printed schema hit max_tokens). The
+ * caption_prompt is the schema's FIRST field, so it survives truncation;
+ * palette entries accumulate progressively. Components are not salvaged —
+ * the deterministic lathe fallback covers shape while the recovered prompt
+ * still drives coloring, naming, and honesty.
+ */
+function salvageFromTruncated(raw: string): CaptionResult | null {
+  const text = raw.trim();
+  if (!text.startsWith("{")) return null;
+  const promptMatch = text.match(/"(?:caption_prompt|prompt)"\s*:\s*"([^"]{10,2000})"/);
+  if (!promptMatch) return null;
+  const paletteMatch = text.match(/"palette"\s*:\s*\[([^\]]*)\]/);
+  const palette = paletteMatch
+    ? (paletteMatch[1].match(/#[0-9a-fA-F]{6}/g) ?? []).slice(0, 8)
+    : [];
+  return {
+    prompt: promptMatch[1],
+    components: FALLBACK_RESULT.components.map((c) => ({ ...c, params: { ...c.params } })),
+    palette: palette.length > 0 ? palette : [...FALLBACK_RESULT.palette],
+    form: FALLBACK_RESULT.form,
+  };
+}
+
 function maybeJson(raw: string): unknown {
   const text = raw.trim();
   if (!text) return null;
@@ -179,7 +204,16 @@ export function parseCaptionOutput(raw: unknown): CaptionResult {
   if (typeof raw === "string") {
     obj = maybeJson(raw);
   }
-  if (typeof obj !== "object" || obj === null) return { ...FALLBACK_RESULT, components: FALLBACK_RESULT.components.map((c) => ({ ...c, params: { ...c.params } })) };
+  if (typeof obj !== "object" || obj === null) {
+    // Salvage path: a truncated (mid-object) answer still carries the
+    // caption_prompt early in the stream — the schema puts it FIRST.
+    // Recovering it turns a total fallback into a mostly-correct caption.
+    if (typeof raw === "string") {
+      const salvaged = salvageFromTruncated(raw);
+      if (salvaged) return salvaged;
+    }
+    return { ...FALLBACK_RESULT, components: FALLBACK_RESULT.components.map((c) => ({ ...c, params: { ...c.params } })) };
+  }
 
   const data = obj as Record<string, unknown>;
   const promptRaw = data.caption_prompt ?? data.prompt;
