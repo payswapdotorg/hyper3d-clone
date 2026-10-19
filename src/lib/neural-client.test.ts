@@ -91,6 +91,30 @@ describe("neural-client (all network mocked)", () => {
     expect(result.meshBytes.byteLength).toBe(MESH_BYTES.byteLength);
   });
 
+  it("names the upload by the bytes' real type — the engine dispatches on the extension", async () => {
+    // 2026-10-19 production incident: JPEG bytes uploaded as reference.png
+    // made the engine's image loader die instantly (SSE `event: error` in
+    // 0.66s) — the hidden failure behind every browser neural fallback.
+    const cases: Array<[string, string]> = [
+      ["image/jpeg", "reference.jpg"],
+      ["image/jpg", "reference.jpg"],
+      ["image/webp", "reference.webp"],
+      ["image/png", "reference.png"],
+    ];
+    for (const [type, want] of cases) {
+      const calls: CallLog[] = [];
+      await generateNeuralMesh({
+        ...BASE_INPUT,
+        image: new Blob(["x"], { type }),
+        fetchImpl: happyFetch(calls),
+      });
+      const upload = calls.find((c) => c.url.endsWith("/upload"));
+      const form = upload?.init?.body as FormData;
+      const file = form.get("files") as File;
+      expect(`${type} -> ${file.name}`).toBe(`${type} -> ${want}`);
+    }
+  });
+
   it("sends the exact verified shape_generation payload (param order + defaults)", () => {
     const body = buildShapeGenerationBody({ imagePath: "/tmp/x/i.png", seed: 42 });
     expect(body.data).toEqual([

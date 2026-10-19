@@ -428,13 +428,28 @@ function safeJson(raw: string): unknown {
 
 /* ------------------------------ upload ------------------------------ */
 
+/**
+ * The upload filename's extension MUST match the bytes' real type: the
+ * engine's server dispatches on the filename extension, and mismatched
+ * bytes die instantly in its image loader (observed live: JPEG bytes named
+ * reference.png → upload 200 → SSE `event: error` in 0.66s — the failure
+ * behind EVERY browser-side neural fallback since the engine shipped;
+ * the free instant error also never reaches the GPU, so quota probes kept
+ * passing while the UI kept failing).
+ */
+function uploadName(blob: Blob): string {
+  if (blob.type === "image/jpeg" || blob.type === "image/jpg") return "reference.jpg";
+  if (blob.type === "image/webp") return "reference.webp";
+  return "reference.png";
+}
+
 async function uploadFile(
   input: { baseUrl: string; fetchImpl: typeof fetch; signal: AbortSignal },
   blob: Blob,
   stage: NeuralStage,
 ): Promise<string> {
   const form = new FormData();
-  form.append("files", blob, "reference.png");
+  form.append("files", blob, uploadName(blob));
   const response = await input.fetchImpl(`${input.baseUrl}/upload`, {
     method: "POST",
     body: form,
