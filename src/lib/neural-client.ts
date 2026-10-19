@@ -5,14 +5,23 @@
  * their own anonymous ZeroGPU IP quota — never proxied through the server
  * (shared egress IP = shared drained pool + function timeouts).
  *
- * Flow (all against https://tencent-hunyuan3d-2-1.hf.space):
- *   1. POST /upload (multipart `files`) → ["/tmp/gradio/<hash>/img.png"]
- *   2. POST /call/shape_generation {"data":[image, mvF, mvB, mvL, mvR,
- *      steps, guidance_scale, seed, octree_resolution, rembg, num_chunks,
- *      randomize_seed]} → {"event_id": "..."}
- *   3. GET  /call/shape_generation/<event_id> — SSE stream (heartbeat lines
- *      start with `:`; terminal events `complete` | `error`)
- *   4. Fetch the mesh GLB from the complete payload's `/file=` URL
+ * Flow (all against https://tencent-hunyuan3d-2-1.hf.space — gradio 4.44,
+ * sse_v3, no api prefix. The legacy /call/<api_name> HTTP route on this
+ * space ACCEPTS the job then kills it instantly with `event: error,
+ * data: null` — verified live 2026-10-19 via raw REST while gradio_client
+ * (queue protocol) succeeded from the same IP minutes apart — so the
+ * client speaks the QUEUE protocol gradio_client itself uses):
+ *   1. POST /upload (multipart `files`) → ["/tmp/gradio/<hash>/img.jpg"]
+ *   2. POST /queue/join {"data":[image, mvF, mvB, mvL, mvR, steps,
+ *      guidance_scale, seed, octree_resolution, rembg, num_chunks,
+ *      randomize_seed], "fn_index": <resolved from /config>,
+ *      "session_hash": <uuid>} → {"event_id": "..."}
+ *   3. GET  /queue/data?session_hash=… — SSE stream; each `data:` line is a
+ *      JSON queue message; `:` lines are heartbeats; success terminates
+ *      with {"msg":"process_completed","output":{"data":[…]}} and
+ *      failures carry {"msg":"error"|"unexpected_error","message":…}
+ *      (real text — e.g. the ZeroGPU quota reason — flows to the user)
+ *   4. Fetch the mesh GLB from the completed payload's `/file=` URL
  *
  * Robustness rules:
  *   - stall guard: no stream activity for `stallMs` (default 75s) → abort →
@@ -121,15 +130,24 @@ export function fileData(path: string, origName?: string): FileData {
   return data;
 }
 
+/** An uploaded engine file: the tmp path + the name it was uploaded under. */
+interface EngineFile {
+  path: string;
+  origName?: string;
+}
+
 /**
- * Exact body for POST /call/shape_generation — the verified parameter order
+ * Exact `data` array for the queue/join call — the verified parameter order
  * (image, mv_image_front, mv_image_back, mv_image_left, mv_image_right,
  * steps, guidance_scale, seed, octree_resolution, check_box_rembg,
- * num_chunks, randomize_seed).
+ * num_chunks, randomize_seed). orig_name rides along on every file: the
+ * engine's components use the ORIGINAL name's suffix to pick the format
+ * they save/cast to (gradio_client sends it too — parity with the
+ * proven-good reference client).
  */
 export function buildShapeGenerationBody(input: {
-  imagePath: string;
-  viewPaths?: Partial<Record<ViewDirection, string>>;
+  image: EngineFile;
+  views?: Partial<Record<ViewDirection, EngineFile>>;
   steps?: number;
   guidanceScale?: number;
   seed: number;
@@ -137,14 +155,20 @@ export function buildShapeGenerationBody(input: {
   removeBackground?: boolean;
   numChunks?: number;
 }): { data: unknown[] } {
-  const views = input.viewPaths ?? {};
+  const views = input.views ?? {};
   return {
     data: [
-      fileData(input.imagePath),
-      views.front ? fileData(views.front) : null,
-      views.back ? fileData(views.back) : null,
-      views.left ? fileData(views.left) : null,
-      views.right ? fileData(views.right) : null,
+      // Slot 0 is a hidden gradio `state` component (verified live from
+      // /config: 13 inputs — state, Image, F, B, L, R, steps, guidance,
+      // seed, octree, rembg, chunks, randomize). The old 12-item /call
+      // payload died on exactly this: "didn't receive enough input values
+      // (needed: 13, got 12)".
+      null,
+      fileData(input.image.path, input.image.origName),
+      views.front ? fileData(views.front.path, views.front.origName) : null,
+      views.back ? fileData(views.back.path, views.back.origName) : null,
+      views.left ? fileData(views.left.path, views.left.origName) : null,
+      views.right ? fileData(views.right.path, views.right.origName) : null,
       input.steps ?? NEURAL_DEFAULT_STEPS,
       input.guidanceScale ?? NEURAL_DEFAULT_GUIDANCE_SCALE,
       input.seed,
@@ -342,12 +366,38 @@ async function consumeSseStream(
 
   const parser = createSseParser(
     (message) => {
-      if (message.event === "complete") {
-        outcome.completed = safeJson(message.data);
-      } else if (message.event === "error") {
-        outcome.errorPayload = safeJson(message.data);
+      // Queue protocol: every data line is a JSON queue message
+      // ({"msg": "...", ...}). `:` comment lines are heartbeats handled
+      // by the second callback below.
+      const qmsg = safeJson(message.data);
+      const kind =
+        qmsg !== null && typeof qmsg === "object" && "msg" in qmsg
+          ? String((qmsg as { msg: unknown }).msg)
+          : null;
+      if (kind === "process_completed") {
+        const output = (qmsg as { output?: { data?: unknown; error?: unknown } }).output;
+        if (output !== null && typeof output === "object" && typeof output.error === "string" && output.error.length > 0) {
+          // Gradio surfaces handler failures INSIDE a completed event —
+          // e.g. the ZeroGPU quota text (verified live: output.error =
+          // "'You have exceeded your ZeroGPU quota (90s requested vs. 77s
+          // left)…'"). Treat as an error so the real reason reaches the user.
+          outcome.errorPayload = { msg: "error", message: output.error };
+        } else if (output !== null && typeof output === "object" && "data" in output) {
+          outcome.completed = output.data;
+        } else {
+          outcome.completed = qmsg;
+        }
+      } else if (
+        kind === "error" ||
+        kind === "unexpected_error" ||
+        kind === "queue_full" ||
+        kind === "process_interrupted"
+      ) {
+        outcome.errorPayload = qmsg;
       } else {
-        options.onProgress?.({ type: "sse", event: message.event, data: safeJson(message.data) });
+        // send_data / process_starts / progress / process_generating / log —
+        // activity that keeps the stall guard fed; surfaced for the UI.
+        options.onProgress?.({ type: "sse", event: kind ?? "message", data: qmsg });
       }
     },
     () => {
@@ -394,7 +444,14 @@ async function consumeSseStream(
     );
   }
   if (outcome.errorPayload !== undefined) {
-    throw new NeuralEngineError("neural engine reported an error event", stage, outcome.errorPayload);
+    // Queue errors carry the REAL reason in .message (e.g. the ZeroGPU
+    // quota text) — surface it so the honest fallback tells the user why.
+    const q = outcome.errorPayload as { message?: unknown };
+    const detail =
+      typeof q?.message === "string" && q.message.length > 0
+        ? `: ${q.message.slice(0, 220)}`
+        : "";
+    throw new NeuralEngineError(`neural engine reported an error event${detail}`, stage, outcome.errorPayload);
   }
   if (outcome.completed === undefined) {
     throw new NeuralEngineError("neural stream ended without a terminal event", stage);
@@ -447,9 +504,10 @@ async function uploadFile(
   input: { baseUrl: string; fetchImpl: typeof fetch; signal: AbortSignal },
   blob: Blob,
   stage: NeuralStage,
-): Promise<string> {
+): Promise<{ path: string; name: string }> {
   const form = new FormData();
-  form.append("files", blob, uploadName(blob));
+  const name = uploadName(blob);
+  form.append("files", blob, name);
   const response = await input.fetchImpl(`${input.baseUrl}/upload`, {
     method: "POST",
     body: form,
@@ -466,10 +524,57 @@ async function uploadFile(
   if (!Array.isArray(paths) || typeof paths[0] !== "string") {
     throw new NeuralEngineError("upload returned an unexpected payload", stage, paths);
   }
-  return paths[0];
+  return { path: paths[0], name };
 }
 
 /* ------------------------------ main entry ------------------------------ */
+
+/**
+ * Resolve the fn_index of /shape_generation from the space's /config
+ * (dependencies[].api_name) — the queue/join protocol addresses functions by
+ * INDEX, not by name. Cached per page load; falls back to the live-verified
+ * index (2 on tencent-hunyuan3d-2.1.hf.space, gradio 4.44) when /config is
+ * unreachable or the shape has changed beyond recognition.
+ */
+const KNOWN_SHAPE_FN_INDEX = 2;
+let cachedShapeFnIndex: number | null = null;
+
+/** Test hook: forget the cached fn_index so a fresh /config is consulted. */
+export function resetEngineFnIndexCache(): void {
+  cachedShapeFnIndex = null;
+}
+
+async function resolveShapeFnIndex(
+  input: { baseUrl: string; fetchImpl: typeof fetch; signal: AbortSignal },
+): Promise<number> {
+  if (cachedShapeFnIndex !== null) return cachedShapeFnIndex;
+  try {
+    const res = await input.fetchImpl(`${input.baseUrl}/config`, { signal: input.signal });
+    if (res.ok) {
+      const cfg = (await res.json()) as {
+        dependencies?: Array<{ id?: unknown; api_name?: unknown }>;
+      };
+      const deps = Array.isArray(cfg?.dependencies) ? cfg.dependencies : [];
+      for (let i = 0; i < deps.length; i += 1) {
+        const api = deps[i]?.api_name;
+        if (api === "shape_generation" || api === "/shape_generation") {
+          const id = deps[i]?.id;
+          cachedShapeFnIndex = typeof id === "number" ? id : i;
+          return cachedShapeFnIndex;
+        }
+      }
+    }
+  } catch {
+    // /config unreachable or unparseable — the known index is the fallback.
+  }
+  return KNOWN_SHAPE_FN_INDEX;
+}
+
+function randomSessionHash(): string {
+  const c = globalThis.crypto as { randomUUID?: () => string } | undefined;
+  if (c && typeof c.randomUUID === "function") return c.randomUUID();
+  return `sess-${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+}
 
 /**
  * Generate a mesh with the free neural engine. Rejects with
@@ -488,22 +593,24 @@ export async function generateNeuralMesh(input: NeuralGenerateInput): Promise<Ne
   const signal = input.signal ?? new AbortController().signal;
 
   onProgress?.({ type: "stage", stage: "upload", message: "Uploading reference to the neural engine…" });
-  const imagePath = await uploadFile({ baseUrl, fetchImpl, signal }, input.image, "upload");
+  const image = await uploadFile({ baseUrl, fetchImpl, signal }, input.image, "upload");
 
-  const viewPaths: Partial<Record<ViewDirection, string>> = {};
+  const viewFiles: Partial<Record<ViewDirection, EngineFile>> = {};
   for (const view of input.views ?? []) {
     onProgress?.({
       type: "stage",
       stage: "upload",
       message: `Uploading ${view.direction} view…`,
     });
-    viewPaths[view.direction] = await uploadFile({ baseUrl, fetchImpl, signal }, view.blob, "upload");
+    viewFiles[view.direction] = await uploadFile({ baseUrl, fetchImpl, signal }, view.blob, "upload");
   }
 
   onProgress?.({ type: "stage", stage: "call", message: "Queuing shape generation…" });
+  const fnIndex = await resolveShapeFnIndex({ baseUrl, fetchImpl, signal });
+  const sessionHash = randomSessionHash();
   const body = buildShapeGenerationBody({
-    imagePath,
-    viewPaths,
+    image: { path: image.path, origName: image.name },
+    views: viewFiles,
     steps: input.steps,
     guidanceScale: input.guidanceScale,
     seed: input.seed,
@@ -511,30 +618,36 @@ export async function generateNeuralMesh(input: NeuralGenerateInput): Promise<Ne
     removeBackground: input.removeBackground,
     numChunks: input.numChunks,
   });
-  const callResponse = await fetchImpl(`${baseUrl}/call/shape_generation`, {
+  const joinResponse = await fetchImpl(`${baseUrl}/queue/join`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      data: body.data,
+      fn_index: fnIndex,
+      session_hash: sessionHash,
+    }),
     signal,
   });
-  if (!callResponse.ok) {
-    const detail = await callResponse.text().catch(() => "");
+  if (!joinResponse.ok) {
+    const detail = await joinResponse.text().catch(() => "");
     throw new NeuralEngineError(
-      `shape_generation call failed (${callResponse.status}) ${detail.slice(0, 200)}`,
+      `shape_generation join failed (${joinResponse.status}) ${detail.slice(0, 200)}`,
       "call",
     );
   }
-  const callBody = (await callResponse.json()) as { event_id?: unknown };
-  if (typeof callBody.event_id !== "string" || callBody.event_id.length === 0) {
-    throw new NeuralEngineError("shape_generation returned no event_id", "call", callBody);
+  const joinBody = (await joinResponse.json()) as { event_id?: unknown };
+  if (typeof joinBody.event_id !== "string" || joinBody.event_id.length === 0) {
+    throw new NeuralEngineError("queue/join returned no event_id", "call", joinBody);
   }
-  const eventId = callBody.event_id;
 
   onProgress?.({ type: "stage", stage: "stream", message: "Generating geometry (Hunyuan3D-2.1)…" });
-  const streamResponse = await fetchImpl(`${baseUrl}/call/shape_generation/${eventId}`, { signal });
+  const streamResponse = await fetchImpl(
+    `${baseUrl}/queue/data?session_hash=${encodeURIComponent(sessionHash)}`,
+    { signal },
+  );
   if (!streamResponse.ok) {
     throw new NeuralEngineError(
-      `SSE stream request failed (${streamResponse.status})`,
+      `queue stream request failed (${streamResponse.status})`,
       "stream",
     );
   }

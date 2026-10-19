@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   NeuralEngineError,
   NEURAL_ENGINE_BASE,
@@ -8,6 +8,7 @@ import {
   extractFaceCount,
   extractMeshInfo,
   generateNeuralMesh,
+  resetEngineFnIndexCache,
 } from "./neural-client";
 
 /* ------------------------- mock infrastructure ------------------------- */
@@ -36,12 +37,18 @@ function blobResponse(bytes: Uint8Array): Response {
   return new Response(bytes.slice().buffer, { status: 200 });
 }
 
-const HAPPY_SSE = [
+/**
+ * Queue-protocol stream (gradio sse_v1+): every data line is a JSON queue
+ * message; heartbeats are `:` comment lines; the terminal success message
+ * is {"msg":"process_completed","output":{"data":[…]}}.
+ */
+const HAPPY_QUEUE = [
   ": heartbeat 1728000000.0\n\n",
-  "event: generating\n",
-  'data: ["thinking"]\n\n',
-  "event: complete\n",
-  'data: [[{"path":"/tmp/gradio/abc/white_mesh.glb","orig_name":"white_mesh.glb","meta":{"_type":"gradio.FileData"}}], "<iframe…/>", "{\\"number_of_faces\\": 264118}", 1234]\n\n',
+  'data: {"msg":"send_data"}\n\n',
+  'data: {"msg":"process_starts"}\n\n',
+  'data: {"msg":"progress","progress_data":[{"index":0,"desc":"shape","unit":"it","length":20}],"rank":0,"queue_size":1}\n\n',
+  'data: {"msg":"process_generating"}\n\n',
+  'data: {"msg":"process_completed","output":{"data":[[{"path":"/tmp/gradio/abc/white_mesh.glb","orig_name":"white_mesh.glb","meta":{"_type":"gradio.FileData"}}], "<iframe…/>", "{\\"number_of_faces\\": 264118}", 1234]}}\n\n',
 ].join("");
 
 interface CallLog {
@@ -49,7 +56,18 @@ interface CallLog {
   init: RequestInit | undefined;
 }
 
-/** Scripted fetch used by every test — NO network is ever touched. */
+/** Minimal space /config with shape_generation at fn_index 2. */
+const SPACE_CONFIG = {
+  protocol: "sse_v3",
+  version: "4.44.0",
+  dependencies: [
+    { id: 0, api_name: "load_image" },
+    { id: 1, api_name: "generation_all" },
+    { id: 2, api_name: "shape_generation" },
+  ],
+};
+
+/** Scripted fetch used by every happy-path test — NO network is ever touched. */
 function happyFetch(calls: CallLog[]): typeof fetch {
   return (async (url: string | URL | Request, init?: RequestInit) => {
     const href = typeof url === "string" ? url : url instanceof URL ? url.href : url.url;
@@ -57,11 +75,14 @@ function happyFetch(calls: CallLog[]): typeof fetch {
     if (href.endsWith("/upload")) {
       return jsonResponse(["/tmp/gradio/abc/reference.png"]);
     }
-    if (href.endsWith("/call/shape_generation")) {
+    if (href.endsWith("/config")) {
+      return jsonResponse(SPACE_CONFIG);
+    }
+    if (href.endsWith("/queue/join")) {
       return jsonResponse({ event_id: "evt-123" });
     }
-    if (href.includes("/call/shape_generation/evt-123")) {
-      return sseResponse([HAPPY_SSE]);
+    if (href.includes("/queue/data")) {
+      return sseResponse([HAPPY_QUEUE]);
     }
     if (href.includes("/file=/tmp/gradio/abc/white_mesh.glb")) {
       return blobResponse(MESH_BYTES);
@@ -78,16 +99,24 @@ const BASE_INPUT = {
 /* ------------------------------ tests ------------------------------ */
 
 describe("neural-client (all network mocked)", () => {
-  it("uploads the reference via multipart POST /upload and uses the returned path", async () => {
+  it("uploads, joins the queue and uses the completed payload's mesh path", async () => {
+    resetEngineFnIndexCache();
     const calls: CallLog[] = [];
     const result = await generateNeuralMesh({ ...BASE_INPUT, fetchImpl: happyFetch(calls) });
     const upload = calls.find((c) => c.url.endsWith("/upload"));
     expect(upload).toBeTruthy();
     expect(upload?.init?.method).toBe("POST");
     expect(upload?.init?.body).toBeInstanceOf(FormData);
-    const call = calls.find((c) => c.url.endsWith("/call/shape_generation"));
-    const body = JSON.parse(String(call?.init?.body)) as { data: unknown[] };
-    expect((body.data[0] as { path: string }).path).toBe("/tmp/gradio/abc/reference.png");
+    const join = calls.find((c) => c.url.endsWith("/queue/join"));
+    expect(join).toBeTruthy();
+    const joinBody = JSON.parse(String(join?.init?.body)) as {
+      data: unknown[];
+      fn_index: number;
+      session_hash: string;
+    };
+    expect(joinBody.fn_index).toBe(2);
+    expect(typeof joinBody.session_hash).toBe("string");
+    expect(joinBody.session_hash.length).toBeGreaterThan(8);
     expect(result.meshBytes.byteLength).toBe(MESH_BYTES.byteLength);
   });
 
@@ -115,58 +144,38 @@ describe("neural-client (all network mocked)", () => {
     }
   });
 
-  it("sends the exact verified shape_generation payload (param order + defaults)", () => {
-    const body = buildShapeGenerationBody({ imagePath: "/tmp/x/i.png", seed: 42 });
-    expect(body.data).toEqual([
-      { path: "/tmp/x/i.png", meta: { _type: "gradio.FileData" } },
-      null,
-      null,
-      null,
-      null,
-      30, // steps
-      5.0, // guidance_scale
-      42, // seed
-      256, // octree_resolution
-      true, // check_box_rembg
-      NEURAL_LIVE_NUM_CHUNKS, // num_chunks
-      false, // randomize_seed
-    ]);
-  });
-
-  it("maps multiview images onto the mv_image_front/back/left/right slots", () => {
+  it("sends the exact queue payload (leading state slot + param order + orig_name)", () => {
     const body = buildShapeGenerationBody({
-      imagePath: "/tmp/x/main.png",
-      viewPaths: { front: "/tmp/x/f.png", right: "/tmp/x/r.png" },
+      image: { path: "/tmp/x/main.png", origName: "main.png" },
+      views: {
+        front: { path: "/tmp/x/f.png", origName: "f.png" },
+        right: { path: "/tmp/x/r.png", origName: "r.png" },
+      },
       seed: 7,
       numChunks: 8000,
     });
     const data = body.data as unknown[];
-    expect((data[1] as { path: string }).path).toBe("/tmp/x/f.png");
-    expect(data[2]).toBeNull(); // back — not supplied
-    expect(data[3]).toBeNull(); // left — not supplied
-    expect((data[4] as { path: string }).path).toBe("/tmp/x/r.png");
-    expect(data[10]).toBe(8000);
+    expect(data).toHaveLength(13); // /config-verified: 13 inputs incl. hidden state
+    expect(data[0]).toBeNull(); // hidden gradio state component
+    expect((data[1] as { path: string; orig_name: string }).path).toBe("/tmp/x/main.png");
+    expect((data[1] as { orig_name: string }).orig_name).toBe("main.png");
+    expect((data[2] as { path: string }).path).toBe("/tmp/x/f.png");
+    expect(data[3]).toBeNull(); // back — not supplied
+    expect(data[4]).toBeNull(); // left — not supplied
+    expect((data[5] as { path: string }).path).toBe("/tmp/x/r.png");
+    expect(data[6]).toBe(30); // steps default
+    expect(data[7]).toBe(5.0); // guidance default
+    expect(data[8]).toBe(7); // seed
+    expect(data[9]).toBe(256); // octree default
+    expect(data[10]).toBe(true); // rembg default
+    expect(data[11]).toBe(8000);
+    expect(data[12]).toBe(false); // randomize_seed
   });
 
   it("uploads each extra view and fills the matching engine slot", async () => {
+    resetEngineFnIndexCache();
     const calls: CallLog[] = [];
-    const fetch = (async (url: string | URL | Request, init?: RequestInit) => {
-      const href = String(url);
-      calls.push({ url: href, init });
-      if (href.endsWith("/upload")) {
-        const form = init?.body as FormData;
-        const file = form.get("files") as File;
-        return jsonResponse([`/tmp/gradio/abc/${file.name}`]);
-      }
-      if (href.endsWith("/call/shape_generation")) {
-        // Capture the payload to assert slots afterwards.
-        return jsonResponse({ event_id: "evt-123" });
-      }
-      if (href.includes("/call/shape_generation/evt-123")) return sseResponse([HAPPY_SSE]);
-      if (href.includes("/file=")) return blobResponse(MESH_BYTES);
-      throw new Error(`unexpected fetch: ${href}`);
-    }) as unknown as typeof fetch;
-
+    const fetch = happyFetch(calls);
     await generateNeuralMesh({
       ...BASE_INPUT,
       views: [
@@ -176,15 +185,62 @@ describe("neural-client (all network mocked)", () => {
       fetchImpl: fetch,
     });
 
-    const call = calls.find((c) => c.url.endsWith("/call/shape_generation"));
-    const body = JSON.parse(String(call?.init?.body)) as { data: unknown[] };
-    expect((body.data[1] as { path: string } | null)).toBeNull(); // front not supplied
-    expect((body.data[2] as { path: string }).path).toContain("reference"); // back slot
-    expect((body.data[3] as { path: string }).path).toBeTruthy();
-    expect(body.data[4]).toBeNull(); // right not supplied
+    const join = calls.find((c) => c.url.endsWith("/queue/join"));
+    const joinBody = JSON.parse(String(join?.init?.body)) as { data: unknown[] };
+    expect((joinBody.data[2] as { path: string } | null)).toBeNull(); // front not supplied
+    expect((joinBody.data[3] as { path: string }).path).toContain("reference"); // back slot
+    expect((joinBody.data[4] as { path: string }).path).toBeTruthy();
+    expect(joinBody.data[5]).toBeNull(); // right not supplied
   });
 
-  it("extracts the mesh URL from the complete payload (path form) and fetches /file= URL", async () => {
+  it("falls back to the known fn_index when /config is unreachable", async () => {
+    resetEngineFnIndexCache();
+    const calls: CallLog[] = [];
+    const fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+      const href = String(url);
+      calls.push({ url: href, init });
+      if (href.endsWith("/upload")) return jsonResponse(["/tmp/g/i.png"]);
+      if (href.endsWith("/config")) return jsonResponse({ error: "boom" }, 500);
+      if (href.endsWith("/queue/join")) return jsonResponse({ event_id: "evt-9" });
+      if (href.includes("/queue/data")) return sseResponse([HAPPY_QUEUE]);
+      if (href.includes("/file=")) return blobResponse(MESH_BYTES);
+      throw new Error(`unexpected fetch: ${href}`);
+    }) as unknown as typeof fetch;
+    const result = await generateNeuralMesh({ ...BASE_INPUT, fetchImpl: fetch });
+    const join = calls.find((c) => c.url.endsWith("/queue/join"));
+    const joinBody = JSON.parse(String(join?.init?.body)) as { fn_index: number };
+    expect(joinBody.fn_index).toBe(2); // live-verified constant
+    expect(result.meshBytes).toEqual(MESH_BYTES);
+  });
+
+  it("resolves fn_index from /config dependencies (index-addressed queue)", async () => {
+    resetEngineFnIndexCache();
+    const calls: CallLog[] = [];
+    const fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+      const href = String(url);
+      calls.push({ url: href, init });
+      if (href.endsWith("/upload")) return jsonResponse(["/tmp/g/i.png"]);
+      if (href.endsWith("/config")) {
+        return jsonResponse({
+          dependencies: [
+            { id: 11, api_name: "other" },
+            { id: 77, api_name: "shape_generation" },
+          ],
+        });
+      }
+      if (href.endsWith("/queue/join")) return jsonResponse({ event_id: "evt-7" });
+      if (href.includes("/queue/data")) return sseResponse([HAPPY_QUEUE]);
+      if (href.includes("/file=")) return blobResponse(MESH_BYTES);
+      throw new Error(`unexpected fetch: ${href}`);
+    }) as unknown as typeof fetch;
+    await generateNeuralMesh({ ...BASE_INPUT, fetchImpl: fetch });
+    const join = calls.find((c) => c.url.endsWith("/queue/join"));
+    const joinBody = JSON.parse(String(join?.init?.body)) as { fn_index: number };
+    expect(joinBody.fn_index).toBe(77);
+  });
+
+  it("extracts the mesh URL from the completed payload (path form) and fetches /file= URL", async () => {
+    resetEngineFnIndexCache();
     const calls: CallLog[] = [];
     const result = await generateNeuralMesh({ ...BASE_INPUT, fetchImpl: happyFetch(calls) });
     expect(result.meshInfo.url).toBe(`${NEURAL_ENGINE_BASE}/file=/tmp/gradio/abc/white_mesh.glb`);
@@ -220,13 +276,17 @@ describe("neural-client (all network mocked)", () => {
     ]);
   });
 
-  it("SSE event: error rejects with NeuralEngineError carrying the payload", async () => {
+  it("queue error messages surface the REAL reason (e.g. the ZeroGPU quota text)", async () => {
+    resetEngineFnIndexCache();
+    const quotaText =
+      "You have exceeded your ZeroGPU quota (90s requested vs. 47s left). Try again in 12:47:26";
     const fetch = (async (url: string | URL | Request) => {
       const href = String(url);
       if (href.endsWith("/upload")) return jsonResponse(["/tmp/g/i.png"]);
-      if (href.endsWith("/call/shape_generation")) return jsonResponse({ event_id: "e1" });
-      if (href.includes("/call/shape_generation/e1")) {
-        return sseResponse(["event: error\ndata: [null]\n\n"]);
+      if (href.endsWith("/config")) return jsonResponse(SPACE_CONFIG);
+      if (href.endsWith("/queue/join")) return jsonResponse({ event_id: "e1" });
+      if (href.includes("/queue/data")) {
+        return sseResponse([`data: ${JSON.stringify({ msg: "error", message: quotaText })}\n\n`]);
       }
       throw new Error("unexpected");
     }) as unknown as typeof fetch;
@@ -235,16 +295,46 @@ describe("neural-client (all network mocked)", () => {
     const nerr = err as NeuralEngineError;
     expect(nerr.stage).toBe("stream");
     expect(nerr.message).toContain("error event");
-    expect(nerr.payload).toEqual([null]);
+    expect(nerr.message).toContain("ZeroGPU quota");
+    expect(nerr.message).toContain("Try again in 12:47:26");
+    expect((nerr.payload as { msg: string }).msg).toBe("error");
   });
 
-  it("stall guard: quiet stream aborts with a stall error (no terminal hang)", async () => {
+  it("process_completed with output.error (gradio handler failure) surfaces the reason", async () => {
+    resetEngineFnIndexCache();
+    // Verified live: the space reports the ZeroGPU quota rejection as
+    // {"msg":"process_completed","output":{"error":"'You have exceeded…'"}}
+    // — a failure hiding inside a completed event.
+    const quotaText = "'You have exceeded your ZeroGPU quota (90s requested vs. 77s left). Try again in 17:07:02'";
     const fetch = (async (url: string | URL | Request) => {
       const href = String(url);
       if (href.endsWith("/upload")) return jsonResponse(["/tmp/g/i.png"]);
-      if (href.endsWith("/call/shape_generation")) return jsonResponse({ event_id: "e2" });
-      if (href.includes("/call/shape_generation/e2")) {
-        // One heartbeat, then silence forever (never closes).
+      if (href.endsWith("/config")) return jsonResponse(SPACE_CONFIG);
+      if (href.endsWith("/queue/join")) return jsonResponse({ event_id: "e4" });
+      if (href.includes("/queue/data")) {
+        return sseResponse([
+          `data: ${JSON.stringify({ msg: "process_starts" })}\n\n`,
+          `data: ${JSON.stringify({ msg: "process_completed", output: { error: quotaText } })}\n\n`,
+        ]);
+      }
+      throw new Error("unexpected");
+    }) as unknown as typeof fetch;
+    const err = await generateNeuralMesh({ ...BASE_INPUT, fetchImpl: fetch }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(NeuralEngineError);
+    const nerr = err as NeuralEngineError;
+    expect(nerr.message).toContain("ZeroGPU quota");
+    expect(nerr.message).toContain("17:07:02");
+  });
+
+  it("stall guard: quiet stream aborts with a stall error (no terminal hang)", async () => {
+    resetEngineFnIndexCache();
+    const fetch = (async (url: string | URL | Request) => {
+      const href = String(url);
+      if (href.endsWith("/upload")) return jsonResponse(["/tmp/g/i.png"]);
+      if (href.endsWith("/config")) return jsonResponse(SPACE_CONFIG);
+      if (href.endsWith("/queue/join")) return jsonResponse({ event_id: "e2" });
+      if (href.includes("/queue/data")) {
+        // One heartbeat comment, then silence forever (never closes).
         return sseResponse([": keepalive\n\n"], { neverClose: true });
       }
       throw new Error("unexpected");
@@ -256,17 +346,24 @@ describe("neural-client (all network mocked)", () => {
   });
 
   it("external AbortSignal (user Cancel) rejects as a cancel", async () => {
+    resetEngineFnIndexCache();
     const controller = new AbortController();
     const fetch = (async (url: string | URL | Request) => {
       const href = String(url);
       if (href.endsWith("/upload")) return jsonResponse(["/tmp/g/i.png"]);
-      if (href.endsWith("/call/shape_generation")) return jsonResponse({ event_id: "e3" });
-      if (href.includes("/call/shape_generation/e3")) {
-        return sseResponse(["event: generating\ndata: []\n\n"], { neverClose: true });
+      if (href.endsWith("/config")) return jsonResponse(SPACE_CONFIG);
+      if (href.endsWith("/queue/join")) return jsonResponse({ event_id: "e3" });
+      if (href.includes("/queue/data")) {
+        return sseResponse(['data: {"msg":"process_generating"}\n\n'], { neverClose: true });
       }
       throw new Error("unexpected");
     }) as unknown as typeof fetch;
-    const pending = generateNeuralMesh({ ...BASE_INPUT, fetchImpl: fetch, stallMs: 10_000, signal: controller.signal });
+    const pending = generateNeuralMesh({
+      ...BASE_INPUT,
+      fetchImpl: fetch,
+      stallMs: 10_000,
+      signal: controller.signal,
+    });
     await new Promise((r) => setTimeout(r, 60));
     controller.abort();
     const err = await pending.catch((e: unknown) => e);
@@ -274,11 +371,13 @@ describe("neural-client (all network mocked)", () => {
     expect((err as NeuralEngineError).message).toContain("canceled");
   });
 
-  it("call failures surface the HTTP status through NeuralEngineError (stage call)", async () => {
+  it("join failures surface the HTTP status through NeuralEngineError (stage call)", async () => {
+    resetEngineFnIndexCache();
     const fetch = (async (url: string | URL | Request) => {
       const href = String(url);
       if (href.endsWith("/upload")) return jsonResponse(["/tmp/g/i.png"]);
-      if (href.endsWith("/call/shape_generation")) {
+      if (href.endsWith("/config")) return jsonResponse(SPACE_CONFIG);
+      if (href.endsWith("/queue/join")) {
         return jsonResponse({ detail: "GPU quota exceeded" }, 429);
       }
       throw new Error("unexpected");
@@ -289,7 +388,8 @@ describe("neural-client (all network mocked)", () => {
     expect((err as NeuralEngineError).message).toContain("429");
   });
 
-  it("streams end-to-end through the event_id URL and report progress events", async () => {
+  it("streams end-to-end through the queue and reports progress events", async () => {
+    resetEngineFnIndexCache();
     const progress: string[] = [];
     const calls: CallLog[] = [];
     const result = await generateNeuralMesh({
@@ -307,13 +407,19 @@ describe("neural-client (all network mocked)", () => {
         "stage:upload",
         "stage:call",
         "stage:stream",
-        "sse:generating",
+        "sse:process_starts",
+        "sse:progress",
+        "sse:process_generating",
         "heartbeat",
         "stage:mesh",
       ]),
     );
-    // The SSE GET uses the event_id returned by the call response.
-    expect(calls.some((c) => c.url.endsWith("/call/shape_generation/evt-123"))).toBe(true);
+    // The stream GET carries the session_hash the join call generated.
+    expect(calls.some((c) => c.url.includes("/queue/data?session_hash="))).toBe(true);
     expect(extractFaceCount(null)).toBeUndefined();
+  });
+
+  it("NEURAL_LIVE_NUM_CHUNKS stays within the engine's decimation contract", () => {
+    expect(NEURAL_LIVE_NUM_CHUNKS).toBe(50_000);
   });
 });
