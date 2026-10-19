@@ -105,11 +105,23 @@ export interface EnqueueOptions {
   fast?: boolean;
 }
 
-/** Fire-and-forget: run the generation pipeline for a task row. */
-export function enqueue(taskId: string, options: EnqueueOptions = {}): void {
+/** Awaited pipeline run — for after() callers that must carry the pipeline
+ * to completion inside the invocation's lifetime (serverless safety:
+ * a bare fire-and-forget run can be frozen mid-flight when the platform
+ * suspends the process after the response, wedging the task forever). */
+export async function runPipelineNow(taskId: string, options: EnqueueOptions = {}): Promise<void> {
   if (running.has(taskId)) return;
   running.add(taskId);
-  void runTask(taskId, options).finally(() => running.delete(taskId));
+  try {
+    await runTask(taskId, options);
+  } finally {
+    running.delete(taskId);
+  }
+}
+
+/** Fire-and-forget: run the generation pipeline for a task row. */
+export function enqueue(taskId: string, options: EnqueueOptions = {}): void {
+  void runPipelineNow(taskId, options).catch(() => undefined);
 }
 
 async function updateSettings(taskId: string, mutate: (settings: Record<string, unknown>) => void): Promise<void> {
@@ -245,8 +257,18 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
       }, Math.max(400, paceMs / (messages.length + 2)));
     } else {
       await updateSettings(taskId, (s) => {
-        s.progress = { message: messages[0], percent: 5 };
+        s.progress = { message: messages[0], percent: 5, at: Date.now() };
       });
+      // Liveness heartbeat for un-paced (fast/resume) runs: without an `at`
+      // refresh a live resumed pipeline looks stale to another instance's
+      // resumeStaleTask after RESUME_STALE_MS and gets double-run.
+      ticker = setInterval(() => {
+        void updateSettings(taskId, (s) => {
+          if (s.progress && typeof s.progress === "object") {
+            (s.progress as { at?: number }).at = Date.now();
+          }
+        });
+      }, 2_000);
     }
 
     const pacingPromise = new Promise<void>((resolve) => {
@@ -333,7 +355,14 @@ const RESUME_STALE_MS = 10_000;
  * double engine call, last-write-wins) — documented in DECISIONS.md.
  */
 export async function resumeStaleTask(taskId: string): Promise<void> {
-  if (running.has(taskId)) return;
+  // NOTE (2026-10-19 freeze fix): do NOT early-return on the in-memory
+  // `running` set. A serverless invocation whose fire-and-forget pipeline
+  // was frozen mid-run (process suspended, not exited — the finally never
+  // runs) keeps the task in its `running` set forever, and every card poll
+  // served by that warm instance silently skipped recovery (observed live:
+  // a fallback task wedged in "processing" for hours despite ~500 polls,
+  // resume_count never even incremented). The DB heartbeat below is the
+  // only liveness signal that is trustworthy across instances.
   const task = await db.task.findUnique({ where: { id: taskId } });
   if (!task || isComplete(task.userState as never) || task.userState === "failed") return;
   const settings = (task.settings as Record<string, unknown> | null) ?? {};
@@ -366,7 +395,19 @@ export async function resumeStaleTask(taskId: string): Promise<void> {
   }
   await db.task.update({
     where: { id: taskId },
-    data: { settings: { ...settings, resume_count: resumeCount + 1 } as never },
+    data: {
+      settings: {
+        ...settings,
+        resume_count: resumeCount + 1,
+        // Claim the resume with a fresh heartbeat so a concurrent resume
+        // on another instance (within RESUME_STALE_MS) sees a live
+        // pipeline and skips instead of double-running.
+        progress: { ...(progress ?? {}), at: Date.now() },
+      } as never,
+    },
   });
-  enqueue(taskId, { fast: true });
+  // Carry the pipeline inside THIS invocation's after() window — a bare
+  // enqueue() is fire-and-forget and can be frozen before completion
+  // (the exact wedge observed on 2026-10-19).
+  await runPipelineNow(taskId, { fast: true });
 }

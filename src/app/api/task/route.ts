@@ -5,7 +5,7 @@ import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { InsufficientCreditsError, computeTaskCost } from "@/lib/credits";
 import { ledger } from "@/lib/ledger";
-import { enqueue } from "@/lib/queue";
+import { runPipelineNow } from "@/lib/queue";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -157,11 +157,11 @@ export async function POST(req: NextRequest) {
   // Fast-tier and legacy tasks run the server pipeline as before.
   // Serverless (Vercel): after() keeps this invocation alive post-response.
   if (engine !== "neural") {
-    const kick = () => enqueue(taskId, { imageBase64, imageMime });
+    const kick = () => runPipelineNow(taskId, { imageBase64, imageMime });
     if (typeof process !== "undefined" && process.env.VERCEL) {
       after(kick);
     } else {
-      kick();
+      void kick();
     }
   }
 

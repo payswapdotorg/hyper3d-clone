@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { z } from "zod";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { enqueue } from "@/lib/queue";
+import { runPipelineNow } from "@/lib/queue";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,6 +61,17 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: stri
     },
   });
 
-  enqueue(uuid, { fast: true });
+  // Serverless: carry the fast pipeline inside this invocation's after()
+  // window (mirrors the create route) — a bare fire-and-forget enqueue can
+  // be frozen mid-run when the platform suspends the process after the
+  // response, wedging the task in "processing" with a poisoned in-memory
+  // running-set (observed live 2026-10-19: task frozen 4.5h, ~500 card
+  // polls never revived it).
+  const run = () => runPipelineNow(uuid, { fast: true });
+  if (typeof process !== "undefined" && process.env.VERCEL) {
+    after(run);
+  } else {
+    void run();
+  }
   return NextResponse.json({ fallback: "fast", reason, task_uuid: uuid }, { status: 202 });
 }
