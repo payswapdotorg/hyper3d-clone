@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse, after } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -61,17 +61,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: stri
     },
   });
 
-  // Serverless: carry the fast pipeline inside this invocation's after()
-  // window (mirrors the create route) — a bare fire-and-forget enqueue can
-  // be frozen mid-run when the platform suspends the process after the
-  // response, wedging the task in "processing" with a poisoned in-memory
-  // running-set (observed live 2026-10-19: task frozen 4.5h, ~500 card
-  // polls never revived it).
-  const run = () => runPipelineNow(uuid, { fast: true });
-  if (typeof process !== "undefined" && process.env.VERCEL) {
-    after(run);
-  } else {
-    void run();
-  }
+  // Deterministic completion: await the fast pipeline INSIDE this request.
+  // The client awaits this POST anyway (it fires from the neural catch
+  // path and toasts on completion), and after()/grace-period survival were
+  // empirically unreliable — the 2026-10-19 wedge was a fire-and-forget
+  // pipeline frozen mid-run with ~500 subsequent card polls never
+  // executing the after() recovery (resume_count never even incremented).
+  // Spec-resume completions take ~2s; a fresh fast engine call ≤~40s,
+  // inside maxDuration=60.
+  await runPipelineNow(uuid, { fast: true });
   return NextResponse.json({ fallback: "fast", reason, task_uuid: uuid }, { status: 202 });
 }
