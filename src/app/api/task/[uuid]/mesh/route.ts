@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { TASK_BLOB_OMIT } from "@/lib/task-serializer";
 import { NEURAL_MAX_STORED_BYTES } from "@/lib/neural-client";
 import { renderPoster, normalizedClone } from "@/lib/render-preview";
 import { buildScene } from "@/lib/mesh-builder";
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: stri
   const user = await getSessionUser(req);
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const task = await db.task.findUnique({ where: { id: uuid } });
+  const task = await db.task.findUnique({ where: { id: uuid }, omit: TASK_BLOB_OMIT });
   if (!task) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (task.userId !== user.id) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 

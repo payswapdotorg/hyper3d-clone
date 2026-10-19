@@ -9,7 +9,11 @@ export const dynamic = "force-dynamic";
  * works identically on serverless hosts with no filesystem. */
 export async function GET(req: NextRequest, ctx: { params: Promise<{ uuid: string }> }) {
   const { uuid } = await ctx.params;
-  const task = await db.task.findUnique({ where: { id: uuid } });
+  const task = await db.task.findUnique({
+    where: { id: uuid },
+    // Only the blob this route serves crosses the wire (blob-drag guard).
+    select: { posterBytes: true },
+  });
   if (!task) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

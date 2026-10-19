@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { buildCompactCard } from "@/lib/task-serializer";
+import { buildCompactCard, TASK_BLOB_OMIT } from "@/lib/task-serializer";
 import { ensureSeeded } from "@/lib/seed";
 
 export const runtime = "nodejs";
@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       where: { userId: user.id, isFeatured: false },
       orderBy: { createdAt: "desc" },
       take: 50,
+      omit: TASK_BLOB_OMIT,
     });
     return NextResponse.json(tasks.map(buildCompactCard));
   }
@@ -29,6 +30,7 @@ export async function GET(req: NextRequest) {
     where: { isFeatured: true },
     orderBy: { createdAt: "asc" },
     take: 16,
+    omit: TASK_BLOB_OMIT,
   });
   return NextResponse.json(tasks.map(buildCompactCard));
 }

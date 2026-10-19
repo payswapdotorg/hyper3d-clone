@@ -3,7 +3,55 @@
  * JSON verbatim in structure (task_uuid, type, prompt, step, image_url,
  * video_url, usage, settings, model_preview_info, versions, user_state…).
  */
-import type { Task, User } from "@prisma/client";
+import type { Prisma, User } from "@prisma/client";
+
+/**
+ * Blob-drag guard (2026-10-19 outage post-mortem): the Task table stores
+ * three blob columns — posterBytes (~120KB), inputBytes (~100KB), meshBytes
+ * (up to 2MB). Full-row queries on hot paths (list × up to 50 rows,
+ * card/progress polls every ~2s, stale-resume on every card poll) dragged
+ * those blobs from the database on every poll only to throw them away —
+ * 8.4 GB of egress in 2 days exhausted the production database's free-tier
+ * quota and hard-suspended it (sign-in 500s site-wide). Hot paths MUST
+ * pass `omit: TASK_BLOB_OMIT` (or a narrower `select`) so blobs only cross
+ * the wire in the routes that actually serve them (preview / input / mesh
+ * / export).
+ */
+export const TASK_BLOB_OMIT = {
+  posterBytes: true,
+  inputBytes: true,
+  meshBytes: true,
+} satisfies Prisma.TaskOmit;
+
+/**
+ * Structural row type the serializers actually read — satisfied by full
+ * Task rows and by blob-omitted rows alike, so hot routes can omit blobs
+ * without casting.
+ */
+export interface TaskCardRow {
+  id: string;
+  type: string;
+  prompt: string;
+  step: string;
+  userState: string;
+  inputImageUrl: string | null;
+  previewImageUrl: string | null;
+  videoUrl: string | null;
+  usage: unknown;
+  settings: unknown;
+  creditsSpent: number;
+  isFeatured: boolean;
+  isPrivate: boolean;
+  error: string | null;
+  generationUuid: string | null;
+  generateTime: Date | null;
+  engine: string | null;
+  engineUsed: string | null;
+  fallbackReason: string | null;
+  seed: number | null;
+  confirmedAt: Date | null;
+  createdAt: Date;
+}
 
 type TaskUsage = { elapsed_seconds?: number; used_tokens?: number } | null;
 type TaskSettings = Record<string, unknown> | null;
@@ -21,7 +69,7 @@ function exportUrl(taskId: string, format: string): string {
   return `/api/task/${taskId}/export?format=${format}`;
 }
 
-export function buildTaskCard(task: Task, author: Pick<User, "id" | "username" | "email">): Record<string, unknown> {
+export function buildTaskCard(task: TaskCardRow, author: Pick<User, "id" | "username" | "email">): Record<string, unknown> {
   const complete = isTaskComplete(task.userState);
   const usage = (task.usage as TaskUsage) ?? {};
   const settings = (task.settings as TaskSettings) ?? {};
@@ -110,7 +158,7 @@ export function buildTaskCard(task: Task, author: Pick<User, "id" | "username" |
   return card;
 }
 
-export function buildCompactCard(task: Task): Record<string, unknown> {
+export function buildCompactCard(task: TaskCardRow): Record<string, unknown> {
   return {
     task_uuid: task.id,
     type: task.type,
@@ -129,7 +177,7 @@ export function buildCompactCard(task: Task): Record<string, unknown> {
   };
 }
 
-export function buildHistory(task: Task): Record<string, unknown> | null {
+export function buildHistory(task: TaskCardRow): Record<string, unknown> | null {
   if (!isTaskComplete(task.userState)) return null;
   const usage = (task.usage as TaskUsage) ?? {};
   return {

@@ -363,7 +363,13 @@ export async function resumeStaleTask(taskId: string): Promise<void> {
   // a fallback task wedged in "processing" for hours despite ~500 polls,
   // resume_count never even incremented). The DB heartbeat below is the
   // only liveness signal that is trustworthy across instances.
-  const task = await db.task.findUnique({ where: { id: taskId } });
+  //
+  // Blob-drag guard (2026-10-19 outage): this runs on EVERY card poll of a
+  // non-terminal task — fetch only the scalars it reads, never the blobs.
+  const task = await db.task.findUnique({
+    where: { id: taskId },
+    select: { id: true, userState: true, settings: true },
+  });
   if (!task || isComplete(task.userState as never) || task.userState === "failed") return;
   const settings = (task.settings as Record<string, unknown> | null) ?? {};
   // engine2 (2026-10-18 race fix): neural tasks are CLIENT-DRIVEN — the

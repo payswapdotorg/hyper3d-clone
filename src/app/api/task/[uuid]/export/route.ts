@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { db } from "@/lib/db";
+import { TASK_BLOB_OMIT } from "@/lib/task-serializer";
 import { exportModel, EXPORT_FORMATS, type ExportFormat } from "@/lib/exporters";
 import { buildScene } from "@/lib/mesh-builder";
 import { normalizedClone } from "@/lib/render-preview";
@@ -32,7 +33,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ uuid: strin
     );
   }
 
-  const task = await db.task.findUnique({ where: { id: uuid } });
+  const task = await db.task.findUnique({
+    where: { id: uuid },
+    // Blob-drag guard: this route needs meshBytes + spec, but never the
+    // poster or input images — don't drag them over the wire.
+    omit: { ...TASK_BLOB_OMIT, meshBytes: false },
+  });
   if (!task) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

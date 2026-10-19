@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { TASK_BLOB_OMIT } from "@/lib/task-serializer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: stri
   const user = await getSessionUser(req);
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const task = await db.task.findUnique({ where: { id: uuid } });
+  const task = await db.task.findUnique({ where: { id: uuid }, omit: TASK_BLOB_OMIT });
   if (!task) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (task.userId !== user.id) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   if (task.userState === "DonePreview" || task.userState === "done" || task.userState === "failed") {
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: stri
 /** Thin status poll for the neural flow (cheaper than the full card). */
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ uuid: string }> }) {
   const { uuid } = await ctx.params;
-  const task = await db.task.findUnique({ where: { id: uuid } });
+  const task = await db.task.findUnique({ where: { id: uuid }, omit: TASK_BLOB_OMIT });
   if (!task) return NextResponse.json({ error: "not_found" }, { status: 404 });
   const settings = (task.settings as Record<string, unknown> | null) ?? {};
   const progress = (settings.progress as { message?: string; percent?: number; stage?: string; at?: number } | undefined) ?? null;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { buildTaskCard } from "@/lib/task-serializer";
+import { buildTaskCard, TASK_BLOB_OMIT } from "@/lib/task-serializer";
 import { resumeStaleTask } from "@/lib/queue";
 import { isComplete, type TaskState } from "@/lib/task-machine";
 
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ uuid: strin
   const { uuid } = await ctx.params;
   const task = await db.task.findUnique({
     where: { id: uuid },
+    omit: TASK_BLOB_OMIT,
     include: { user: { select: { id: true, username: true, email: true } } },
   });
   if (!task) {
