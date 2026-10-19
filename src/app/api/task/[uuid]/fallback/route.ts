@@ -54,6 +54,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: stri
       userState: "created", // re-arm the state machine for the fast pipeline
       error: null,
       settings: { ...settings, fallback_reason: reason.slice(0, 300) },
+      // Persist the reason on the COLUMN too: buildTaskCard reads
+      // task.fallbackReason — without this the card lost the "why" after a
+      // refresh (settings-only writes never surfaced).
+      fallbackReason: reason.slice(0, 300),
     },
   });
 
