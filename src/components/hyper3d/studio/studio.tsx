@@ -143,23 +143,38 @@ function uint8ToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-/** Decimate every mesh in place until the scene stays under `maxFaces`. */
-function simplifySceneTo(root: THREE.Object3D, maxFaces: number): void {
+/**
+ * Decimate every mesh in place until the scene stays under `maxFaces`.
+ * ASYNC + vertex-space (three r186 meshopt): SimplifyModifier.modify() is
+ * async and its count is the number of VERTICES TO REMOVE. Two live-found
+ * bugs fixed here (2026-10-19, first REAL neural mesh): the old synchronous
+ * assign put a Promise into m.geometry (GLTFExporter: "geometry.getAttribute
+ * is not a function"), and the old math passed a FACE delta as the vertex
+ * removal count — 205k faces = 103k verts, "remove 191k verts" collapsed
+ * the mesh to 0 faces.
+ */
+async function simplifySceneTo(root: THREE.Object3D, maxFaces: number): Promise<void> {
   const meshes: THREE.Mesh[] = [];
   root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.Mesh);
   });
   const facesOf = (g: THREE.BufferGeometry) =>
     Math.floor((g.index ? g.index.count : g.attributes.position?.count ?? 0) / 3);
+  const vertsOf = (g: THREE.BufferGeometry) => g.getAttribute("position")?.count ?? 0;
   const total = meshes.reduce((n, m) => n + facesOf(m.geometry), 0);
   if (total <= maxFaces) return;
+  // A closed triangle mesh carries ~2 faces per vertex, so scaling each
+  // mesh's vertex count by maxFaces/totalFaces lands the scene near the
+  // face budget (14k faces ≈ 7k verts ≈ ~350KB GLB — comfortably under the
+  // 2MB stored cap).
   const ratio = Math.min(1, maxFaces / Math.max(1, total));
   const mod = new SimplifyModifier();
   for (const m of meshes) {
-    const faces = facesOf(m.geometry);
-    const keep = Math.max(4, Math.floor(faces * ratio));
+    const verts = vertsOf(m.geometry);
+    if (verts < 8) continue;
+    const keepVerts = Math.max(4, Math.floor(verts * ratio));
     try {
-      m.geometry = mod.modify(m.geometry, Math.max(0, faces - keep));
+      m.geometry = (await mod.modify(m.geometry, Math.max(0, verts - keepVerts))) as THREE.BufferGeometry;
     } catch {
       /* keep the original geometry on simplify failure */
     }
@@ -457,7 +472,7 @@ export function Studio({
         await postProgress(uuid, "Saving your model…", 88, "save");
         let stored = (await exportModel(root, "glb")).bytes;
         if (stored.length > NEURAL_MAX_STORED_BYTES) {
-          simplifySceneTo(root, 14_000);
+          await simplifySceneTo(root, 14_000);
           stored = (await exportModel(root, "glb")).bytes;
         }
         const elapsedSeconds = (performance.now() - t0) / 1000;
