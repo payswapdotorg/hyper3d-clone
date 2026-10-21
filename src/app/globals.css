@@ -40,18 +40,18 @@
 }
 
 @theme {
-  /* Hyper3D cloned brand palette (from PRODUCT_FACTS §g — no default indigo/blue) */
-  --color-h3d-bg: #121317;
-  --color-h3d-panel: #17171b;
-  --color-h3d-panel-2: #242424;
-  --color-h3d-line: #3a3439;
-  --color-h3d-purple: #916af0;
-  --color-h3d-deep: #4a00e0;
-  --color-h3d-violet: #8584ff;
-  --color-h3d-lilac: #be34ff;
-  --color-h3d-soft: #d8a1f1;
+  /* Hyper3D cloned brand palette — warm plum/pink per reference hyper3d.ai/workspace/rodin (no default indigo/blue) */
+  --color-h3d-bg: #0f0f12;
+  --color-h3d-panel: #1e1b24;
+  --color-h3d-panel-2: #2a2532;
+  --color-h3d-line: #3a3342;
+  --color-h3d-purple: #a78bfa;
+  --color-h3d-deep: #8b5cf6;
+  --color-h3d-violet: #c4b5fd;
+  --color-h3d-lilac: #d946ef;
+  --color-h3d-soft: #f0abfc;
   --color-h3d-gold: #ffd176;
-  --color-h3d-muted: #ababab;
+  --color-h3d-muted: #a0a0a8;
   --color-h3d-dim: #d6d6d6;
   --color-h3d-blue: #94afff;
   --color-h3d-cyan: #32d6ff;
@@ -60,53 +60,53 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #121317;
+  --background: #0f0f12;
   --foreground: #ffffff;
-  --card: #17171b;
+  --card: #1e1b24;
   --card-foreground: #ffffff;
-  --popover: #1c1c22;
+  --popover: #241f2e;
   --popover-foreground: #ffffff;
-  --primary: #916af0;
+  --primary: #a78bfa;
   --primary-foreground: #ffffff;
-  --secondary: #242424;
-  --secondary-foreground: #e6e6ea;
-  --muted: #202024;
-  --muted-foreground: #ababab;
-  --accent: #262033;
-  --accent-foreground: #d6ccf5;
+  --secondary: #2a2532;
+  --secondary-foreground: #e6e0ee;
+  --muted: #221e2b;
+  --muted-foreground: #a0a0a8;
+  --accent: #2a2235;
+  --accent-foreground: #e4d5f9;
   --destructive: oklch(0.62 0.21 22);
-  --border: #3a3439;
-  --input: #343038;
-  --ring: #916af0;
-  --sidebar: #17171b;
+  --border: #322c3e;
+  --input: #2a2532;
+  --ring: #a78bfa;
+  --sidebar: #1e1b24;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #916af0;
+  --sidebar-primary: #a78bfa;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #242424;
+  --sidebar-accent: #2a2532;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #3a3439;
-  --sidebar-ring: #916af0;
+  --sidebar-border: #322c3e;
+  --sidebar-ring: #a78bfa;
 }
 
 .dark {
-  --background: #121317;
+  --background: #0f0f12;
   --foreground: #ffffff;
-  --card: #17171b;
+  --card: #1e1b24;
   --card-foreground: #ffffff;
-  --popover: #1c1c22;
+  --popover: #241f2e;
   --popover-foreground: #ffffff;
-  --primary: #916af0;
+  --primary: #a78bfa;
   --primary-foreground: #ffffff;
-  --secondary: #242424;
-  --secondary-foreground: #e6e6ea;
-  --muted: #202024;
-  --muted-foreground: #ababab;
-  --accent: #262033;
-  --accent-foreground: #d6ccf5;
+  --secondary: #2a2532;
+  --secondary-foreground: #e6e0ee;
+  --muted: #221e2b;
+  --muted-foreground: #a0a0a8;
+  --accent: #2a2235;
+  --accent-foreground: #e4d5f9;
   --destructive: oklch(0.62 0.21 22);
-  --border: #3a3439;
-  --input: #343038;
-  --ring: #916af0;
+  --border: #322c3e;
+  --input: #2a2532;
+  --ring: #a78bfa;
 }
 
 @layer base {
@@ -121,7 +121,7 @@
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   }
   ::selection {
-    background: rgba(145, 106, 240, 0.4);
+    background: rgba(167, 139, 250, 0.4);
     color: #fff;
   }
 }
@@ -143,11 +143,24 @@
 }
 
 .h3d-gradient-primary {
-  background-image: linear-gradient(135deg, #4a00e0 0%, #8584ff 100%);
+  background-image: linear-gradient(93deg, #8b5cf6 0%, #a855f7 48%, #ec4899 100%);
+}
+
+/* Reference workspace atmosphere: warm plum radial glows over near-black + a
+   faint film-grain noise tile (topmost layer). Applied to the studio root. */
+.h3d-studio-bg {
+  background-color: #0b0a0e;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E"),
+    radial-gradient(64rem 46rem at 50% -12%, rgba(112, 78, 96, 0.5), transparent 62%),
+    radial-gradient(48rem 36rem at 50% 40%, rgba(68, 52, 78, 0.36), transparent 64%),
+    radial-gradient(90rem 62rem at 50% 122%, rgba(46, 34, 52, 0.44), transparent 66%);
+  background-size: 160px 160px, auto, auto, auto;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
 }
 
 .h3d-gradient-text {
-  background-image: linear-gradient(92deg, #a88bff 0%, #8584ff 45%, #be34ff 100%);
+  background-image: linear-gradient(92deg, #e0d0ff 0%, #c4b5fd 40%, #f472b6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -155,9 +168,9 @@
 
 .h3d-hero-glow {
   background-image:
-    radial-gradient(52rem 30rem at 78% -8%, rgba(74, 0, 224, 0.32), transparent 62%),
-    radial-gradient(38rem 26rem at 12% 12%, rgba(133, 132, 255, 0.14), transparent 60%),
-    radial-gradient(30rem 22rem at 60% 110%, rgba(190, 52, 255, 0.12), transparent 65%);
+    radial-gradient(52rem 30rem at 78% -8%, rgba(139, 92, 246, 0.3), transparent 62%),
+    radial-gradient(38rem 26rem at 12% 12%, rgba(217, 70, 239, 0.13), transparent 60%),
+    radial-gradient(30rem 22rem at 60% 110%, rgba(236, 72, 153, 0.11), transparent 65%);
 }
 
 .h3d-grid-overlay {

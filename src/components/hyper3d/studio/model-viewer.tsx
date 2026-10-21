@@ -85,6 +85,7 @@ export const ModelViewer = forwardRef<ModelViewerHandle, {
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setClearColor(0x191420, 1);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.12;
     container.appendChild(renderer.domElement);
@@ -116,18 +117,18 @@ export const ModelViewer = forwardRef<ModelViewerHandle, {
     const key = new THREE.DirectionalLight(0xffffff, 2.2);
     key.position.set(4, 6, 3);
     scene.add(key);
-    const rim = new THREE.DirectionalLight(0x8584ff, 1.8);
+    const rim = new THREE.DirectionalLight(0xc4b5fd, 1.8);
     rim.position.set(-5, 2.5, -4.5);
     scene.add(rim);
-    const rim2 = new THREE.DirectionalLight(0xbe34ff, 0.8);
+    const rim2 = new THREE.DirectionalLight(0xe879f9, 0.8);
     rim2.position.set(2, -3, -5);
     scene.add(rim2);
     scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
-    const grid = new THREE.GridHelper(16, 32, 0x3a3439, 0x232329);
+    const grid = new THREE.GridHelper(16, 32, 0x3a3342, 0x262230);
     grid.position.y = -1.62;
     (grid.material as THREE.Material).transparent = true;
-    (grid.material as THREE.Material).opacity = 0.55;
+    (grid.material as THREE.Material).opacity = 0.45;
     scene.add(grid);
 
     stateRef.current = {

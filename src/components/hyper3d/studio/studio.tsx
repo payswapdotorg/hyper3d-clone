@@ -886,12 +886,17 @@ export function Studio({
   const railTasks = rail === "mine" ? mine : featured;
   const modelName = card ? nameForPrompt(card.prompt) : "No model yet";
 
+  /* Reference-style empty state: nothing generated yet, nothing in flight —
+     render the controls as a centered floating card (like the reference
+     /workspace/rodin landing) instead of the three-pane dashboard. */
+  const emptyStudio = !viewerUrl && !card && !generating && !creating && !analyzing;
+
   /* ---------------- render ---------------- */
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#121317]" role="dialog" aria-label="Rodin Studio workspace">
+    <div className="fixed inset-0 z-50 flex flex-col h3d-studio-bg" role="dialog" aria-label="Rodin Studio workspace">
       {/* studio header */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/8 bg-[#141419]/90 px-4 sm:px-5">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/8 bg-[#16121c]/75 px-4 backdrop-blur-md sm:px-5">
         <div className="flex items-center gap-3">
           <span className="flex size-8 items-center justify-center rounded-lg h3d-gradient-primary">
             <Boxes className="size-4 text-white" aria-hidden="true" />
@@ -928,10 +933,28 @@ export function Studio({
       </header>
 
       {/* body */}
-      <div className="flex flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
-        {/* ---------- left sidebar ---------- */}
+      <div
+        className={cn(
+          "flex flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden",
+          emptyStudio && "items-center p-4 sm:p-6 lg:flex-col lg:justify-center",
+        )}
+      >
+        {/* reference hero — massive headline above the floating card (empty state only) */}
+        {emptyStudio && (
+          <div className="mb-5 shrink-0 text-center">
+            <h1 className="font-display text-6xl font-bold tracking-tight text-white sm:text-7xl">Rodin</h1>
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.24em] text-h3d-violet">Gen-2.5 · Agent-Ready</p>
+            <p className="mt-2 text-sm text-h3d-muted">The best way to understand is to create.</p>
+          </div>
+        )}
+        {/* ---------- left sidebar (or centered card when empty) ---------- */}
         <aside
-          className="h3d-scroll w-full shrink-0 space-y-5 border-b border-white/8 p-4 sm:p-5 lg:w-[330px] lg:overflow-y-auto lg:border-b-0 lg:border-r"
+          className={cn(
+            "h3d-scroll w-full shrink-0 space-y-5",
+            emptyStudio
+              ? "mx-auto my-auto w-full max-w-[560px] rounded-3xl border border-white/10 bg-[#1e1b24]/80 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-6 lg:max-h-[calc(100vh-12.5rem)] lg:w-[560px] lg:overflow-y-auto"
+              : "border-b border-white/8 p-4 sm:p-5 lg:w-[330px] lg:overflow-y-auto lg:border-b-0 lg:border-r",
+          )}
           aria-label="Generation controls"
         >
           {/* version selector (reference workspace header) */}
@@ -1475,7 +1498,7 @@ export function Studio({
               </p>
             )}
             <Button
-              className="relative h-12 w-full overflow-hidden h3d-gradient-primary text-sm font-bold tracking-wide text-white shadow-[0_0_24px_rgba(133,132,255,0.4)] hover:opacity-90"
+              className="relative h-12 w-full overflow-hidden rounded-full h3d-gradient-primary text-sm font-bold uppercase tracking-[0.12em] text-white shadow-[0_0_28px_rgba(217,70,239,0.35)] hover:opacity-90"
               onClick={handleGenerate}
               disabled={creating || generating || analyzing}
             >
@@ -1498,7 +1521,10 @@ export function Studio({
         </aside>
 
         {/* ---------- center: viewer ---------- */}
-        <main className="flex min-w-0 flex-1 flex-col lg:overflow-hidden" aria-label="3D viewer and render">
+        <main
+          className={cn("flex min-w-0 flex-1 flex-col lg:overflow-hidden", emptyStudio && "hidden")}
+          aria-label="3D viewer and render"
+        >
           <div className="relative min-h-[52vh] flex-1 lg:min-h-0">
             {GENERATING_MODES.includes(mode) ? (
               <ModelViewer
@@ -1610,7 +1636,10 @@ export function Studio({
             shrink-0 content stacked under the viewer and crushed the
             flex-basis-0 viewer to 0px on lg screens. */}
         <aside
-          className="h3d-scroll w-full shrink-0 space-y-4 border-t border-white/8 p-4 sm:p-5 lg:w-[300px] lg:overflow-y-auto lg:border-t-0 lg:border-l"
+          className={cn(
+            "h3d-scroll w-full shrink-0 space-y-4 border-t border-white/8 p-4 sm:p-5 lg:w-[300px] lg:overflow-y-auto lg:border-t-0 lg:border-l",
+            emptyStudio && "hidden",
+          )}
           aria-label="Model details and export"
         >
             <div className="h3d-glass rounded-2xl p-4">
@@ -1817,7 +1846,7 @@ export function Studio({
 
       {/* ---------- asset rail ---------- */}
       <footer
-        className="h3d-scroll flex h-[108px] shrink-0 items-center gap-4 overflow-x-auto border-t border-white/8 bg-[#141419]/80 px-4"
+        className="h3d-scroll flex h-[108px] shrink-0 items-center gap-4 overflow-x-auto border-t border-white/8 bg-[#16121c]/70 px-4 backdrop-blur-md"
         aria-label="Task gallery"
       >
         <div className="flex shrink-0 rounded-xl border border-white/10 bg-white/4 p-1" role="tablist" aria-label="Gallery filter">
@@ -1833,7 +1862,7 @@ export function Studio({
               )}
               onClick={() => setRail(tab)}
             >
-              {tab === "mine" ? "Mine" : "Featured"}
+              {tab === "mine" ? "Asset" : "Explore"}
             </button>
           ))}
         </div>
