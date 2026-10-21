@@ -20,27 +20,37 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Boxes,
+  ChevronDown,
   Coins,
+  Compass,
   Dices,
   Download,
   Eye,
+  Gem,
   Globe,
+  Grid3x3,
+  Heart,
   Image as ImageIcon,
   Layers,
+  Link2,
   Loader2,
+  Lock,
   Palette,
   Pause,
   PencilRuler,
   Plus,
   RotateCw,
+  Search,
   Sparkles,
   Triangle,
   Type,
   Upload,
+  UserRound,
   Video,
   Wand2,
   X,
   Zap,
+  Box,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -221,6 +231,43 @@ interface TaskCard {
   error?: string | null;
   generate_time?: string | null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Reference-clone pieces (DOM-extracted from hyper3d.ai/workspace/rodin,
+ * 2026-10-21 recon): the animated Rodin SVG wordmark and the Featured
+ * gallery tiles. */
+const RODIN_WORDMARK_PATH =
+  "M22.1133 48.8711V63.9883H26.4492C29.3398 63.9883 31.3906 64.5547 32.6016 65.6875C33.8516 66.7812 34.4766 68.2266 34.4766 70.0234C34.4766 71.7812 33.8516 73.2266 32.6016 74.3594C31.3906 75.4531 29.3398 76 26.4492 76H8.22656C5.33594 76 3.26562 75.4531 2.01562 74.3594C0.804688 73.2266 0.199219 71.7617 0.199219 69.9648C0.199219 68.207 0.824219 66.7812 2.07422 65.6875C3.32422 64.5547 5.375 63.9883 8.22656 63.9883H10.1016V16.9961H8.22656C5.33594 16.9961 3.26562 16.4492 2.01562 15.3555C0.804688 14.2227 0.199219 12.7578 0.199219 10.9609C0.199219 9.16406 0.804688 7.71875 2.01562 6.625C3.26562 5.49219 5.33594 4.92578 8.22656 4.92578L35.4141 4.98438C43.8906 4.98438 50.4531 7.09375 55.1016 11.3125C59.7891 15.4922 62.1328 20.5898 62.1328 26.6055C62.1328 30.3555 61.0391 33.7734 58.8516 36.8594C56.6641 39.9062 53.3633 42.6211 48.9492 45.0039C51.4883 47.2305 54.2031 50.082 57.0938 53.5586C58.8906 55.7852 61.3125 59.2617 64.3594 63.9883C67.4062 63.9883 69.418 64.3008 70.3945 64.9258C72.1523 66.1367 73.0312 67.8359 73.0312 70.0234C73.0312 71.7812 72.4258 73.2266 71.2148 74.3594C70.0039 75.4531 67.9531 76 65.0625 76H58.207C48.4805 60.9609 40.4141 51.918 34.0078 48.8711H22.1133ZM22.1133 36.8594H31.4883C34.9648 36.8594 38.0703 36.332 40.8047 35.2773C44.4766 33.8711 46.9375 32.3867 48.1875 30.8242C49.4766 29.2617 50.1211 27.7188 50.1211 26.1953C50.1211 23.9297 48.9102 21.8398 46.4883 19.9258C44.0664 17.972 40.5312 16.9961 35.8828 16.9961H22.1133V36.8594ZM137.777 50.3945C137.777 55.0039 136.488 59.4766 133.91 63.8125C131.371 68.1094 127.562 71.5469 122.484 74.125C117.445 76.6641 112.172 77.9336 106.664 77.9336C101.195 77.9336 95.9609 76.6836 90.9609 74.1836C85.9609 71.6445 82.1523 68.207 79.5352 63.8711C76.918 59.5352 75.6094 55.0039 75.6094 50.2773C75.6094 45.4727 76.9375 40.7656 79.5938 36.1562C82.25 31.5078 86.0586 27.8555 91.0195 25.1992C96.0195 22.543 101.234 21.2148 106.664 21.2148C112.133 21.2148 117.387 22.582 122.426 25.3164C127.504 28.0117 131.332 31.6641 133.91 36.2734C136.488 40.8438 137.777 45.5508 137.777 50.3945ZM125.766 50.4531C125.766 46.5859 124.379 43.0312 121.605 39.7891C117.816 35.4141 112.836 33.2266 106.664 33.2266C101.234 33.2266 96.7031 34.9648 93.0703 38.4414C89.4375 41.918 87.6211 45.9414 87.6211 50.5117C87.6211 54.2617 89.457 57.7773 93.1289 61.0586C96.8008 64.3008 101.312 65.9219 106.664 65.9219C112.055 65.9219 116.586 64.3008 120.258 61.0586C123.93 57.7773 125.766 54.2422 125.766 50.4531ZM206.215 0.00390625V63.9883H208.266C211.117 63.9883 213.168 64.5547 214.418 65.6875C215.668 66.7812 216.293 68.2266 216.293 70.0234C216.293 71.7812 215.668 73.2266 214.418 74.3594C213.207 75.4531 211.156 76 208.266 76H194.203V73.0703C191.469 74.6719 188.598 75.8828 185.59 76.7031C182.621 77.5234 179.535 77.9336 176.332 77.9336C167.309 77.9336 160.043 75.3359 154.535 70.1406C149.027 64.9062 146.273 58.4023 146.273 50.6289C146.273 42.5039 149.164 35.5703 154.945 29.8281C160.727 24.0859 167.777 21.2148 176.098 21.2148C179.223 21.2148 182.289 21.7031 185.297 22.6797C188.305 23.6172 191.273 25.043 194.203 26.957V12.0156H192.152C189.262 12.0156 187.191 11.4688 185.941 10.375C184.73 9.24219 184.125 7.79688 184.125 6.03906C184.125 4.24219 184.73 2.79688 185.941 1.70312C187.191 0.570313 189.262 0.00390625 192.152 0.00390625H206.215ZM194.203 50.9805C194.203 46.0195 192.465 41.8203 188.988 38.3828C185.512 34.9453 181.254 33.2266 176.215 33.2266C171.215 33.2266 166.977 34.9453 163.5 38.3828C160.023 41.8203 158.285 45.9609 158.285 50.8047C158.285 55.2188 159.848 58.8516 162.973 61.7031C166.098 64.5156 170.512 65.9219 176.215 65.9219C181.879 65.9219 186.293 64.5156 189.457 61.7031C192.621 58.8516 194.203 55.2773 194.203 50.9805ZM255.023 0.00390625V12.7188H240.727V0.00390625H255.023ZM256.664 22.7969V63.9883H271.078C273.969 63.9883 276.02 64.5547 277.23 65.6875C278.48 66.7812 279.105 68.2266 279.105 70.0234C279.105 71.7812 278.48 73.2266 277.23 74.3594C276.02 75.4531 273.969 76 271.078 76H230.238C227.348 76 225.277 75.4531 224.027 74.3594C222.816 73.2266 222.211 71.7617 222.211 69.9648C222.211 68.207 222.816 66.7812 224.027 65.6875C225.277 64.5547 227.348 63.9883 230.238 63.9883H244.652V34.8086H234.984C232.133 34.8086 230.082 34.2617 228.832 33.168C227.582 32.0352 226.957 30.5703 226.957 28.7734C226.957 27.0156 227.562 25.5898 228.773 24.4961C230.023 23.3633 232.094 22.7969 234.984 22.7969H256.664ZM310.629 22.7969V26.8398C312.816 24.9648 315.219 23.5586 317.836 22.6211C320.492 21.6836 323.363 21.2148 326.449 21.2148C333.559 21.2148 339.184 23.4219 343.324 27.8359C346.605 31.3516 348.246 35.9609 348.246 41.6641V63.9883C350.785 63.9883 352.66 64.5547 353.871 65.6875C355.082 66.7812 355.688 68.2266 355.688 70.0234C355.688 71.7812 355.062 73.2266 353.812 74.3594C352.602 75.4531 350.551 76 347.66 76H336.82C333.93 76 331.859 75.4531 330.609 74.3594C329.398 73.2266 328.793 71.7617 328.793 69.9648C328.793 68.207 329.398 66.7812 330.609 65.6875C331.82 64.5547 333.695 63.9883 336.234 63.9883V41.3125C336.234 38.6953 335.531 36.7812 334.125 35.5703C332.289 34.0078 329.535 33.2266 325.863 33.2266C323.09 33.2266 320.648 33.7734 318.539 34.8672C316.469 35.9219 313.832 38.1875 310.629 41.6641V63.9883C313.715 63.9883 315.707 64.2812 316.605 64.8672C318.52 66.0391 319.477 67.7578 319.477 70.0234C319.477 71.7812 318.852 73.2266 317.602 74.3594C316.391 75.4531 314.34 76 311.449 76H297.797C294.906 76 292.836 75.4531 291.586 74.3594C290.375 73.2266 289.77 71.7617 289.77 69.9648C289.77 67.7773 290.707 66.0781 292.582 64.8672C293.52 64.2812 295.531 63.9883 298.617 63.9883V34.8086C296.078 34.8086 294.203 34.2422 292.992 33.1094C291.781 31.9766 291.176 30.5312 291.176 28.7734C291.176 27.0156 291.781 25.5898 292.992 24.4961C294.242 23.3633 296.312 22.7969 299.203 22.7969H310.629Z";
+
+/** The reference's own Rodin wordmark: one SVG path, stroke-draws in then
+ * fills white (see .rodin-title-animation in globals.css). Sizes match the
+ * reference's responsive classes. */
+function RodinWordmark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 356 78"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+      role="presentation"
+    >
+      <path className="rodin-title-animation" d={RODIN_WORDMARK_PATH} />
+    </svg>
+  );
+}
+
+/* Featured gallery tiles (reference ASSET section) — this clone's own demo
+ * renders, honestly labelled. */
+const FEATURED_TILES: { src: string; title: string; author: string; likes: number; hue: string }[] = [
+  { src: "/images/gallery-mech.png", title: "Scout Mech", author: "Rodin Gen-2.5", likes: 48, hue: "#b98acf" },
+  { src: "/images/gallery-helmet.png", title: "Legion Helmet", author: "Rodin Gen-2.5", likes: 35, hue: "#d2b6df" },
+  { src: "/images/gallery-drone.png", title: "Cargo Drone", author: "Rodin Gen-1.5", likes: 27, hue: "#ca6650" },
+  { src: "/images/gallery-creature.png", title: "Reef Creature", author: "Rodin Gen-2.5", likes: 41, hue: "#e6765d" },
+  { src: "/images/gallery-sword.png", title: "Rune Blade", author: "Rodin Gen-1.5", likes: 22, hue: "#ecc16c" },
+  { src: "/images/gallery-potions.png", title: "Potion Shelf", author: "Rodin Gen-2.5", likes: 31, hue: "#9e76ac" },
+  { src: "/images/gallery-bike.png", title: "Trail Bike", author: "Rodin Gen-1.5", likes: 19, hue: "#d67830" },
+  { src: "/images/gallery-chest.png", title: "Traveler Chest", author: "Rodin Gen-2.5", likes: 26, hue: "#c9b7cf" },
+];
 
 export interface StudioInitial {
   prompt: string;
@@ -887,74 +934,819 @@ export function Studio({
   const modelName = card ? nameForPrompt(card.prompt) : "No model yet";
 
   /* Reference-style empty state: nothing generated yet, nothing in flight —
-     render the controls as a centered floating card (like the reference
-     /workspace/rodin landing) instead of the three-pane dashboard. */
+     render the controls as the reference /workspace/rodin landing (scrollable
+     hero + 180px input card cluster + GENERATE capsule + ASSET gallery)
+     instead of the three-pane dashboard. */
   const emptyStudio = !viewerUrl && !card && !generating && !creating && !analyzing;
+
+  /* floating tool panel on the empty landing (materials / presets / quality /
+     directions) — the reference hides these behind icon rails + popovers */
+  const [toolPanel, setToolPanel] = useState<null | "materials" | "presets" | "quality" | "directions">(null);
+
+  /* chips + hover-swap labels for the reference GENERATE cluster */
+  const qualityChipLabel =
+    genVersion === "gen-1.5"
+      ? (LEGACY_MODES.find((m) => m.id === legacyMode)?.label ?? "Default")
+      : effortInfo.label;
+  const generateHoverLabel = !user
+    ? "Sign In"
+    : mine.length === 0
+      ? "Free Preview"
+      : agentic
+        ? "10 Credits"
+        : "1 Credit";
+  const costChipLabel = !user
+    ? "Sign in to start"
+    : mine.length === 0
+      ? "1 Credit"
+      : agentic
+        ? "10 Credits"
+        : "1 Credit";
 
   /* ---------------- render ---------------- */
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col h3d-studio-bg" role="dialog" aria-label="Rodin Studio workspace">
-      {/* studio header */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/8 bg-[#16121c]/75 px-4 backdrop-blur-md sm:px-5">
-        <div className="flex items-center gap-3">
-          <span className="flex size-8 items-center justify-center rounded-lg h3d-gradient-primary">
-            <Boxes className="size-4 text-white" aria-hidden="true" />
+      {/* reference top bar — HYPER3D + Subscribe (hover → 7-Day Trial) left,
+          Add On / API / MCP&CLI / Login + globe right (DOM-extracted look). */}
+      <header className="relative z-20 flex h-[81px] shrink-0 items-center justify-between px-6 sm:px-10">
+        <div className="flex items-center gap-5">
+          <span className="flex items-center gap-2 text-white" aria-label="HYPER3D">
+            <Boxes className="size-6" aria-hidden="true" />
+            <span className="text-xl font-bold tracking-tight">HYPER3D</span>
           </span>
-          <div className="leading-tight">
-            <p className="font-display text-sm font-bold tracking-wide text-white">
-              HYPER3D<span className="text-h3d-purple">.AI</span>
-            </p>
-            <p className="font-mono text-[10px] text-h3d-muted">rodin / workspace</p>
-          </div>
-          <span className="ml-1 hidden rounded-full border border-h3d-purple/40 bg-h3d-purple/15 px-2.5 py-1 font-mono text-[10px] font-medium text-h3d-violet sm:inline-flex">
-            {GEN_VERSION}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {user && (
-            <span className="hidden items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 md:flex">
-              <Coins className="size-3.5 text-h3d-gold" aria-hidden="true" />
-              <span className="font-mono text-xs text-white">{user.balance}</span>
-              <span className="text-[10px] text-h3d-muted">credits</span>
+          <button
+            type="button"
+            onClick={() =>
+              toast.info("Subscribe", {
+                description:
+                  "The reference's paid tiers are not part of this clone — the demo wallet already covers every feature here (first generation free).",
+              })
+            }
+            className="group relative flex h-[37px] w-[139px] items-center justify-center rounded-[30px] border border-white/15 bg-white/5 text-lg font-semibold transition-colors hover:border-white/25"
+            aria-label="Subscribe (demo notice)"
+          >
+            <span className="absolute inset-0 flex items-center justify-center text-white opacity-100 transition-opacity group-hover:opacity-0">
+              Subscribe
             </span>
+            <span className="h3d-grad-text-warm absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+              7-Day Trial
+            </span>
+          </button>
+        </div>
+        <nav className="flex items-center gap-6" aria-label="Workspace">
+          <button
+            type="button"
+            onClick={() =>
+              toast.info("Add On", { description: "Add-ons live outside this clone's scope — the workspace itself is fully wired." })
+            }
+            className="hidden text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white xl:block"
+          >
+            Add On
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              toast.info("API", { description: "This clone's own REST API (/api/task/*) powers the workspace end-to-end." })
+            }
+            className="hidden text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white md:block"
+          >
+            API
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              toast.info("MCP&CLI", { description: "Not implemented in this clone — honest stub, same position as the reference." })
+            }
+            className="hidden text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white md:block"
+          >
+            MCP&amp;CLI
+          </button>
+          <span className="hidden h-4 w-px bg-white/20 md:block" aria-hidden="true" />
+          {user ? (
+            <span className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1.5">
+                <Coins className="size-3.5 text-h3d-gold" aria-hidden="true" />
+                <span className="text-sm text-white">{user.balance}</span>
+                <span className="text-[11px] text-white/40">credits</span>
+              </span>
+              <span
+                className="flex size-9 items-center justify-center rounded-full border border-h3d-violet/50 bg-h3d-violet/20 text-sm font-semibold text-white"
+                title={user.email}
+              >
+                {user.email.slice(0, 1).toUpperCase()}
+              </span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onNeedAuth("Sign in to generate — your first preview is free.")}
+              className="flex items-center gap-1.5 text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white"
+            >
+              <UserRound className="size-4" aria-hidden="true" />
+              Login
+            </button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="min-h-11 border-white/15 bg-white/5 text-sm font-medium hover:bg-white/10"
+          <Globe className="size-[18px] text-[#b0b0b0] transition-colors hover:text-white" aria-hidden="true" />
+          <button
+            type="button"
             onClick={onClose}
-            aria-label="Close studio and return to the landing page"
+            aria-label="Close workspace and return to the landing page"
+            title="Close workspace"
+            className="flex size-9 items-center justify-center rounded-full text-white/40 transition-colors hover:bg-white/10 hover:text-white"
           >
             <X className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Exit Studio</span>
-          </Button>
-        </div>
+          </button>
+        </nav>
       </header>
 
-      {/* body */}
+      {/* atmosphere — the reference's three fixed gradient blobs (DOM-extracted
+          geometry + gradients, blur(100px)) behind everything. */}
+      <div className="h3d-blob z-0" style={{ left: "51%", top: "25%", width: 403, height: 403, background: "rgba(210, 181, 223, 0.34)" }} aria-hidden="true" />
       <div
-        className={cn(
-          "flex flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden",
-          emptyStudio && "items-center p-4 sm:p-6 lg:flex-col lg:justify-center",
-        )}
-      >
-        {/* reference hero — massive headline above the floating card (empty state only) */}
-        {emptyStudio && (
-          <div className="mb-5 shrink-0 text-center">
-            <h1 className="font-display text-6xl font-bold tracking-tight text-white sm:text-7xl">Rodin</h1>
-            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.24em] text-h3d-violet">Gen-2.5 · Agent-Ready</p>
-            <p className="mt-2 text-sm text-h3d-muted">The best way to understand is to create.</p>
+        className="h3d-blob z-0"
+        style={{
+          left: "15%",
+          top: "8%",
+          width: 677,
+          height: 677,
+          backgroundImage: "linear-gradient(309.02deg, rgba(158, 118, 172, 0.52) 16.79%, rgba(214, 120, 48, 0.52) 93.35%)",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="h3d-blob z-0"
+        style={{
+          left: "57%",
+          top: "44%",
+          width: 346,
+          height: 346,
+          backgroundImage: "linear-gradient(132.64deg, rgba(255, 217, 142, 0.4) 42.55%, rgba(214, 120, 48, 0.4) 79.55%)",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* body — the reference's scrollable workspace landing when empty; the
+          proven three-pane dashboard once a task exists / work is in flight. */}
+      {emptyStudio ? (
+        <div className="h3d-scroll relative z-10 flex-1 overflow-y-auto">
+          <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center px-4">
+            {/* subnav — Avatar / 3D / Video text tabs in a glass pill (3D active, as the reference) */}
+            <nav className="mt-[19px] flex items-center gap-7 rounded-full border border-white/10 bg-black/25 px-6 py-2.5 backdrop-blur-md" aria-label="Product line">
+              {(["Avatar", "3D", "Video"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={
+                    t === "3D"
+                      ? undefined
+                      : () =>
+                          toast.info(`${t} workspace`, {
+                            description: "This clone implements the 3D workspace — Avatar and Video are reference-parity labels only.",
+                          })
+                  }
+                  className={cn(
+                    "flex items-center gap-1 text-sm font-bold transition-colors",
+                    t === "3D" ? "cursor-default text-white" : "text-white/50 hover:text-white/80",
+                  )}
+                  aria-current={t === "3D" ? "page" : undefined}
+                >
+                  {t}
+                  {t === "Video" && <ChevronDown className="size-3" aria-hidden="true" />}
+                </button>
+              ))}
+            </nav>
+
+            {/* hero — the reference's own animated SVG wordmark + version tabs + quotes */}
+            <div className="mt-10 flex flex-col items-center sm:mt-[53px]">
+              <RodinWordmark className="h-[49px] w-[213px] sm:h-[78px] sm:w-[356px] md:h-[85px] md:w-[391px] lg:h-[93px] lg:w-[427px]" />
+              <div className="mt-3 flex items-center gap-2" role="radiogroup" aria-label="Generator version">
+                {GEN_VERSIONS.map((v) => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={genVersion === v.id}
+                    onClick={() => {
+                      setGenVersion(v.id);
+                      if (v.id === "gen-1.5") setAgentic(false);
+                    }}
+                    title={v.note}
+                    className={cn(
+                      "flex items-center gap-1.5 px-1 text-[12.8px] font-bold transition-colors",
+                      genVersion === v.id ? "text-white" : "text-white/30 hover:text-white/70",
+                    )}
+                  >
+                    {v.label}
+                    {v.id === "gen-2.5" && <span className="ml-0.5 size-[5px] rounded-full bg-[#e65a4e]" aria-hidden="true" />}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-[7px] flex flex-col items-center gap-1 text-sm text-[#cfcfcf]">
+                <span>The best way to understand is to create.</span>
+                <span>What I cannot create, I do not understand.</span>
+              </div>
+            </div>
+
+            {/* card cluster — left mode rail + 180px input card + right tools rail */}
+            <div className="relative mt-8 flex flex-col items-center gap-3 sm:mt-[34px] sm:flex-row sm:items-center sm:gap-0">
+              {/* left mode rail (glass, 74px, attached to the card's left edge) */}
+              <div className="flex gap-1.5 rounded-xl bg-white/[0.043] p-1.5 backdrop-blur-2xl sm:absolute sm:-left-[86px] sm:top-1/2 sm:-translate-y-1/2 sm:flex-col">
+                {(
+                  [
+                    { id: "rodin", label: "Image to 3D", icon: ImageIcon, gen: true },
+                    { id: "editing-3d", label: "3D Editing", icon: PencilRuler, gen: false },
+                    { id: "worldgen", label: "WorldGen", icon: Globe, gen: false },
+                  ] as const
+                ).map((m) => {
+                  const active =
+                    m.id === "rodin" ? GENERATING_MODES.includes(mode) : mode === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setMode(m.id === "rodin" ? "image-to-3d" : (m.id as GenMode))}
+                      className={cn(
+                        "flex h-10 w-[67px] flex-col items-center justify-center gap-0.5 rounded-[9px] transition-colors",
+                        active ? "h3d-mode-active text-white" : "text-white/56 hover:text-white/85",
+                      )}
+                    >
+                      <m.icon className="size-[15px]" aria-hidden="true" />
+                      <span className="text-[9.5px] font-medium leading-none">{m.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* the 180×180 input card (radius 20, black/18) */}
+              <div className="relative h-[180px] w-[180px] overflow-hidden rounded-[20px] border border-white/8 bg-black/[0.18]">
+                <p className="pt-3 text-center text-base font-bold text-white">
+                  {mode === "editing-3d" ? "3D Editing" : mode === "worldgen" ? "WorldGen" : "Image to 3D"}
+                </p>
+                {GENERATING_MODES.includes(mode) ? (
+                  mode === "image-to-3d" && !upload ? (
+                    <label
+                      htmlFor="workspace-upload"
+                      className="absolute inset-x-0 bottom-[38px] top-[42px] flex cursor-pointer flex-col items-center justify-center gap-3 transition-colors hover:bg-white/[0.03]"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) void handleFile(file);
+                      }}
+                    >
+                      <span className="relative size-10" aria-hidden="true">
+                        <span className="absolute left-1/2 top-1/2 h-[5px] w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
+                        <span className="absolute left-1/2 top-1/2 h-10 w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
+                      </span>
+                    </label>
+                  ) : mode === "text-to-3d" ? (
+                    <textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Describe the item you want to generate..."
+                      aria-label="Prompt"
+                      className="absolute inset-x-2 bottom-[42px] top-[42px] resize-none bg-transparent text-sm text-[#ebebeb] outline-none placeholder:text-white/30"
+                    />
+                  ) : (
+                    <div className="absolute inset-0">
+                      <img src={upload?.dataUrl} alt="Uploaded reference" className="absolute inset-0 h-full w-full object-cover" />
+                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-black/60 py-1.5 text-[10px] text-white/80 backdrop-blur-sm">
+                        {analyzing ? (
+                          <>
+                            <Loader2 className="size-3 animate-spin" aria-hidden="true" /> analyzing…
+                          </>
+                        ) : (
+                          "click ＋ to replace"
+                        )}
+                      </span>
+                    </div>
+                  )
+                ) : (
+                  <div className="absolute inset-x-3 bottom-[42px] top-[42px] flex items-center justify-center rounded-lg border border-dashed border-white/12 px-3 text-center text-[10px] leading-relaxed text-white/45">
+                    {mode === "editing-3d"
+                      ? "Coming soon in this clone — mesh editing is a stub (honest)."
+                      : "Coming soon in this clone — WorldGen scenes are a stub (honest)."}
+                  </div>
+                )}
+                {/* image/text toggle pill (lilac glass, gradient text) */}
+                {GENERATING_MODES.includes(mode) && (
+                  <button
+                    type="button"
+                    onClick={() => setMode(mode === "image-to-3d" ? "text-to-3d" : "image-to-3d")}
+                    className="absolute bottom-3 left-1/2 flex h-[30px] w-[168px] -translate-x-1/2 items-center justify-center rounded-[17px] bg-[#d2b6df]/15 text-base font-bold backdrop-blur-[60px] transition-colors hover:bg-[#d2b6df]/25"
+                  >
+                    <span className="h3d-grad-text-warm">
+                      {mode === "image-to-3d" ? "Text to Image/3D" : "Image to 3D"}
+                    </span>
+                  </button>
+                )}
+              </div>
+              <input
+                id="workspace-upload"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleFile(file);
+                  e.target.value = "";
+                }}
+              />
+
+              {/* right tools rail — circular icon buttons (28px, white/8): two
+                  live tools + two reference ControlNet slots with honest stubs */}
+              <div className="flex gap-2 sm:absolute sm:-right-[46px] sm:top-1/2 sm:-translate-y-1/2 sm:flex-col">
+                <button
+                  type="button"
+                  aria-label="Material pass"
+                  title="Material"
+                  onClick={() => setToolPanel(toolPanel === "materials" ? null : "materials")}
+                  className={cn(
+                    "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    toolPanel === "materials" && "bg-white/20",
+                  )}
+                >
+                  <Palette className="size-3.5 text-white/80" aria-hidden="true" />
+                </button>
+                {mode === "image-to-3d" && upload && (
+                  <button
+                    type="button"
+                    aria-label="Extra views — pick the four optional reference angles"
+                    title="Extra views (optional)"
+                    onClick={() => setToolPanel(toolPanel === "directions" ? null : "directions")}
+                    className={cn(
+                      "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                      toolPanel === "directions" && "bg-white/20",
+                    )}
+                  >
+                    <Compass className="size-3.5 text-white/80" aria-hidden="true" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  aria-label="Material pass"
+                  title="Material"
+                  onClick={() => setToolPanel(toolPanel === "materials" ? null : "materials")}
+                  className={cn(
+                    "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    toolPanel === "materials" && "bg-white/20",
+                  )}
+                >
+                  <Palette className="size-3.5 text-white/80" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Prompt presets and seed"
+                  title="Presets"
+                  onClick={() => setToolPanel(toolPanel === "presets" ? null : "presets")}
+                  className={cn(
+                    "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    toolPanel === "presets" && "bg-white/20",
+                  )}
+                >
+                  <Sparkles className="size-3.5 text-white/80" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Bounding Box Control — not implemented in this clone"
+                  title="Bounding Box Control (reference ControlNet — stub)"
+                  onClick={() =>
+                    toast.info("Bounding Box Control", {
+                      description: "A reference ControlNet input — not implemented in this clone (honest stub; the slot exists for visual parity).",
+                    })
+                  }
+                  className="flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15"
+                >
+                  <Box className="size-3.5 text-white/80" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Voxel ControlNet — not implemented in this clone"
+                  title="Voxel ControlNet (reference ControlNet — stub)"
+                  onClick={() =>
+                    toast.info("Voxel ControlNet", {
+                      description: "A reference ControlNet input — not implemented in this clone (honest stub; the slot exists for visual parity).",
+                    })
+                  }
+                  className="flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15"
+                >
+                  <Grid3x3 className="size-3.5 text-white/80" aria-hidden="true" />
+                </button>
+              </div>
+
+              {/* floating tool panels (glass, anchored right of the cluster) */}
+              {toolPanel && (
+                <div className="absolute left-full top-0 z-30 ml-4 w-64 rounded-xl border border-white/10 bg-[#1c1a20]/90 p-3 shadow-[0_18px_44px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:top-1/2 sm:-translate-y-1/2">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                      {toolPanel === "directions" ? "Extra views" : toolPanel === "materials" ? "Material" : "Presets"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setToolPanel(null)}
+                      aria-label="Close panel"
+                      className="flex size-6 items-center justify-center rounded-full text-white/40 hover:bg-white/10 hover:text-white"
+                    >
+                      <X className="size-3" aria-hidden="true" />
+                    </button>
+                  </div>
+                  {toolPanel === "materials" && (
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {MATERIALS.map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          aria-pressed={material === m.id}
+                          onClick={() => setMaterial(m.id)}
+                          className={cn(
+                            "rounded-lg px-2 py-2 text-left text-xs transition-colors",
+                            material === m.id ? "h3d-mode-active text-white" : "text-white/60 hover:bg-white/8 hover:text-white",
+                          )}
+                        >
+                          <span className="block font-semibold">{m.label}</span>
+                          <span className="block text-[9px] text-white/40">{m.blurb}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {toolPanel === "presets" && (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {PROMPT_PRESETS.slice(0, 6).map((p) => (
+                          <button
+                            key={p.label}
+                            type="button"
+                            onClick={() => {
+                              setPrompt(p.prompt);
+                              if (mode === "image-to-3d") setMode("text-to-3d");
+                            }}
+                            className="rounded-full border border-white/12 px-2.5 py-1 text-[10px] text-white/70 transition-colors hover:border-white/25 hover:text-white"
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          min={0}
+                          max={65535}
+                          value={seed}
+                          onChange={(e) => {
+                            const n = Number(e.target.value);
+                            setSeed(Number.isFinite(n) ? Math.max(0, Math.min(65535, Math.floor(n))) : 0);
+                            setLockSeed(true);
+                          }}
+                          aria-label="Seed"
+                          className="h-8 min-w-0 flex-1 rounded-lg border border-white/12 bg-white/5 px-2 text-xs text-white/85"
+                        />
+                        <button
+                          type="button"
+                          aria-pressed={lockSeed}
+                          title={lockSeed ? "Seed locked — click to randomize" : "Seed randomizes — click to lock"}
+                          onClick={() => setLockSeed(!lockSeed)}
+                          className={cn(
+                            "flex size-8 items-center justify-center rounded-lg border border-white/12 bg-white/5",
+                            lockSeed && "border-[#e6765d]/60 bg-[#e6765d]/15",
+                          )}
+                        >
+                          <Dices className={cn("size-3.5", lockSeed ? "text-[#e6765d]" : "text-white/50")} aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {toolPanel === "directions" && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] leading-relaxed text-white/45">
+                        Optional extra views (pose-free). Engine slots: front always used; extra angles refine the mesh.
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {VIEW_DIRECTIONS.map((dir) => {
+                          const existing = extraViews.find((v) => v.direction === dir);
+                          const engineFed = ENGINE_SLOT_OF[dir] !== null;
+                          return existing ? (
+                            <div key={dir} className="relative">
+                              <img
+                                src={existing.dataUrl}
+                                alt={`${DIRECTION_LABELS[dir]} view`}
+                                className="h-12 w-full rounded-md border border-[#b98acf]/60 object-cover"
+                              />
+                              <button
+                                type="button"
+                                aria-label={`Remove ${DIRECTION_LABELS[dir]} view`}
+                                onClick={() => setExtraViews((views) => views.filter((v) => v.direction !== dir))}
+                                className="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-black/70 text-white/80"
+                              >
+                                <X className="size-2.5" aria-hidden="true" />
+                              </button>
+                              <span className="absolute inset-x-0 bottom-0 rounded-b-md bg-black/70 px-0.5 py-0.5 text-center text-[7px] uppercase text-white/80">
+                                {DIRECTION_SHORT[dir]}
+                              </span>
+                            </div>
+                          ) : (
+                            <label
+                              key={dir}
+                              className={cn(
+                                "flex h-12 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed text-[8px] uppercase tracking-wide transition-colors",
+                                engineFed
+                                  ? "border-white/20 text-white/60 hover:border-[#b98acf]/60 hover:text-white"
+                                  : "border-white/8 text-white/25",
+                              )}
+                              title={engineFed ? `Add the ${DIRECTION_LABELS[dir]} view` : "Decorative slot — the engine takes 4 base angles"}
+                            >
+                              <Plus className="size-3" aria-hidden="true" />
+                              {DIRECTION_SHORT[dir]}
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp"
+                                className="sr-only"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  e.target.value = "";
+                                  if (!file) return;
+                                  if (extraViews.length >= 4) {
+                                    toast.info("Up to 4 extra views", { description: "The engine takes 1 main image + up to 4 views (5 total)." });
+                                    return;
+                                  }
+                                  const reader = new FileReader();
+                                  reader.onload = () => {
+                                    const dataUrl = String(reader.result);
+                                    setExtraViews((vs) => [
+                                      ...vs.filter((v) => v.direction !== dir),
+                                      { direction: dir, dataUrl, file },
+                                    ]);
+                                  };
+                                  void reader.readAsDataURL(file);
+                                }}
+                              />
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* caption palette strip (image mode, after vision analysis) */}
+            {mode === "image-to-3d" && caption && caption.palette.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+                {caption.palette.slice(0, 6).map((hex) => (
+                  <span key={hex} title={hex} className="size-3.5 rounded-full border border-white/25" style={{ backgroundColor: hex }} />
+                ))}
+                <span className="text-[10px] text-white/45">
+                  {caption.components.length} components · {caption.form}
+                </span>
+              </div>
+            )}
+
+            {/* GENERATE cluster — private lock + glass capsule w/ blurred
+                terracotta→lilac glow + quality/batch/cost chips */}
+            <div className="mt-[38px] flex items-center gap-3">
+              <button
+                type="button"
+                aria-pressed={isPrivate}
+                title={isPrivate ? "Private — hidden from the gallery" : "Public — visible in the gallery"}
+                onClick={() => setIsPrivate(!isPrivate)}
+                className={cn(
+                  "flex size-[60px] items-center justify-center rounded-full border transition-colors",
+                  isPrivate
+                    ? "border-[#e6765d]/60 bg-[#e6765d]/15"
+                    : "border-white/12 bg-white/[0.04] hover:border-white/25",
+                )}
+              >
+                <Lock className={cn("size-[18px]", isPrivate ? "text-[#e6765d]" : "text-white/70")} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={creating || generating || analyzing}
+                className="group relative flex h-[68px] w-[206px] items-center justify-center rounded-full h3d-generate-capsule shadow-[0_0_44px_rgba(202,102,80,0.22),0_0_70px_rgba(185,138,207,0.18)] transition-transform active:scale-[0.98] disabled:cursor-not-allowed"
+                aria-label={generateHoverLabel}
+              >
+                <span
+                  className={cn(
+                    "h3d-generate-glow absolute left-1/2 top-1/2 h-[39px] w-[164px] -translate-x-1/2 -translate-y-1/2",
+                    (creating || generating || analyzing) && "h-5 w-[100px] opacity-50",
+                    "group-hover:h-[30px] group-hover:w-[130px]",
+                  )}
+                  aria-hidden="true"
+                />
+                {creating || generating || analyzing ? (
+                  <span className="relative z-10 flex items-center gap-2 text-lg font-bold text-white/60">
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Working…
+                  </span>
+                ) : (
+                  <>
+                    <span className="relative z-10 text-lg font-bold text-white transition-opacity group-hover:opacity-0">
+                      GENERATE
+                    </span>
+                    <span className="h3d-grad-text-warm absolute inset-0 z-10 flex items-center justify-center text-lg font-bold opacity-0 transition-opacity group-hover:opacity-100">
+                      {generateHoverLabel}
+                    </span>
+                  </>
+                )}
+              </button>
+              <div className="flex flex-col items-start gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    genVersion === "gen-2.5" ? setEffortModalOpen(true) : setToolPanel(toolPanel === "quality" ? null : "quality")
+                  }
+                  className="flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-80"
+                  title="Quality / effort"
+                >
+                  <span className="h3d-grad-text-warm">{qualityChipLabel}</span>
+                  <ChevronDown className="size-3 text-white/50" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast.info("Batch is a Business plan feature", {
+                      description: `The reference gates fast-mode batch (up to ${BATCH_MAX} variations/run) to the Business plan — this clone keeps batch 1, same honest gate.`,
+                      duration: 8000,
+                    })
+                  }
+                  className="flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/80 transition-colors hover:border-white/25"
+                  aria-label="Batch size — Business plan feature"
+                >
+                  <Link2 className="size-3" aria-hidden="true" />
+                  x1
+                </button>
+                <span className="text-[11px] font-semibold text-white/80">{costChipLabel}</span>
+              </div>
+              {/* gen-1.5 quality panel (Default / Speedy) */}
+              {toolPanel === "quality" && genVersion === "gen-1.5" && (
+                <div className="absolute mt-2 flex gap-1 rounded-xl border border-white/10 bg-[#1c1a20]/95 p-1.5 backdrop-blur-xl">
+                  {LEGACY_MODES.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      aria-pressed={legacyMode === m.id}
+                      onClick={() => {
+                        setLegacyMode(m.id);
+                        setToolPanel(null);
+                      }}
+                      className={cn(
+                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                        legacyMode === m.id ? "h3d-mode-active text-white" : "text-white/60 hover:text-white",
+                      )}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* controls row — reference look: Zap + Agentic Mode/OFF text ·
+                ‹ version › pill · Gem + quality */}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              <button
+                type="button"
+                aria-pressed={agentic}
+                disabled={!agenticAvailable}
+                onClick={() => setAgentic(!agentic)}
+                title={agenticAvailable ? "Toggle agentic generation" : "Gen-2.5 line only"}
+                className={cn(
+                  "flex items-center gap-2",
+                  agenticAvailable ? "cursor-pointer" : "cursor-default opacity-40",
+                )}
+              >
+                <Zap className={cn("size-4", agentic ? "text-[#e6765d]" : "text-white/50")} aria-hidden="true" />
+                <span className="text-sm font-semibold text-white/95">Agentic Mode</span>
+                <span className="text-[11px] font-medium text-white/60">{agentic ? "ON" : "OFF"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = genVersion === "gen-2.5" ? "gen-1.5" : "gen-2.5";
+                  setGenVersion(next);
+                  if (next === "gen-1.5") setAgentic(false);
+                }}
+                title="Switch generator version"
+                className="flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-sm font-bold text-white transition-colors hover:border-white/25"
+              >
+                <ChevronDown className="size-3 rotate-90 text-white/50" aria-hidden="true" />
+                {GEN_VERSIONS.find((v) => v.id === genVersion)?.label}
+                <ChevronDown className="size-3 -rotate-90 text-white/50" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  genVersion === "gen-2.5" ? setEffortModalOpen(true) : setToolPanel(toolPanel === "quality" ? null : "quality")
+                }
+                title="Quality"
+                className="flex items-center gap-1.5 text-sm text-white/90"
+              >
+                <Gem className="size-3.5 text-[#ecc16c]" aria-hidden="true" />
+                {qualityChipLabel}
+                {agentic && <span className="text-[11px] text-[#c9b7cf]">· 5 min</span>}
+              </button>
+              {genVersion === "gen-1.5" && !agentic && (
+                <span className="text-[11px] text-white/45">standard pipeline</span>
+              )}
+            </div>
+
+            {neuralBusy && (
+              <div className="mt-4 flex w-full max-w-md items-center gap-2 rounded-lg border border-[#b98acf]/30 bg-[#b98acf]/10 px-3 py-2">
+                <Loader2 className="size-3.5 shrink-0 animate-spin text-[#b98acf]" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-white/85">{neuralMessage ?? "Working…"}</p>
+                  <p className="text-[10px] text-white/40">{neuralElapsed.toFixed(1)}s · Hunyuan3D-2.1</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={cancelNeural}
+                  className="h-8 shrink-0 border-white/15 bg-white/5 px-2.5 text-[10px] text-white/75"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-        {/* ---------- left sidebar (or centered card when empty) ---------- */}
+
+          {/* ASSET section — tabs, Featured pill, search/filter, gallery grid */}
+          <section className="mx-auto mt-14 w-full max-w-[1280px] px-6 pb-20 md:px-20" aria-label="Assets">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+              <h2 className="text-[26px] font-bold leading-none text-white">ASSET</h2>
+              <button
+                type="button"
+                onClick={() => toast.info("EXPLORE", { description: "The community feed is reference-parity chrome — this clone shows the Featured demo set." })}
+                className="text-[26px] font-bold leading-none text-white/40 transition-colors hover:text-white/70"
+              >
+                EXPLORE
+              </button>
+              <div className="ml-auto flex items-center gap-3">
+                <span className="flex h-[38px] w-[106px] items-center justify-center rounded-[39px] border border-[#e6765d] text-base text-[#cfcfcf]">
+                  Featured
+                </span>
+                <button
+                  type="button"
+                  aria-label="Search assets"
+                  onClick={() => toast.info("Search", { description: "Search is reference-parity chrome in this clone." })}
+                  className="flex size-[38px] items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <Search className="size-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toast.info("Filter", { description: "Featured sort only — reference-parity chrome." })}
+                  className="flex h-[38px] items-center gap-1.5 rounded-full border border-white/12 px-4 text-sm text-white/70 transition-colors hover:border-white/25 hover:text-white"
+                >
+                  Filter <ChevronDown className="size-3.5" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <p className="mt-1.5 text-xs text-white/35">
+              Featured — demo renders from this clone's own gallery (the reference's community feed is not part of the clone).
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {FEATURED_TILES.map((tile) => (
+                <figure
+                  key={tile.src}
+                  className="group relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]"
+                >
+                  <img
+                    src={tile.src}
+                    alt={`${tile.title} — demo render`}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                    loading="lazy"
+                  />
+                  <button
+                    type="button"
+                    aria-label={`Like ${tile.title}`}
+                    onClick={() => toast.info("Likes", { description: "Likes are reference-parity chrome — counters are demo values." })}
+                    className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/40 text-white/70 opacity-0 backdrop-blur-sm transition-opacity hover:text-[#ff6b6b] group-hover:opacity-100"
+                  >
+                    <Heart className="size-3.5" aria-hidden="true" />
+                  </button>
+                  <figcaption className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/80 to-transparent p-3">
+                    <span
+                      className="flex size-6 items-center justify-center rounded-full text-[10px] font-bold text-black/80"
+                      style={{ backgroundColor: tile.hue }}
+                      aria-hidden="true"
+                    >
+                      {tile.author.slice(6, 7)}
+                    </span>
+                    <span className="text-xs text-white">{tile.author}</span>
+                    <span className="ml-auto text-[11px] text-white/70">{tile.likes} likes</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : (
+      <div className="relative z-10 flex flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        {/* ---------- left sidebar (dashboard) ---------- */}
         <aside
-          className={cn(
-            "h3d-scroll w-full shrink-0 space-y-5",
-            emptyStudio
-              ? "mx-auto my-auto w-full max-w-[560px] rounded-3xl border border-white/10 bg-[#1e1b24]/80 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-6 lg:max-h-[calc(100vh-12.5rem)] lg:w-[560px] lg:overflow-y-auto"
-              : "border-b border-white/8 p-4 sm:p-5 lg:w-[330px] lg:overflow-y-auto lg:border-b-0 lg:border-r",
-          )}
+          className="h3d-scroll w-full shrink-0 space-y-5 border-b border-white/8 p-4 sm:p-5 lg:w-[330px] lg:overflow-y-auto lg:border-b-0 lg:border-r"
           aria-label="Generation controls"
         >
           {/* version selector (reference workspace header) */}
@@ -1843,8 +2635,11 @@ export function Studio({
             </div>
           </aside>
       </div>
+      )}
 
-      {/* ---------- asset rail ---------- */}
+      {/* ---------- asset rail (dashboard state only — the empty landing has
+          its own ASSET section in the page flow) ---------- */}
+      {!emptyStudio && (
       <footer
         className="h3d-scroll flex h-[108px] shrink-0 items-center gap-4 overflow-x-auto border-t border-white/8 bg-[#16121c]/70 px-4 backdrop-blur-md"
         aria-label="Task gallery"
@@ -1874,6 +2669,7 @@ export function Studio({
           onRefresh={() => (rail === "mine" ? void refreshMine() : void refreshFeatured())}
         />
       </footer>
+      )}
 
       {/* effort modal (blueprint §2.3) */}
       <EffortModal

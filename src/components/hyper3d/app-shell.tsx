@@ -30,8 +30,8 @@ interface StudioSeed {
 
 const DEFAULT_SEED: StudioSeed = {
   prompt: "",
-  mode: "text-to-3d",
-  effort: "medium",
+  mode: "image-to-3d",
+  effort: "high",
 };
 
 export function Hyper3DApp() {

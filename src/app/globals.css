@@ -146,17 +146,88 @@
   background-image: linear-gradient(93deg, #8b5cf6 0%, #a855f7 48%, #ec4899 100%);
 }
 
-/* Reference workspace atmosphere: warm plum radial glows over near-black + a
-   faint film-grain noise tile (topmost layer). Applied to the studio root. */
+/* Reference workspace atmosphere (DOM-extracted from hyper3d.ai/workspace/rodin):
+   cool near-black base #121317 + THREE fixed blurred gradient blobs + a faint
+   film-grain noise tile. Blobs are DOM children (.h3d-blob) with exact
+   reference gradients and blur(100px), as in the original. */
 .h3d-studio-bg {
-  background-color: #0b0a0e;
+  background-color: #121317;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E"),
-    radial-gradient(64rem 46rem at 50% -12%, rgba(112, 78, 96, 0.5), transparent 62%),
-    radial-gradient(48rem 36rem at 50% 40%, rgba(68, 52, 78, 0.36), transparent 64%),
-    radial-gradient(90rem 62rem at 50% 122%, rgba(46, 34, 52, 0.44), transparent 66%);
-  background-size: 160px 160px, auto, auto, auto;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  background-repeat: repeat;
+  font-family: "Helvetica Neue", Helvetica, Arial, Roboto, "Segoe UI", Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.h3d-blob {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(100px);
+}
+
+/* Rodin wordmark — the reference's own SVG path, stroke-draws in over 8s then
+   fills white over 2s (starts 2s in), exactly as the original keyframes. */
+@keyframes rodin-stroke {
+  0% {
+    stroke-dasharray: 2257;
+    stroke-dashoffset: 2257;
+  }
+  100% {
+    stroke-dasharray: 2257;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rodin-fill {
+  0% {
+    fill: rgba(0, 0, 0, 0);
+  }
+  100% {
+    fill: rgb(255, 255, 255);
+  }
+}
+
+.rodin-title-animation {
+  stroke: #fff;
+  animation: rodin-stroke 8s linear 0s 1 normal forwards running,
+    rodin-fill 2s linear 2s 1 normal forwards running;
+  fill: rgba(0, 0, 0, 0);
+}
+
+/* GENERATE capsule — reference glass: transparent-centre radial with a subtle
+   white edge ring + backdrop blur 15px; the inner glow is a blurred (20px)
+   terracotta→lilac gradient bar (see .h3d-generate-glow). */
+.h3d-generate-capsule {
+  background: radial-gradient(
+    66.92% 66.92% at 50.23% 50.77%,
+    rgba(211, 211, 211, 0) 0px,
+    rgba(211, 211, 211, 0) 40.67%,
+    rgba(212, 212, 212, 0.14) 75.17%,
+    rgba(212, 212, 212, 0.314) 100%
+  );
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+
+.h3d-generate-glow {
+  background: linear-gradient(90deg, rgba(202, 102, 80, 1) 0%, rgba(185, 138, 207, 1) 100%);
+  border-radius: 22px;
+  filter: blur(20px);
+  transition: width 0.3s, height 0.3s, filter 0.3s;
+}
+
+/* Warm gradient text (lilac→gold) — reference "Text to Image/3D" + hover swaps. */
+.h3d-grad-text-warm {
+  background-image: linear-gradient(106.5deg, rgb(210, 182, 223) 14.93%, rgb(236, 193, 108) 108.64%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Active mode-menu item — reference salmon→lilac 10% tint. */
+.h3d-mode-active {
+  background-image: linear-gradient(92.72deg, rgba(255, 152, 155, 0.1) 1.22%, rgba(216, 161, 241, 0.1) 96.05%);
 }
 
 .h3d-gradient-text {
