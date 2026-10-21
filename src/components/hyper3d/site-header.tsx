@@ -143,7 +143,7 @@ export function SiteHeader({
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
-          <span className="flex size-8 items-center justify-center rounded-lg h3d-gradient-primary shadow-[0_0_18px_rgba(133,132,255,0.45)]">
+          <span className="flex size-8 items-center justify-center rounded-lg h3d-gradient-primary shadow-[0_0_18px_rgba(196,181,253,0.45)]">
             <Box className="size-4.5 text-white" aria-hidden="true" />
           </span>
           <span className="font-display text-lg font-bold tracking-wide text-white">
@@ -258,7 +258,7 @@ export function SiteHeader({
 
           <Button
             size="sm"
-            className="hidden min-h-11 rounded-full h3d-gradient-primary px-4 text-sm font-semibold text-white shadow-[0_0_20px_rgba(133,132,255,0.35)] hover:opacity-90 sm:inline-flex sm:px-5"
+            className="hidden min-h-11 rounded-full h3d-gradient-primary px-4 text-sm font-semibold text-white shadow-[0_0_20px_rgba(196,181,253,0.35)] hover:opacity-90 sm:inline-flex sm:px-5"
             onClick={onStartCreating}
           >
             Start Creating

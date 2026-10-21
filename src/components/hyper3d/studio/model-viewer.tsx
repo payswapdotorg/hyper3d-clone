@@ -363,7 +363,7 @@ export const ModelViewer = forwardRef<ModelViewerHandle, {
       aria-label="3D viewer"
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_38%,rgba(133,132,255,0.13),transparent_70%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_38%,rgba(196,181,253,0.13),transparent_70%)]"
         aria-hidden="true"
       />
     </div>

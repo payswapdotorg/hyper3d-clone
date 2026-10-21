@@ -29,7 +29,7 @@ export function Research() {
   return (
     <section id="research" aria-label="Research" className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(46rem_26rem_at_50%_115%,rgba(74,0,224,0.22),transparent_65%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(46rem_26rem_at_50%_115%,rgba(139,92,246,0.24),transparent_65%)]"
         aria-hidden="true"
       />
       <div className="relative mx-auto max-w-5xl px-4 text-center sm:px-6">
