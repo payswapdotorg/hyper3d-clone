@@ -23,14 +23,17 @@ import {
   Coins,
   Dices,
   Download,
+  Eye,
   Globe,
   Image as ImageIcon,
+  Layers,
   Loader2,
   Palette,
   Pause,
   PencilRuler,
   Plus,
   RotateCw,
+  Sparkles,
   Triangle,
   Type,
   Upload,
@@ -53,15 +56,27 @@ import { TaskRail, type RailTask } from "./task-rail";
 import type { UserInfo } from "@/lib/use-session";
 import type { CaptionResult } from "@/lib/caption";
 import {
+  BATCH_MAX,
+  CREATION_MODES,
   EFFORTS,
   EXPORT_FORMATS,
   FORMAT_USES,
   GEN_VERSION,
+  GEN_VERSIONS,
   GENERATING_MODES,
   GEN_MODES,
+  LEGACY_MODES,
+  MATERIALS,
+  PROMPT_PRESETS,
+  REDO_QUOTAS,
   nameForPrompt,
+  redoLabel,
+  type CreationModeId,
   type EffortId,
   type GenMode,
+  type GenVersionId,
+  type LegacyModeId,
+  type MaterialId,
 } from "@/lib/hyper3d";
 import { cn } from "@/lib/utils";
 import type { TextureMode } from "./model-viewer";
@@ -73,7 +88,13 @@ import {
   type ViewDirection,
 } from "@/lib/neural-client";
 import { paintVertexColors, type PaintSource } from "@/lib/texture-paint";
-import { VIEW_DIRECTIONS } from "@/lib/direction-picker";
+import {
+  DIRECTION_LABELS,
+  DIRECTION_SHORT,
+  ENGINE_SLOT_OF,
+  IMAGE_LABELS,
+  VIEW_DIRECTIONS,
+} from "@/lib/direction-picker";
 import { exportModel } from "@/lib/exporters";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { SimplifyModifier } from "three/examples/jsm/modifiers/SimplifyModifier.js";
@@ -112,13 +133,6 @@ const TEXTURE_MODES: { id: TextureMode; label: string }[] = [
 /** Live-viewer chunk budget: 50k chunks keeps the painted GLB comfortably
  * under the 2MB storage cap in practice; a simplify pass is the safety net. */
 const NEURAL_LIVE_CHUNKS = 50_000;
-
-const DIRECTION_LABELS: Record<ViewDirection, string> = {
-  front: "Front",
-  back: "Back",
-  left: "Left",
-  right: "Right",
-};
 
 /** Read a File into the RGBA PaintSource the texture painter samples. */
 async function imageToPaintSource(file: File): Promise<PaintSource> {
@@ -234,6 +248,15 @@ export function Studio({
   const [effortModalOpen, setEffortModalOpen] = useState(false);
   const [agenticModalShown, setAgenticModalShown] = useState(false);
 
+  /* ---- workspace parity options (reference surface, 2026-10-20) ---- */
+  const [genVersion, setGenVersion] = useState<GenVersionId>("gen-2.5");
+  const [legacyMode, setLegacyMode] = useState<LegacyModeId>("default");
+  const [material, setMaterial] = useState<MaterialId>("pbr");
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [creationMode, setCreationMode] = useState<CreationModeId>("generate-objects");
+  const [presetsOpen, setPresetsOpen] = useState(false);
+  const [redoBusy, setRedoBusy] = useState<"geometry" | "material" | null>(null);
+
   const [prompt, setPrompt] = useState(initial.prompt);
   const [upload, setUpload] = useState<{ dataUrl: string; name: string; file: File } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -262,15 +285,26 @@ export function Studio({
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 65536));
   const [lockSeed, setLockSeed] = useState(false);
   const [extraViews, setExtraViews] = useState<
-    { direction: ViewDirection; dataUrl: string; file: File }[]
+    { direction: import("@/lib/direction-picker").ViewDirection; dataUrl: string; file: File }[]
   >([]);
   const [neuralBusy, setNeuralBusy] = useState(false);
   const [neuralMessage, setNeuralMessage] = useState<string | null>(null);
   const [neuralElapsed, setNeuralElapsed] = useState(0);
   const neuralAbortRef = useRef<AbortController | null>(null);
   const [confirming, setConfirming] = useState(false);
+  /** Latest stored neural mesh bytes (for client-side material redo). */
+  const lastMeshBytesRef = useRef<Uint8Array | null>(null);
 
-  const neuralTier = mode === "image-to-3d" && !agentic && tier === "quality";
+  /** Neural engine = Gen-2.5 Quality tier only. Gen-1.5 runs the standard
+   * pipeline (honest product-line difference), and Agentic is Gen-2.5-only. */
+  const neuralTier = genVersion === "gen-2.5" && mode === "image-to-3d" && !agentic && tier === "quality";
+  const agenticAvailable = genVersion === "gen-2.5";
+  const effectiveEffort: EffortId =
+    genVersion === "gen-1.5" ? (LEGACY_MODES.find((m) => m.id === legacyMode)?.effort ?? "medium") : effort;
+  const redoQuota = {
+    geometry: user?.redo?.geometry ?? REDO_QUOTAS.geometry,
+    material: user?.redo?.material ?? REDO_QUOTAS.material,
+  };
 
   useEffect(() => {
     return () => {
@@ -448,9 +482,20 @@ export function Studio({
       };
       try {
         await postProgress(uuid, "Contacting the neural engine…", 5, "upload");
+        // Map the 11 reference direction labels onto the engine's four
+        // mv_image slots (first-in-reading-order wins per slot; the rest stay
+        // recorded on the task card as image_labels).
+        const engineViews: { direction: ViewDirection; blob: File }[] = [];
+        const takenSlots = new Set<ViewDirection>();
+        for (const v of extraViews) {
+          const slot = ENGINE_SLOT_OF[v.direction] as ViewDirection | null;
+          if (!slot || takenSlots.has(slot)) continue;
+          takenSlots.add(slot);
+          engineViews.push({ direction: slot, blob: v.file });
+        }
         const result = await generateNeuralMesh({
           image: upload.file,
-          views: extraViews.map((v) => ({ direction: v.direction, blob: v.file })),
+          views: engineViews,
           seed: seedUsed,
           numChunks: NEURAL_LIVE_CHUNKS,
           signal: ac.signal,
@@ -462,11 +507,13 @@ export function Studio({
           },
         });
 
-        setNeuralMessage("Painting texture from your image…");
-        await postProgress(uuid, "Painting texture from your image…", 72, "paint");
+        setNeuralMessage(material === "none" ? "Skipping texture pass (material: none)…" : "Painting texture from your image…");
+        await postProgress(uuid, material === "none" ? "Skipping texture pass…" : "Painting texture from your image…", 72, "paint");
         const root = await parseGlbBytes(result.meshBytes);
-        const source = await imageToPaintSource(upload.file);
-        paintVertexColors(root, source, { palette: caption?.palette ?? [] });
+        if (material !== "none") {
+          const source = await imageToPaintSource(upload.file);
+          paintVertexColors(root, source, { palette: caption?.palette ?? [] });
+        }
 
         setNeuralMessage("Saving your model…");
         await postProgress(uuid, "Saving your model…", 88, "save");
@@ -475,6 +522,7 @@ export function Studio({
           await simplifySceneTo(root, 14_000);
           stored = (await exportModel(root, "glb")).bytes;
         }
+        lastMeshBytesRef.current = stored;
         const elapsedSeconds = (performance.now() - t0) / 1000;
         const mr = await fetch(`/api/task/${uuid}/mesh`, {
           method: "POST",
@@ -527,7 +575,7 @@ export function Studio({
         finish();
       }
     },
-    [upload, extraViews, caption, postProgress, stopPolling, refreshMine],
+    [upload, extraViews, caption, material, postProgress, stopPolling, refreshMine],
   );
 
   const cancelNeural = useCallback(() => {
@@ -535,7 +583,7 @@ export function Studio({
   }, []);
 
   const createTask = useCallback(
-    async (effortForTask: EffortId) => {
+    async (effortForTask?: EffortId) => {
       if (!user) {
         onNeedAuth("Sign in to generate — your first preview is free.");
         return;
@@ -561,16 +609,25 @@ export function Studio({
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            type: agentic ? "RodinAgentic" : "RodinStandard",
+            type: agentic && agenticAvailable ? "RodinAgentic" : "RodinStandard",
             prompt: promptText || "A 3D object from the uploaded reference.",
-            effort: effortForTask,
+            effort: effortForTask ?? effectiveEffort,
             ...(upload ? { image: upload.dataUrl } : {}),
             ...(useNeural || tier === "fast"
               ? { engine: useNeural ? "neural" : "fast", seed: seedUsed }
               : {}),
             ...(useNeural && extraViews.length > 0
-              ? { mvImages: extraViews.map((v) => v.dataUrl) }
+              ? {
+                  mvImages: extraViews.map((v) => v.dataUrl),
+                  imageLabels: extraViews.map((v) => IMAGE_LABELS[v.direction]),
+                }
               : {}),
+            // workspace parity options
+            genVersion,
+            ...(genVersion === "gen-1.5" ? { legacyMode } : {}),
+            material,
+            isPrivate,
+            ...(mode === "worldgen" ? { creationMode } : {}),
           }),
         });
         if (res.status === 401) {
@@ -591,8 +648,8 @@ export function Studio({
         if (useNeural) {
           void runNeuralPipeline(body.uuid, seedUsed);
         } else {
-          toast.success(agentic ? "Agentic task started" : "Task queued", {
-            description: `${EFFORTS.find((e) => e.id === effortForTask)?.label} effort · uuid ${body.uuid.slice(0, 8)}…`,
+          toast.success(agentic && agenticAvailable ? "Agentic task started" : "Task queued", {
+            description: `${EFFORTS.find((e) => e.id === (effortForTask ?? effectiveEffort))?.label} effort · uuid ${body.uuid.slice(0, 8)}…`,
           });
         }
       } catch (err) {
@@ -603,7 +660,7 @@ export function Studio({
         setCreating(false);
       }
     },
-    [user, prompt, upload, mode, agentic, neuralTier, tier, seed, lockSeed, extraViews, startPolling, runNeuralPipeline, onNeedAuth, onSessionRefresh],
+    [user, prompt, upload, mode, agentic, agenticAvailable, neuralTier, tier, seed, lockSeed, extraViews, genVersion, legacyMode, material, isPrivate, creationMode, effectiveEffort, startPolling, runNeuralPipeline, onNeedAuth, onSessionRefresh],
   );
 
   /** Pay-by-result confirm gate: charges exactly 1 credit, unlocks exports. */
@@ -643,6 +700,98 @@ export function Studio({
       setConfirming(false);
     }
   }, [activeTask, confirming, onSessionRefresh, refreshMine, user]);
+
+  /** Reference task-card redos, quota-gated: geometry re-generates with a
+   * fresh seed (a new free-preview task), material re-paints the stored
+   * mesh from the reference image client-side and re-POSTs it. */
+  const handleRedo = useCallback(
+    async (kind: "geometry" | "material") => {
+      if (!activeTask || redoBusy) return;
+      setRedoBusy(kind);
+      try {
+        const res = await fetch(`/api/task/${activeTask}/redo`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ kind }),
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          task_uuid?: string;
+          seed?: number;
+          engine?: string;
+          client_pipeline?: boolean;
+          left?: number;
+          error?: string;
+          detail?: string;
+        };
+        if (res.status === 402) {
+          toast.error(kind === "geometry" ? "Geometry redos used up" : "Material redos used up", {
+            description: "The redo quota for this plan is exhausted.",
+          });
+          return;
+        }
+        if (res.status === 409) {
+          toast.info("Material redo needs a reference image", {
+            description: body.detail ?? "Material redo re-paints from the reference image.",
+          });
+          return;
+        }
+        if (!res.ok || !body.ok) throw new Error(body.error ?? `redo failed (${res.status})`);
+
+        if (kind === "geometry" && body.task_uuid) {
+          toast.success("Redoing geometry", {
+            description: `Fresh seed ${body.seed ?? "—"} · free preview · ${body.left} geometry redos left`,
+          });
+          startPolling(body.task_uuid);
+          if (body.client_pipeline) {
+            if (body.seed !== undefined) setSeed(body.seed);
+            void runNeuralPipeline(body.task_uuid, body.seed ?? seed);
+          }
+        } else if (kind === "material") {
+          // Client-side re-paint of the in-session mesh from the reference.
+          const stored = lastMeshBytesRef.current;
+          const ref = upload?.file ?? null;
+          if (!stored || !ref) {
+            toast.info("Material redo needs the live mesh", {
+              description: "Generate with the neural engine in this session, then redo the material — the re-paint runs in your browser.",
+            });
+            return;
+          }
+          const root = await parseGlbBytes(stored);
+          const source = await imageToPaintSource(ref);
+          paintVertexColors(root, source, { palette: caption?.palette ?? [] });
+          const bytes = (await exportModel(root, "glb")).bytes;
+          lastMeshBytesRef.current = bytes;
+          const mr = await fetch(`/api/task/${activeTask}/mesh`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              mesh: uint8ToBase64(bytes),
+              engineUsed: "neural",
+              seed,
+              elapsedSeconds: 1,
+            }),
+          });
+          if (!mr.ok) throw new Error(`mesh re-save failed (${mr.status})`);
+          setViewerUrl(URL.createObjectURL(new Blob([bytes.buffer as ArrayBuffer], { type: "model/gltf-binary" })));
+          toast.success("Material redone", {
+            description: `Re-painted from your reference image · ${body.left} material redos left`,
+          });
+          const cardRes = await fetch(`/api/task/card/${activeTask}`, { cache: "no-store" });
+          if (cardRes.ok) setCard((await cardRes.json()) as TaskCard);
+        }
+        onSessionRefresh();
+        void refreshMine();
+      } catch (err) {
+        toast.error("Redo failed", {
+          description: err instanceof Error ? err.message : "Please try again.",
+        });
+      } finally {
+        setRedoBusy(null);
+      }
+    },
+    [activeTask, redoBusy, startPolling, runNeuralPipeline, upload, caption, seed, onSessionRefresh, refreshMine],
+  );
 
   const handleGenerate = useCallback(() => {
     if (creating) return;
@@ -785,6 +934,36 @@ export function Studio({
           className="h3d-scroll w-full shrink-0 space-y-5 border-b border-white/8 p-4 sm:p-5 lg:w-[330px] lg:overflow-y-auto lg:border-b-0 lg:border-r"
           aria-label="Generation controls"
         >
+          {/* version selector (reference workspace header) */}
+          <fieldset>
+            <legend className="mb-2 font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Version</legend>
+            <div
+              className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
+              role="radiogroup"
+              aria-label="Generator version"
+            >
+              {GEN_VERSIONS.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={genVersion === v.id}
+                  onClick={() => {
+                    setGenVersion(v.id);
+                    if (v.id === "gen-1.5") setAgentic(false);
+                  }}
+                  className={cn(
+                    "min-h-11 rounded-lg px-2 text-center transition-colors",
+                    genVersion === v.id ? "bg-h3d-purple/25 text-white" : "text-white/50 hover:text-white",
+                  )}
+                >
+                  <span className="block text-xs font-semibold">{v.label}</span>
+                  <span className="block font-mono text-[9px] text-white/40">{genVersion === v.id ? v.note : "\u00a0"}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
           <fieldset>
             <legend className="mb-2 font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Mode</legend>
             <div className="space-y-1.5">
@@ -823,26 +1002,64 @@ export function Studio({
             </div>
           </fieldset>
 
-          {/* agentic toggle */}
-          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <Zap className={cn("size-4", agentic ? "text-h3d-gold" : "text-white/40")} aria-hidden="true" />
+          {/* agentic toggle (Gen-2.5 only — agentic shipped with the 2.5 line) */}
+          {agenticAvailable ? (
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+              <div className="flex items-center gap-2">
+                <Zap className={cn("size-4", agentic ? "text-h3d-gold" : "text-white/40")} aria-hidden="true" />
+                <div>
+                  <p className="text-sm font-medium text-white">Agentic Mode</p>
+                  <p className="font-mono text-[10px] text-h3d-muted">
+                    {agentic ? "10 credits · effort picker on generate" : "0.5–1 credit · fast pass"}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={agentic}
+                onCheckedChange={setAgentic}
+                aria-label="Toggle agentic generation mode"
+                className="data-[state=checked]:bg-h3d-purple"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 opacity-60">
+              <Zap className="size-4 text-white/30" aria-hidden="true" />
               <div>
-                <p className="text-sm font-medium text-white">Agentic Mode</p>
-                <p className="font-mono text-[10px] text-h3d-muted">
-                  {agentic ? "10 credits · effort picker on generate" : "0.5–1 credit · fast pass"}
-                </p>
+                <p className="text-sm font-medium text-white/60">Agentic Mode</p>
+                <p className="font-mono text-[10px] text-white/35">Gen-2.5 line only — switch the version to enable</p>
               </div>
             </div>
-            <Switch
-              checked={agentic}
-              onCheckedChange={setAgentic}
-              aria-label="Toggle agentic generation mode"
-              className="data-[state=checked]:bg-h3d-purple"
-            />
-          </div>
+          )}
 
-          {/* effort */}
+          {/* effort — Gen-2.5: five efforts; Gen-1.5: Default / Speedy */}
+          {genVersion === "gen-1.5" ? (
+            <div className="space-y-2.5">
+              <Label className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Mode</Label>
+              <div
+                className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
+                role="radiogroup"
+                aria-label="Generation mode (Gen-1.5)"
+              >
+                {LEGACY_MODES.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={legacyMode === m.id}
+                    onClick={() => setLegacyMode(m.id)}
+                    className={cn(
+                      "min-h-11 rounded-lg px-2 text-center transition-colors",
+                      legacyMode === m.id ? "bg-h3d-purple/25 text-white" : "text-white/50 hover:text-white",
+                    )}
+                  >
+                    <span className="block text-xs font-semibold">{m.label}</span>
+                    <span className="block font-mono text-[9px] text-white/40">{m.blurb}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="font-mono text-[9px] text-white/30">Gen-1.5 V1.2 maps Default→Medium, Speedy→Low effort.</p>
+            </div>
+          ) : (
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <Label className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Thinking Effort</Label>
@@ -869,6 +1086,7 @@ export function Studio({
               ))}
             </div>
           </div>
+          )}
 
           {/* upload (image mode) */}
           {mode === "image-to-3d" && (
@@ -946,17 +1164,18 @@ export function Studio({
                 </div>
               )}
 
-              {/* direction picker — optional extra views (Quality tier) */}
+              {/* direction picker — 11 reference labels, optional extra views (Quality tier) */}
               <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2.5">
                 <div className="flex items-center justify-between">
                   <p className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                    Extra views <span className="text-white/30">(optional)</span>
+                    Extra views <span className="text-white/30">(optional · pose-free)</span>
                   </p>
                   <span className="font-mono text-[10px] text-white/35">{extraViews.length}/4</span>
                 </div>
                 <div className="mt-2 grid grid-cols-4 gap-1.5">
                   {VIEW_DIRECTIONS.map((dir) => {
                     const existing = extraViews.find((v) => v.direction === dir);
+                    const engineFed = ENGINE_SLOT_OF[dir] !== null;
                     return existing ? (
                       <div key={dir} className="group relative">
                         <img
@@ -965,7 +1184,7 @@ export function Studio({
                           className="h-12 w-full rounded-md border border-h3d-purple/50 object-cover"
                         />
                         <span className="absolute inset-x-0 bottom-0 rounded-b-md bg-black/70 px-1 py-0.5 text-center font-mono text-[8px] uppercase text-white/80">
-                          {DIRECTION_LABELS[dir]}
+                          {DIRECTION_SHORT[dir]}
                         </span>
                         <button
                           type="button"
@@ -979,11 +1198,14 @@ export function Studio({
                     ) : (
                       <label
                         key={dir}
-                        className="flex h-12 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-white/15 text-white/40 transition-colors hover:border-h3d-purple/50 hover:text-white/70"
-                        title={`Add a ${DIRECTION_LABELS[dir]} view (improves neural reconstruction)`}
+                        className={cn(
+                          "flex h-12 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed text-white/40 transition-colors hover:border-h3d-purple/50 hover:text-white/70",
+                          engineFed ? "border-white/15" : "border-white/10",
+                        )}
+                        title={`Add a ${DIRECTION_LABELS[dir]} view${engineFed ? " (fed to the neural engine's " + ENGINE_SLOT_OF[dir] + " slot)" : " (recorded on the task card; no engine slot)"}`}
                       >
-                        <Plus className="size-3.5" aria-hidden="true" />
-                        <span className="font-mono text-[8px] uppercase">{DIRECTION_LABELS[dir]}</span>
+                        <Plus className="size-3" aria-hidden="true" />
+                        <span className="font-mono text-[8px] uppercase">{DIRECTION_SHORT[dir]}</span>
                         <input
                           type="file"
                           accept="image/png,image/jpeg,image/webp"
@@ -992,6 +1214,10 @@ export function Studio({
                             const file = e.target.files?.[0];
                             e.target.value = "";
                             if (!file) return;
+                            if (extraViews.length >= 4) {
+                              toast.info("Up to 4 extra views", { description: "The engine takes 1 main image + up to 4 views (5 total)." });
+                              return;
+                            }
                             const reader = new FileReader();
                             reader.onload = () => {
                               const dataUrl = String(reader.result);
@@ -1008,17 +1234,78 @@ export function Studio({
                   })}
                 </div>
                 <p className="mt-1.5 font-mono text-[9px] leading-relaxed text-white/30">
-                  More views = better neural reconstruction. Skip for the pose-free single-image flow.
+                  11 reference labels (F/FL/FR/L/UP/R/BL/B/BR/DN/?). Front·Back·Left·Right feed the
+                  engine directly; diagonal/up/down are recorded on the task card. Unknown (?) is the
+                  reference default — skip freely, one image is enough.
                 </p>
               </div>
             </div>
           )}
 
-          {/* prompt */}
+          {/* creation mode (WorldGen tab — reference selector) */}
+          {mode === "worldgen" && (
+            <div className="space-y-2">
+              <Label className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Creation Mode</Label>
+              <div className="space-y-1.5" role="radiogroup" aria-label="Creation mode">
+                {CREATION_MODES.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={creationMode === c.id}
+                    onClick={() => setCreationMode(c.id)}
+                    className={cn(
+                      "flex min-h-11 w-full items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition-all",
+                      creationMode === c.id
+                        ? "border-h3d-purple/55 bg-h3d-purple/12 text-white"
+                        : "border-white/8 bg-white/[0.03] text-white/65 hover:border-white/20 hover:text-white",
+                    )}
+                  >
+                    <Layers className={cn("size-4 shrink-0", creationMode === c.id && "text-h3d-purple")} aria-hidden="true" />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">{c.label}</span>
+                      <span className="block truncate font-mono text-[10px] text-white/40">{c.blurb}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* prompt + presets */}
           <div className="space-y-2">
-            <Label htmlFor="studio-prompt" className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">
-              Prompt {upload && <span className="text-white/35">(optional guidance)</span>}
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="studio-prompt" className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">
+                Prompt {upload && <span className="text-white/35">(optional guidance)</span>}
+              </Label>
+              <button
+                type="button"
+                aria-expanded={presetsOpen}
+                onClick={() => setPresetsOpen((v) => !v)}
+                className="flex min-h-9 items-center gap-1 font-mono text-[11px] text-h3d-violet underline-offset-2 hover:underline"
+              >
+                <Sparkles className="size-3" aria-hidden="true" /> Presets
+              </button>
+            </div>
+            {presetsOpen && (
+              <div className="flex flex-wrap gap-1.5">
+                {PROMPT_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      setPrompt(p.prompt);
+                      setEffort(p.effort);
+                      setPresetsOpen(false);
+                      toast.success(`Preset applied — ${p.label}`, { description: `${p.effort} effort suggested.` });
+                    }}
+                    className="min-h-9 rounded-full border border-white/12 bg-white/[0.04] px-2.5 font-mono text-[10px] text-white/75 transition-colors hover:border-h3d-purple/50 hover:bg-h3d-purple/12 hover:text-white"
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <Textarea
               id="studio-prompt"
               value={prompt}
@@ -1027,6 +1314,37 @@ export function Studio({
               rows={4}
               className="resize-none border-white/12 bg-white/4 text-sm placeholder:text-white/40"
             />
+          </div>
+
+          {/* material selector (reference Gen-2.5 API surface) */}
+          <div className="space-y-2">
+            <Label className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Material</Label>
+            <div
+              className="grid grid-cols-4 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
+              role="radiogroup"
+              aria-label="Material pass"
+            >
+              {MATERIALS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={material === m.id}
+                  onClick={() => setMaterial(m.id)}
+                  title={m.blurb}
+                  className={cn(
+                    "min-h-11 rounded-lg px-1 text-center transition-colors",
+                    material === m.id ? "bg-h3d-purple/25 text-white" : "text-white/50 hover:text-white",
+                  )}
+                >
+                  <span className="block text-xs font-semibold">{m.label}</span>
+                </button>
+              ))}
+            </div>
+            <p className="font-mono text-[9px] text-white/30">
+              {MATERIALS.find((m) => m.id === material)?.blurb}
+              {material === "none" && " — the neural pipeline skips its texture pass."}
+            </p>
           </div>
 
           {/* engine tier + seed + generate */}
@@ -1098,6 +1416,41 @@ export function Studio({
                 <Dices className={cn("size-4", lockSeed ? "text-h3d-purple" : "text-white/50")} aria-hidden="true" />
               </Button>
             </div>
+            {/* private task + batch size (reference input-card rows) */}
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <Eye className={cn("size-4 shrink-0", isPrivate ? "text-h3d-purple" : "text-white/40")} aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-white">Private</p>
+                  <p className="truncate font-mono text-[10px] text-h3d-muted">
+                    {isPrivate ? "hidden from the public gallery" : "visible in the gallery (default)"}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={isPrivate}
+                onCheckedChange={setIsPrivate}
+                aria-label="Toggle private task"
+                className="data-[state=checked]:bg-h3d-purple"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                toast.info("Batch is a Business plan feature", {
+                  description: `The reference gates fast-mode batch (up to ${BATCH_MAX} variations/run, pay only for what you download) to the Business plan — the Free workspace keeps batch size 1, as does this clone (honest gate).`,
+                  duration: 8000,
+                })
+              }
+              className="flex min-h-11 w-full items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2 text-left opacity-70 transition-colors hover:border-white/20"
+              aria-label="Batch size — Business plan feature"
+            >
+              <span className="flex items-center gap-2">
+                <Layers className="size-4 text-white/35" aria-hidden="true" />
+                <span className="text-sm font-medium text-white/70">Batch size 1</span>
+              </span>
+              <span className="rounded border border-h3d-gold/40 px-1.5 py-0.5 font-mono text-[9px] uppercase text-h3d-gold">Business</span>
+            </button>
             {neuralBusy && (
               <div className="flex items-center gap-2 rounded-lg border border-h3d-purple/30 bg-h3d-purple/8 px-3 py-2">
                 <Loader2 className="size-3.5 shrink-0 animate-spin text-h3d-purple" aria-hidden="true" />
@@ -1393,6 +1746,38 @@ export function Studio({
                     {turntableRecording ? "Recording orbit…" : "Turntable · WebM"}
                   </Button>
                 </>
+              )}
+
+              {/* redos (reference task-card surface, quota-gated) */}
+              {complete && (
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-h-11 border-white/12 bg-white/4 font-mono text-[11px] font-medium text-white/85 hover:border-h3d-purple/50 hover:bg-h3d-purple/12"
+                    disabled={redoBusy !== null || redoQuota.geometry <= 0}
+                    title={redoQuota.geometry > 0 ? "Re-generate the geometry with a fresh seed — a new free preview" : "Geometry redo quota exhausted"}
+                    onClick={() => void handleRedo("geometry")}
+                  >
+                    {redoBusy === "geometry" ? <Loader2 className="size-3.5 animate-spin text-h3d-purple" aria-hidden="true" /> : <RotateCw className="size-3.5 text-h3d-purple" aria-hidden="true" />}
+                    {redoLabel("geometry", redoQuota.geometry)}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-h-11 border-white/12 bg-white/4 font-mono text-[11px] font-medium text-white/85 hover:border-h3d-purple/50 hover:bg-h3d-purple/12"
+                    disabled={redoBusy !== null || redoQuota.material <= 0 || !lastMeshBytesRef.current || !upload}
+                    title={
+                      lastMeshBytesRef.current && upload
+                        ? "Re-paint the material from your reference image (in-browser)"
+                        : "Material redo runs in-browser on the live neural mesh — generate with the neural engine in this session first"
+                    }
+                    onClick={() => void handleRedo("material")}
+                  >
+                    {redoBusy === "material" ? <Loader2 className="size-3.5 animate-spin text-h3d-purple" aria-hidden="true" /> : <Palette className="size-3.5 text-h3d-purple" aria-hidden="true" />}
+                    {redoLabel("material", redoQuota.material)}
+                  </Button>
+                </div>
               )}
               {!complete && (
                 <p className="mt-2 font-mono text-[10px] text-white/35">Exports unlock when the preview is ready.</p>

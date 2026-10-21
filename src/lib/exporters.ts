@@ -14,6 +14,7 @@ import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter.js";
 import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
+import { exportAsciiFbx } from "./exporters-fbx";
 
 /* ------------------------- FileReader polyfill (server) ------------------------- */
 
@@ -62,9 +63,9 @@ function ensureFileReader(): void {
 
 /* ------------------------------ export API ------------------------------ */
 
-export type ExportFormat = "glb" | "gltf" | "obj" | "stl" | "usdz";
+export type ExportFormat = "glb" | "gltf" | "fbx" | "obj" | "stl" | "usdz";
 
-export const EXPORT_FORMATS: ExportFormat[] = ["glb", "gltf", "obj", "stl", "usdz"];
+export const EXPORT_FORMATS: ExportFormat[] = ["glb", "gltf", "fbx", "obj", "stl", "usdz"];
 
 export interface ExportResult {
   bytes: Uint8Array;
@@ -103,6 +104,7 @@ function gltfFromExporter(group: THREE.Object3D): Promise<string> {
  *
  *   glb  — binary glTF container (magic 0x46546C67, JSON + BIN chunks)
  *   gltf — glTF 2.0 JSON with embedded base64 buffer
+ *   fbx  — ASCII FBX 7.3 (exporters-fbx.ts — geometry/normals/UVs/colors)
  *   obj  — Wavefront OBJ text (v/f lines)
  *   stl  — binary STL (80-byte header + uint32 triangle count + 50B/tri)
  *   usdz — zip archive containing a .usda scene
@@ -121,6 +123,14 @@ export async function exportModel(group: THREE.Object3D, format: ExportFormat): 
         bytes: new TextEncoder().encode(json),
         contentType: "model/gltf+json",
         ext: "gltf",
+      };
+    }
+    case "fbx": {
+      const text = exportAsciiFbx(group);
+      return {
+        bytes: new TextEncoder().encode(text),
+        contentType: "application/octet-stream",
+        ext: "fbx",
       };
     }
     case "obj": {

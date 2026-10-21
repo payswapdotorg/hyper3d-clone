@@ -92,6 +92,17 @@ export function buildTaskCard(task: TaskCardRow, author: Pick<User, "id" | "user
   if (typeof task.seed === "number" && task.seed !== 0) settingsOut.seed = task.seed;
   if (task.confirmedAt) settingsOut.confirmed = true;
 
+  // Workspace-parity options (reference surface, 2026-10-20): product line,
+  // legacy mode name, material pass, multiview image_labels, creation mode,
+  // and the redo lineage — all stored at creation, surfaced on the card.
+  if (typeof settings.gen_version === "string") settingsOut.gen_version = settings.gen_version;
+  if (typeof settings.legacy_mode === "string") settingsOut.legacy_mode = settings.legacy_mode;
+  if (typeof settings.material === "string") settingsOut.material = settings.material;
+  if (Array.isArray(settings.image_labels)) settingsOut.image_labels = settings.image_labels;
+  if (typeof settings.creation_mode === "string") settingsOut.creation_mode = settings.creation_mode;
+  if (typeof settings.redo_of === "string") settingsOut.redo_of = settings.redo_of;
+  if (typeof settings.mv_image_count === "number") settingsOut.mv_image_count = settings.mv_image_count;
+
   const versions = complete
     ? {
         v3: {

@@ -19,6 +19,8 @@ export interface UserInfo {
   has_complete_order: boolean;
   has_purchase_credit: boolean;
   preferences: Record<string, unknown>;
+  /** Redo quotas (reference Creator tier: geometry ×20 / material ×6). */
+  redo?: { geometry: number; material: number };
   subscriptions: Record<string, unknown>;
   privileges: string[];
   features: string[];

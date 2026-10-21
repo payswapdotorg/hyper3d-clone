@@ -33,18 +33,100 @@ export const EFFORTS: { id: EffortId; label: string; seconds: number; blurb: str
   { id: "extreme-high", label: "Extreme-High", seconds: 80, blurb: "Maximum fidelity, full pass" },
 ];
 
-export const EXPORT_FORMATS = ["GLB", "GLTF", "OBJ", "STL", "USDZ"] as const;
+export const EXPORT_FORMATS = ["GLB", "GLTF", "FBX", "OBJ", "STL", "USDZ"] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 export const FORMAT_USES: Record<(typeof EXPORT_FORMATS)[number], string> = {
   GLB: "Web & AR",
   GLTF: "Web & AR",
+  FBX: "Unity & Unreal",
   OBJ: "Editing",
   STL: "Printing",
   USDZ: "Apple AR",
 };
 
 export const GEN_VERSION = "Gen-2.5 Agent-Ready";
+
+/* ---------------------- workspace version selector ---------------------- */
+
+/** Reference workspace header: a version selector between the Gen-1.5 and
+ * Gen-2.5 product lines. Selecting the legacy line swaps the five-effort
+ * slider for the Gen-2 era Default / Speedy modes and disables Agentic
+ * (agentic shipped with Gen-2.5) — an honest pipeline difference, not just
+ * a label change. */
+export type GenVersionId = "gen-1.5" | "gen-2.5";
+
+export const GEN_VERSIONS: { id: GenVersionId; label: string; note: string }[] = [
+  { id: "gen-1.5", label: "Gen-1.5 V1.2", note: "Default / Speedy · standard pipeline" },
+  { id: "gen-2.5", label: "Gen-2.5 Agent-Ready", note: "5 efforts · agentic · neural engine" },
+];
+
+/** Gen-2 era mode names (reference: hyper3d.ai blog, Feb 2026). */
+export type LegacyModeId = "default" | "speedy";
+
+export const LEGACY_MODES: { id: LegacyModeId; label: string; blurb: string; effort: EffortId }[] = [
+  { id: "default", label: "Default", blurb: "Balanced results", effort: "medium" },
+  { id: "speedy", label: "Speedy", blurb: "Quick drafts", effort: "low" },
+];
+
+/* --------------------------- material selector -------------------------- */
+
+/** Reference Gen-2.5 API: material = PBR | Shaded | All | None. Our honest
+ * mapping: PBR keeps the full vertex-color + material pass; Shaded keeps the
+ * baked-color paint only; All runs both (PBR maps + shaded fallback); None
+ * skips the texture pass entirely (fastest preview, bare mesh). */
+export type MaterialId = "pbr" | "shaded" | "all" | "none";
+
+export const MATERIALS: { id: MaterialId; label: string; blurb: string }[] = [
+  { id: "pbr", label: "PBR", blurb: "Full material pass" },
+  { id: "shaded", label: "Shaded", blurb: "Baked color only" },
+  { id: "all", label: "All", blurb: "PBR + shaded set" },
+  { id: "none", label: "None", blurb: "Skip texture — fastest" },
+];
+
+/* ------------------------------- presets -------------------------------- */
+
+/** Reference effort-modal showcase categories, surfaced as one-click prompt
+ * presets (prompt seed + a suggested effort tier). */
+export const PROMPT_PRESETS: { id: string; label: string; prompt: string; effort: EffortId }[] = [
+  { id: "gaming", label: "3A Gaming", prompt: "a heavy fantasy greatsword, engraved fuller, worn steel with gold inlay, game-ready proportions", effort: "high" },
+  { id: "product", label: "Product Mockup", prompt: "a minimalist ceramic coffee mug, matte glaze, soft studio lighting, clean product-shot silhouette", effort: "medium" },
+  { id: "hardsurface", label: "Hard-Surface", prompt: "a rugged quad-rotor recon drone, matte panels, worn metal, hard-surface panel lines, antenna mast", effort: "high" },
+  { id: "character", label: "Character Creation", prompt: "a stylized knight helmet with a red plume, battle-worn steel, ornate visor slits", effort: "high" },
+  { id: "premium", label: "Premium Showcase", prompt: "a glossy red apple with a short brown stem, hero-asset finish, immaculate surface", effort: "medium" },
+  { id: "virtualprod", label: "Virtual Production", prompt: "a wooden loot chest with iron bands, lid slightly open, film-set practical prop detail", effort: "medium" },
+];
+
+/* ----------------------------- creation modes ---------------------------- */
+
+/** Reference WorldGen creation-mode selector. Stored on the task; WorldGen
+ * generation itself remains an honest "coming soon" in this clone. */
+export type CreationModeId = "build-myself" | "generate-objects" | "complete-scene";
+
+export const CREATION_MODES: { id: CreationModeId; label: string; blurb: string }[] = [
+  { id: "build-myself", label: "Build Myself", blurb: "Manual — you place and edit every part" },
+  { id: "generate-objects", label: "Generate Objects", blurb: "AI Assist — generated 3D objects, you compose" },
+  { id: "complete-scene", label: "Complete Scene", blurb: "Full AI — scene + 3D Gaussian environment" },
+];
+
+/* --------------------------------- batch --------------------------------- */
+
+/** Reference fast-mode batch: up to 10 variations per run — gated to the
+ * Business plan in the reference UI. Our clone mirrors the gate honestly:
+ * the control is visible and plan-locked (Free tier), exactly like the
+ * reference's Free workspace. */
+export const BATCH_MAX = 10;
+
+/* --------------------------------- redos --------------------------------- */
+
+/** Reference redo quotas by plan (Creator: Geometry ×20 / Material ×6).
+ * The clone's demo account mirrors the Creator-tier quota set. */
+export const REDO_QUOTAS = { geometry: 20, material: 6 } as const;
+export type RedoKind = "geometry" | "material";
+
+export function redoLabel(kind: RedoKind, left: number): string {
+  return kind === "geometry" ? `Redo Geometry · ${left} left` : `Redo Material · ${left} left`;
+}
 
 /* ------------------------------ nav data ------------------------------ */
 

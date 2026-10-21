@@ -1,16 +1,40 @@
 /**
  * Direction picker state — the optional multiview step after the main image
- * upload (reference behavior: up to 4 extra views labeled Front / Back /
- * Left / Right, mapping 1:1 onto the neural engine's mv_image_front/
- * back/left/right params). Skippable by design: a single image remains the
- * default flow, and the picker is only offered on the Quality (neural) tier.
+ * upload. Reference surface (live workspace 2026-10-20 + Gen-2.5 API
+ * `image_label`): ELEVEN direction labels — Front / Front-Left / Front-Right /
+ * Left / Up / Right / Back-Left / Back / Back-Right / Down / Unknown — with
+ * Unknown (?) as the documented default and the whole step skippable
+ * (pose-free single image remains the primary flow).
+ *
+ * Engine honesty: our free neural engine (Hunyuan3D-2.1) consumes exactly
+ * four mv_image slots (front/back/left/right). The four cardinal slots map
+ * 1:1 onto those params; the seven extra reference labels are ACCEPTED and
+ * recorded on the task card (image_label parity with the reference API
+ * surface) and map to the nearest engine slot for reconstruction, with the
+ * honest footnote surfaced in the picker UI. Skippable by design.
  *
  * Pure state module — no React, no network; the studio wires it up.
  */
 
-export const VIEW_DIRECTIONS = ["front", "back", "left", "right"] as const;
+export const VIEW_DIRECTIONS = [
+  "front-left",
+  "front",
+  "front-right",
+  "left",
+  "up",
+  "right",
+  "back-left",
+  "back",
+  "back-right",
+  "down",
+  "unknown",
+] as const;
 
 export type ViewDirection = (typeof VIEW_DIRECTIONS)[number];
+
+/** The four slots the neural engine actually consumes. */
+export const ENGINE_DIRECTIONS = ["front", "back", "left", "right"] as const;
+export type EngineDirection = (typeof ENGINE_DIRECTIONS)[number];
 
 export interface PickerView {
   /** data URL of the uploaded image (display + engine upload). */
@@ -44,7 +68,7 @@ export function canAddView(state: DirectionState): boolean {
   return viewCount(state) < MAX_EXTRA_VIEWS;
 }
 
-/** The next free direction in F → B → L → R order (or null when full). */
+/** The next free direction in reading order (or null when full). */
 export function nextFreeDirection(state: DirectionState): ViewDirection | null {
   for (const dir of VIEW_DIRECTIONS) {
     if (!state[dir]) return dir;
@@ -79,17 +103,87 @@ export function removeView(state: DirectionState, direction: ViewDirection): Dir
 }
 
 /**
+ * How a picker direction maps onto the engine's four mv_image slots.
+ * Cardinals map to themselves; diagonals lean toward their facing side
+ * (front-left → front, back-right → back); up/down/unknown have no engine
+ * slot — they are recorded on the task card only.
+ */
+export const ENGINE_SLOT_OF: Record<ViewDirection, EngineDirection | null> = {
+  "front-left": "front",
+  front: "front",
+  "front-right": "front",
+  left: "left",
+  up: null,
+  right: "right",
+  "back-left": "back",
+  back: "back",
+  "back-right": "back",
+  down: null,
+  unknown: null,
+};
+
+/**
  * Engine argument slots in the exact mv_image_front/back/left/right order
- * the neural client expects; null = not supplied.
+ * the neural client expects; null = not supplied. When two picker slots
+ * collapse onto the same engine slot, the FIRST in reading order wins
+ * (deterministic) — the other stays recorded as task metadata.
  */
 export function engineSlots(state: DirectionState): (PickerView | null)[] {
-  return VIEW_DIRECTIONS.map((dir) => state[dir] ?? null);
+  const taken = new Set<EngineDirection>();
+  const out: Partial<Record<EngineDirection, PickerView>> = {};
+  for (const dir of VIEW_DIRECTIONS) {
+    const view = state[dir];
+    if (!view) continue;
+    const slot = ENGINE_SLOT_OF[dir];
+    if (!slot || taken.has(slot)) continue;
+    taken.add(slot);
+    out[slot] = view;
+  }
+  return [out.front ?? null, out.back ?? null, out.left ?? null, out.right ?? null];
 }
 
-/** Direction labels shown on chips/cards. */
+/** Direction labels shown on chips/cards (reference wording). */
 export const DIRECTION_LABELS: Record<ViewDirection, string> = {
+  "front-left": "Front Left",
   front: "Front",
-  back: "Back",
+  "front-right": "Front Right",
   left: "Left",
+  up: "Up",
   right: "Right",
+  "back-left": "Back Left",
+  back: "Back",
+  "back-right": "Back Right",
+  down: "Down",
+  unknown: "Unknown",
+};
+
+/** Short labels for the compact picker grid. */
+export const DIRECTION_SHORT: Record<ViewDirection, string> = {
+  "front-left": "FL",
+  front: "F",
+  "front-right": "FR",
+  left: "L",
+  up: "UP",
+  right: "R",
+  "back-left": "BL",
+  back: "B",
+  "back-right": "BR",
+  down: "DN",
+  unknown: "?",
+};
+
+/** The reference API's single-letter image_label enum, positionally matched
+ * to VIEW_DIRECTIONS (docs.hyper3d.ai Gen-2.5, Aug 2026 changelog). */
+export const IMAGE_LABELS: Record<ViewDirection, string> = {
+  "front-left": "FL",
+  front: "F",
+  "front-right": "FR",
+  left: "L",
+  up: "U",
+  right: "R",
+  "back-left": "BL",
+  back: "B",
+  "back-right": "BR",
+  down: "D",
+  unknown: "?",
 };

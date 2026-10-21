@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   }
 
   const tasks = await db.task.findMany({
-    where: { isFeatured: true },
+    where: { isFeatured: true, isPrivate: false },
     orderBy: { createdAt: "asc" },
     take: 16,
     omit: TASK_BLOB_OMIT,

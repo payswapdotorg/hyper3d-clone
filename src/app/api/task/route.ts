@@ -26,6 +26,19 @@ const CreateTaskSchema = z.object({
   seed: z.number().int().min(0).max(65535).optional(),
   /** Up to 4 extra view images (data URLs) for the neural multiview params. */
   mvImages: z.array(z.string().min(8).max(4_000_000)).max(4).optional(),
+  // ---- workspace parity options (reference surface, 2026-10-20) ----
+  /** Product line: gen-1.5 (Default/Speedy) or gen-2.5 (efforts + agentic). */
+  genVersion: z.enum(["gen-1.5", "gen-2.5"]).optional(),
+  /** Legacy Gen-2 era mode name (only meaningful with genVersion=gen-1.5). */
+  legacyMode: z.enum(["default", "speedy"]).optional(),
+  /** Material pass: pbr | shaded | all | none (none skips the texture pass). */
+  material: z.enum(["pbr", "shaded", "all", "none"]).optional(),
+  /** Private task: excluded from the featured/public gallery. */
+  isPrivate: z.boolean().optional(),
+  /** WorldGen creation mode: build-myself | generate-objects | complete-scene. */
+  creationMode: z.enum(["build-myself", "generate-objects", "complete-scene"]).optional(),
+  /** image_label parity: per-view direction labels (reference Gen-2.5 enum). */
+  imageLabels: z.array(z.enum(["F", "FL", "FR", "B", "BL", "BR", "L", "R", "U", "D", "?"])).max(4).optional(),
 });
 
 const MIME_BY_EXT: Record<string, string> = {
@@ -73,7 +86,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Validation failed", issues: parsed.error.issues.map((i) => i.message) }, { status: 400 });
   }
-  const { type, prompt, effort, image, settings, engine, seed, mvImages } = parsed.data;
+  const { type, prompt, effort, image, settings, engine, seed, mvImages, genVersion, legacyMode, material, isPrivate, creationMode, imageLabels } = parsed.data;
 
   // Pay-by-result (engine2): engine-tagged tasks are billed ONLY at confirm —
   // generation + preview are free (mirrors the reference free tier). The old
@@ -123,10 +136,16 @@ export async function POST(req: NextRequest) {
         ...(seed !== undefined ? { seed } : {}),
         ...(engine ? { pay_by_result: true } : {}),
         ...(mvImages ? { mv_image_count: mvImages.length } : {}),
+        ...(genVersion ? { gen_version: genVersion } : {}),
+        ...(legacyMode ? { legacy_mode: legacyMode } : {}),
+        ...(material ? { material } : {}),
+        ...(creationMode ? { creation_mode: creationMode } : {}),
+        ...(imageLabels ? { image_labels: imageLabels } : {}),
       },
       creditsSpent: cost,
       ...(engine ? { engine } : {}),
       ...(seed !== undefined ? { seed } : {}),
+      ...(isPrivate ? { isPrivate } : {}),
       ...(inputBytes ? { inputBytes: new Uint8Array(inputBytes) } : {}), // blob-in-DB (serverless-safe)
     },
   });
