@@ -56,7 +56,7 @@ export function Features() {
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#17171b] via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1e1b24] via-transparent to-transparent" />
                   <span className="absolute left-3 top-3 flex size-8 items-center justify-center rounded-lg border border-white/15 bg-black/45 backdrop-blur-sm">
                     <c.icon className="size-4 text-h3d-violet" aria-hidden="true" />
                   </span>

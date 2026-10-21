@@ -81,7 +81,7 @@ export function TaskRail({
                   className="object-cover opacity-85 transition-opacity group-hover:opacity-100"
                 />
               ) : (
-                <span className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#1d1d28] to-[#17171b]">
+                <span className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#241f2e] to-[#1e1b24]">
                   <Boxes className="size-6 text-h3d-purple/50" aria-hidden="true" />
                 </span>
               )}

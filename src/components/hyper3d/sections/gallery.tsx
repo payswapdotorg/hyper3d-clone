@@ -55,7 +55,7 @@ export function Gallery({ onOpenModel }: { onOpenModel: (prompt: string) => void
     <section
       id="gallery"
       aria-label="Model showcase gallery"
-      className="relative border-y border-white/6 bg-[#141419]/60 py-16 sm:py-20 lg:py-24"
+      className="relative border-y border-white/6 bg-[#16121c]/60 py-16 sm:py-20 lg:py-24"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading

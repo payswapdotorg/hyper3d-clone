@@ -30,7 +30,7 @@ export function ControlNetSection() {
     <section
       id="controlnet"
       aria-label="ControlNet detail control"
-      className="relative border-y border-white/6 bg-[#141419]/60 py-16 sm:py-20 lg:py-24"
+      className="relative border-y border-white/6 bg-[#16121c]/60 py-16 sm:py-20 lg:py-24"
     >
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
         {/* visual */}
@@ -44,7 +44,7 @@ export function ControlNetSection() {
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="h-auto w-full object-cover"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#121317]/60 via-transparent to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#0f0f12]/60 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-lg border border-white/12 bg-black/55 px-3 py-1.5 font-mono text-[11px] text-white/80 backdrop-blur-sm">
               <Cuboid className="size-3.5 text-h3d-purple" aria-hidden="true" />
               controlnet: bounding_box · tier: Gen-2.5

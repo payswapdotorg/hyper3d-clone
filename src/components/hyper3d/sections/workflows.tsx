@@ -39,7 +39,7 @@ export function Workflows() {
     <section
       id="workflows"
       aria-label="3D workflows"
-      className="relative border-y border-white/6 bg-[#141419]/60 py-16 sm:py-20 lg:py-24"
+      className="relative border-y border-white/6 bg-[#16121c]/60 py-16 sm:py-20 lg:py-24"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading

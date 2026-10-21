@@ -62,7 +62,7 @@ export function SignInDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h3d-glass-strong border-white/15 bg-[#17171b]/95 sm:max-w-md">
+      <DialogContent className="h3d-glass-strong border-white/15 bg-[#1e1b24]/95 sm:max-w-md">
         <DialogHeader>
           <div className="mb-1 flex items-center gap-2" aria-hidden="true">
             <span className="flex size-9 items-center justify-center rounded-lg h3d-gradient-primary text-white">

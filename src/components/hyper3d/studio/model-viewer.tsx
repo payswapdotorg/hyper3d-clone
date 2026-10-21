@@ -137,7 +137,7 @@ export const ModelViewer = forwardRef<ModelViewerHandle, {
       camera,
       controls,
       model: null,
-      wireframeMat: new THREE.MeshBasicMaterial({ color: 0x916af0, wireframe: true }),
+      wireframeMat: new THREE.MeshBasicMaterial({ color: 0xa78bfa, wireframe: true }),
       normalMat: new THREE.MeshNormalMaterial({ flatShading: true }),
       originalMaterials: new Map(),
     };

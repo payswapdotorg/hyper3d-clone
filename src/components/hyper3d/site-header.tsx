@@ -125,7 +125,7 @@ export function SiteHeader({
   );
 
   const panel =
-    "absolute inset-x-0 top-full border-b border-white/10 bg-[#141419]/97 backdrop-blur-xl shadow-[0_24px_60px_rgba(0,0,0,0.55)]";
+    "absolute inset-x-0 top-full border-b border-white/10 bg-[#16121c]/97 backdrop-blur-xl shadow-[0_24px_60px_rgba(0,0,0,0.55)]";
 
   return (
     <header
@@ -278,7 +278,7 @@ export function SiteHeader({
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="h3d-scroll w-[86vw] max-w-sm overflow-y-auto border-white/10 bg-[#141419] p-0"
+              className="h3d-scroll w-[86vw] max-w-sm overflow-y-auto border-white/10 bg-[#16121c] p-0"
             >
               <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
                 <SheetTitle className="font-display text-base font-bold tracking-wide">

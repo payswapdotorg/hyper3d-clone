@@ -51,7 +51,7 @@ export function Pricing({ onStartFree }: { onStartFree: () => void }) {
     <section
       id="pricing"
       aria-label="Pricing"
-      className="relative border-t border-white/6 bg-[#141419]/60 py-16 sm:py-20 lg:py-24"
+      className="relative border-t border-white/6 bg-[#16121c]/60 py-16 sm:py-20 lg:py-24"
     >
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(50rem_18rem_at_50%_-8%,rgba(74,0,224,0.18),transparent_70%)]"
@@ -103,7 +103,7 @@ export function Pricing({ onStartFree }: { onStartFree: () => void }) {
             const card = (
               <Card
                 className={cn(
-                  "relative flex h-full flex-col border-white/10 bg-[#17171b]/85 transition-all duration-300",
+                  "relative flex h-full flex-col border-white/10 bg-[#1e1b24]/85 transition-all duration-300",
                   plan.popular
                     ? "h3d-gradient-border shadow-[0_24px_70px_rgba(74,0,224,0.35)] lg:-translate-y-2"
                     : "bg-white/[0.04] hover:border-white/20",

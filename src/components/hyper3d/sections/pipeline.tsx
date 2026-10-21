@@ -11,7 +11,7 @@ export function Pipeline() {
     <section
       id="pipeline"
       aria-label="3D pipeline integrations"
-      className="relative border-y border-white/6 bg-[#141419]/60 py-14 sm:py-16 lg:py-20"
+      className="relative border-y border-white/6 bg-[#16121c]/60 py-14 sm:py-16 lg:py-20"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading

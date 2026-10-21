@@ -41,7 +41,7 @@ export function EffortModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h3d-glass-strong max-h-[90vh] overflow-y-auto border-white/15 bg-[#17171b]/95 sm:max-w-3xl">
+      <DialogContent className="h3d-glass-strong max-h-[90vh] overflow-y-auto border-white/15 bg-[#1e1b24]/95 sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="font-display text-xl font-semibold text-white">
             Which thinking effort is more suitable for you?

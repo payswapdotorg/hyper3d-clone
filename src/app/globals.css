@@ -186,8 +186,8 @@
 .h3d-gradient-border {
   border: 1px solid transparent;
   background:
-    linear-gradient(#17171b, #17171b) padding-box,
-    linear-gradient(160deg, #4a00e0 0%, #8584ff 55%, #be34ff 100%) border-box;
+    linear-gradient(#1e1b24, #1e1b24) padding-box,
+    linear-gradient(160deg, #8b5cf6 0%, #a855f7 55%, #ec4899 100%) border-box;
 }
 
 .h3d-scroll::-webkit-scrollbar,
