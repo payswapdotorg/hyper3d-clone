@@ -28,13 +28,16 @@ import {
   Eye,
   Gem,
   Globe,
-  Grid3x3,
+  Group,
   Heart,
   Image as ImageIcon,
+  Instagram,
   Layers,
   Link2,
+  Linkedin,
   Loader2,
   Lock,
+  MessageCircle,
   Palette,
   Pause,
   PencilRuler,
@@ -43,12 +46,15 @@ import {
   Search,
   Sparkles,
   Triangle,
+  Twitch,
+  Twitter,
   Type,
   Upload,
   UserRound,
   Video,
   Wand2,
   X,
+  Youtube,
   Zap,
   Box,
 } from "lucide-react";
@@ -269,6 +275,15 @@ const FEATURED_TILES: { src: string; title: string; author: string; likes: numbe
   { src: "/images/gallery-chest.png", title: "Traveler Chest", author: "Rodin Gen-2.5", likes: 26, hue: "#c9b7cf" },
 ];
 
+/** Reference-parity footer link — honest chrome (the reference's external
+ * destinations are not part of this clone). */
+const stubToast = (label: string) => () =>
+  toast.info(label, { description: "Reference-parity chrome — not part of this clone." });
+
+/** Cookie notice persistence key (the reference shows its cookie card on
+ * first visit; accepting stores the choice). */
+const COOKIE_OK_KEY = "h3d-clone-cookie-ok";
+
 export interface StudioInitial {
   prompt: string;
   mode: GenMode;
@@ -281,13 +296,13 @@ export function Studio({
   user,
   onNeedAuth,
   onSessionRefresh,
-  onClose,
+  onSignOut,
 }: {
   initial: StudioInitial;
   user: UserInfo | null;
   onNeedAuth: (intent: string) => void;
   onSessionRefresh: () => void;
-  onClose: () => void;
+  onSignOut: () => void;
 }) {
   const [mode, setMode] = useState<GenMode>(initial.mode);
   const [agentic, setAgentic] = useState(false);
@@ -943,6 +958,24 @@ export function Studio({
      directions) — the reference hides these behind icon rails + popovers */
   const [toolPanel, setToolPanel] = useState<null | "materials" | "presets" | "quality" | "directions">(null);
 
+  /* cookie consent card (reference guest chrome) — shown until accepted */
+  const [cookieOk, setCookieOk] = useState(true);
+  useEffect(() => {
+    try {
+      if (!window.localStorage.getItem(COOKIE_OK_KEY)) setCookieOk(false);
+    } catch {
+      /* private mode — skip the card */
+    }
+  }, []);
+  const acceptCookies = useCallback((all: boolean) => {
+    try {
+      window.localStorage.setItem(COOKIE_OK_KEY, all ? "all" : "essential");
+    } catch {
+      /* ignore */
+    }
+    setCookieOk(true);
+  }, []);
+
   /* chips + hover-swap labels for the reference GENERATE cluster */
   const qualityChipLabel =
     genVersion === "gen-1.5"
@@ -966,9 +999,11 @@ export function Studio({
   /* ---------------- render ---------------- */
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col h3d-studio-bg" role="dialog" aria-label="Rodin Studio workspace">
-      {/* reference top bar — HYPER3D + Subscribe (hover → 7-Day Trial) left,
-          Add On / API / MCP&CLI / Login + globe right (DOM-extracted look). */}
+    <div id="main-content" className="fixed inset-0 z-50 flex flex-col h3d-studio-bg" aria-label="Rodin Studio workspace">
+      {/* reference top bar — HYPER3D + 7-Day Trial gradient pill (hover →
+          Subscribe) left, Add On / API / MCP&CLI / Login + globe right
+          (DOM-extracted look; the gradient matches the reference's
+          linear-gradient(112.97deg, #9EC9FF, #FFAEB0)). */}
       <header className="relative z-20 flex h-[81px] shrink-0 items-center justify-between px-6 sm:px-10">
         <div className="flex items-center gap-5">
           <span className="flex items-center gap-2 text-white" aria-label="HYPER3D">
@@ -986,11 +1021,13 @@ export function Studio({
             className="group relative flex h-[37px] w-[139px] items-center justify-center rounded-[30px] border border-white/15 bg-white/5 text-lg font-semibold transition-colors hover:border-white/25"
             aria-label="Subscribe (demo notice)"
           >
-            <span className="absolute inset-0 flex items-center justify-center text-white opacity-100 transition-opacity group-hover:opacity-0">
-              Subscribe
-            </span>
-            <span className="h3d-grad-text-warm absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+            <span
+              className="absolute inset-0 flex items-center justify-center rounded-[30px] bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-lg font-bold text-[#17181c] opacity-100 transition-opacity group-hover:opacity-0"
+            >
               7-Day Trial
+            </span>
+            <span className="absolute inset-0 flex items-center justify-center text-white opacity-0 transition-opacity group-hover:opacity-100">
+              Subscribe
             </span>
           </button>
         </div>
@@ -1030,12 +1067,19 @@ export function Studio({
                 <span className="text-sm text-white">{user.balance}</span>
                 <span className="text-[11px] text-white/40">credits</span>
               </span>
-              <span
-                className="flex size-9 items-center justify-center rounded-full border border-h3d-violet/50 bg-h3d-violet/20 text-sm font-semibold text-white"
+              <button
+                type="button"
+                onClick={() =>
+                  toast.info(`Signed in as ${user.email}`, {
+                    description: "Demo account — the clone's own auth.",
+                    action: { label: "Sign out", onClick: () => void onSignOut() },
+                  })
+                }
+                className="flex size-9 items-center justify-center rounded-full border border-h3d-violet/50 bg-h3d-violet/20 text-sm font-semibold text-white transition-colors hover:border-h3d-violet"
                 title={user.email}
               >
                 {user.email.slice(0, 1).toUpperCase()}
-              </span>
+              </button>
             </span>
           ) : (
             <button
@@ -1047,16 +1091,7 @@ export function Studio({
               Login
             </button>
           )}
-          <Globe className="size-[18px] text-[#b0b0b0] transition-colors hover:text-white" aria-hidden="true" />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close workspace and return to the landing page"
-            title="Close workspace"
-            className="flex size-9 items-center justify-center rounded-full text-white/40 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </button>
+          <Globe className="size-[18px] cursor-pointer text-[#b0b0b0] transition-colors hover:text-white" aria-label="Language" />
         </nav>
       </header>
 
@@ -1179,10 +1214,15 @@ export function Studio({
                 })}
               </div>
 
-              {/* the 180×180 input card (radius 20, black/18) */}
+              {/* the 180×180 input card (radius 20, black/18) — header row has
+                  the mode icon beside the label (reference modeMenuIcon) */}
               <div className="relative h-[180px] w-[180px] overflow-hidden rounded-[20px] border border-white/8 bg-black/[0.18]">
-                <p className="pt-3 text-center text-base font-bold text-white">
-                  {mode === "editing-3d" ? "3D Editing" : mode === "worldgen" ? "WorldGen" : "Image to 3D"}
+                <p className="flex items-center justify-center gap-1.5 pt-3 text-center text-base font-bold text-white">
+                  {(() => {
+                    const ModeIcon = mode === "editing-3d" ? PencilRuler : mode === "worldgen" ? Globe : mode === "text-to-3d" ? Type : ImageIcon;
+                    return <ModeIcon className="size-4 text-white/80" aria-hidden="true" />;
+                  })()}
+                  {mode === "editing-3d" ? "3D Editing" : mode === "worldgen" ? "WorldGen" : mode === "text-to-3d" ? "Text to 3D" : "Image to 3D"}
                 </p>
                 {GENERATING_MODES.includes(mode) ? (
                   mode === "image-to-3d" && !upload ? (
@@ -1255,8 +1295,10 @@ export function Studio({
                 }}
               />
 
-              {/* right tools rail — circular icon buttons (28px, white/8): two
-                  live tools + two reference ControlNet slots with honest stubs */}
+              {/* right tools rail — circular icon buttons (28px, white/8):
+                  the reference's icon set (wand with a red notification dot,
+                  cube, group, stack) with honest wiring — two live tools +
+                  two reference ControlNet slots with honest stubs */}
               <div className="flex gap-2 sm:absolute sm:-right-[46px] sm:top-1/2 sm:-translate-y-1/2 sm:flex-col">
                 <button
                   type="button"
@@ -1264,11 +1306,12 @@ export function Studio({
                   title="Material"
                   onClick={() => setToolPanel(toolPanel === "materials" ? null : "materials")}
                   className={cn(
-                    "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    "relative flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
                     toolPanel === "materials" && "bg-white/20",
                   )}
                 >
-                  <Palette className="size-3.5 text-white/80" aria-hidden="true" />
+                  <Wand2 className="size-3.5 text-white/80" aria-hidden="true" />
+                  <span className="absolute -right-0.5 -top-0.5 size-[7px] rounded-full border border-[#121317] bg-[#e65a4e]" aria-hidden="true" />
                 </button>
                 {mode === "image-to-3d" && upload && (
                   <button
@@ -1284,30 +1327,6 @@ export function Studio({
                     <Compass className="size-3.5 text-white/80" aria-hidden="true" />
                   </button>
                 )}
-                <button
-                  type="button"
-                  aria-label="Material pass"
-                  title="Material"
-                  onClick={() => setToolPanel(toolPanel === "materials" ? null : "materials")}
-                  className={cn(
-                    "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
-                    toolPanel === "materials" && "bg-white/20",
-                  )}
-                >
-                  <Palette className="size-3.5 text-white/80" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Prompt presets and seed"
-                  title="Presets"
-                  onClick={() => setToolPanel(toolPanel === "presets" ? null : "presets")}
-                  className={cn(
-                    "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
-                    toolPanel === "presets" && "bg-white/20",
-                  )}
-                >
-                  <Sparkles className="size-3.5 text-white/80" aria-hidden="true" />
-                </button>
                 <button
                   type="button"
                   aria-label="Bounding Box Control — not implemented in this clone"
@@ -1332,7 +1351,19 @@ export function Studio({
                   }
                   className="flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15"
                 >
-                  <Grid3x3 className="size-3.5 text-white/80" aria-hidden="true" />
+                  <Group className="size-3.5 text-white/80" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Prompt presets and seed"
+                  title="Presets"
+                  onClick={() => setToolPanel(toolPanel === "presets" ? null : "presets")}
+                  className={cn(
+                    "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    toolPanel === "presets" && "bg-white/20",
+                  )}
+                >
+                  <Layers className="size-3.5 text-white/80" aria-hidden="true" />
                 </button>
               </div>
 
@@ -1524,7 +1555,7 @@ export function Studio({
                 type="button"
                 onClick={handleGenerate}
                 disabled={creating || generating || analyzing}
-                className="group relative flex h-[68px] w-[206px] items-center justify-center rounded-full h3d-generate-capsule shadow-[0_0_44px_rgba(202,102,80,0.22),0_0_70px_rgba(185,138,207,0.18)] transition-transform active:scale-[0.98] disabled:cursor-not-allowed"
+                className="group relative flex h-[68px] w-[206px] items-center justify-center rounded-full h3d-generate-capsule shadow-[0_0_58px_rgba(202,102,80,0.3),0_0_96px_rgba(185,138,207,0.25)] transition-transform active:scale-[0.98] disabled:cursor-not-allowed"
                 aria-label={generateHoverLabel}
               >
                 <span
@@ -1576,7 +1607,6 @@ export function Studio({
                   <Link2 className="size-3" aria-hidden="true" />
                   x1
                 </button>
-                <span className="text-[11px] font-semibold text-white/80">{costChipLabel}</span>
               </div>
               {/* gen-1.5 quality panel (Default / Speedy) */}
               {toolPanel === "quality" && genVersion === "gen-1.5" && (
@@ -1602,9 +1632,10 @@ export function Studio({
               )}
             </div>
 
-            {/* controls row — reference look: Zap + Agentic Mode/OFF text ·
-                ‹ version › pill · Gem + quality */}
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            {/* controls row — reference DOM order: Zap+OFF/ON pill · "Agentic
+                Mode" label · ‹ version › pill · Gem + quality · 5 min ·
+                1 Credit · the agentic caption */}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
               <button
                 type="button"
                 aria-pressed={agentic}
@@ -1617,8 +1648,15 @@ export function Studio({
                 )}
               >
                 <Zap className={cn("size-4", agentic ? "text-[#e6765d]" : "text-white/50")} aria-hidden="true" />
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[11px] font-bold",
+                    agentic ? "bg-[#e6765d]/20 text-[#e6765d]" : "bg-white/8 text-white/70",
+                  )}
+                >
+                  {agentic ? "ON" : "OFF"}
+                </span>
                 <span className="text-sm font-semibold text-white/95">Agentic Mode</span>
-                <span className="text-[11px] font-medium text-white/60">{agentic ? "ON" : "OFF"}</span>
               </button>
               <button
                 type="button"
@@ -1644,8 +1682,20 @@ export function Studio({
               >
                 <Gem className="size-3.5 text-[#ecc16c]" aria-hidden="true" />
                 {qualityChipLabel}
-                {agentic && <span className="text-[11px] text-[#c9b7cf]">· 5 min</span>}
               </button>
+              <span className="flex h-6 items-center rounded-full bg-white/8 px-2.5 text-[11px] font-semibold text-white/75" title="Typical run time">
+                5 min
+              </span>
+              <span
+                className="flex h-8 items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-2.5 text-xs font-semibold text-white/85"
+                title={costChipLabel}
+              >
+                <Coins className="size-3.5 text-h3d-gold" aria-hidden="true" />
+                {costChipLabel}
+              </span>
+              {agentic && (
+                <span className="text-[11px] text-white/45">Vibe Modeling. Let AI plan and build.</span>
+              )}
               {genVersion === "gen-1.5" && !agentic && (
                 <span className="text-[11px] text-white/45">standard pipeline</span>
               )}
@@ -1671,7 +1721,8 @@ export function Studio({
             )}
           </div>
 
-          {/* ASSET section — tabs, Featured pill, search/filter, gallery grid */}
+          {/* ASSET section — tabs + Featured pill left, Share/search/Filter
+              right, gallery grid, Load More (reference DOM layout) */}
           <section className="mx-auto mt-14 w-full max-w-[1280px] px-6 pb-20 md:px-20" aria-label="Assets">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               <h2 className="text-[26px] font-bold leading-none text-white">ASSET</h2>
@@ -1682,10 +1733,17 @@ export function Studio({
               >
                 EXPLORE
               </button>
+              <span className="flex h-[38px] w-[106px] items-center justify-center rounded-[39px] border border-[#e6765d] text-base text-[#cfcfcf]">
+                Featured
+              </span>
               <div className="ml-auto flex items-center gap-3">
-                <span className="flex h-[38px] w-[106px] items-center justify-center rounded-[39px] border border-[#e6765d] text-base text-[#cfcfcf]">
-                  Featured
-                </span>
+                <button
+                  type="button"
+                  onClick={() => toast.info("Share", { description: "Asset sharing is reference-parity chrome in this clone." })}
+                  className="flex h-[38px] items-center rounded-full border border-white/12 px-4 text-sm text-white/70 transition-colors hover:border-white/25 hover:text-white"
+                >
+                  Share
+                </button>
                 <button
                   type="button"
                   aria-label="Search assets"
@@ -1703,9 +1761,6 @@ export function Studio({
                 </button>
               </div>
             </div>
-            <p className="mt-1.5 text-xs text-white/35">
-              Featured — demo renders from this clone's own gallery (the reference's community feed is not part of the clone).
-            </p>
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {FEATURED_TILES.map((tile) => (
                 <figure
@@ -1740,7 +1795,114 @@ export function Studio({
                 </figure>
               ))}
             </div>
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={() =>
+                  toast.info("Load More", {
+                    description: "The Featured set is the full demo gallery — the reference's infinite community feed is not part of this clone.",
+                  })
+                }
+                className="flex h-[47px] w-[157px] items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] text-sm font-semibold text-white/80 backdrop-blur-sm transition-colors hover:border-white/30 hover:text-white"
+              >
+                Load More <ChevronDown className="size-4" aria-hidden="true" />
+              </button>
+            </div>
           </section>
+
+          {/* footer — the reference's own page footer (brand + email + socials,
+              PRODUCT / FEATURES / PLUG-INS / LEGAL columns, Deemos copyright) */}
+          <footer className="border-t border-white/8 bg-black/40 px-6 pb-10 pt-14 md:px-20">
+            <div className="mx-auto grid w-full max-w-[1280px] grid-cols-2 gap-10 md:grid-cols-5">
+              <div className="col-span-2 md:col-span-1">
+                <span className="flex items-center gap-2 text-white" aria-label="HYPER3D">
+                  <Boxes className="size-6" aria-hidden="true" />
+                  <span className="text-xl font-bold tracking-tight">HYPER3D</span>
+                </span>
+                <p className="mt-3 text-sm text-white/45">hello@deemos.com</p>
+                <div className="mt-4 flex items-center gap-4 text-white/50">
+                  <a href="https://x.com" target="_blank" rel="noreferrer" aria-label="X" className="transition-colors hover:text-white">
+                    <Twitter className="size-4" aria-hidden="true" />
+                  </a>
+                  <a href="https://youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube" className="transition-colors hover:text-white">
+                    <Youtube className="size-4" aria-hidden="true" />
+                  </a>
+                  <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="transition-colors hover:text-white">
+                    <Linkedin className="size-4" aria-hidden="true" />
+                  </a>
+                  <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram" className="transition-colors hover:text-white">
+                    <Instagram className="size-4" aria-hidden="true" />
+                  </a>
+                  <a href="https://discord.com" target="_blank" rel="noreferrer" aria-label="Discord" className="transition-colors hover:text-white">
+                    <MessageCircle className="size-4" aria-hidden="true" />
+                  </a>
+                  <a href="https://twitch.tv" target="_blank" rel="noreferrer" aria-label="Twitch" className="transition-colors hover:text-white">
+                    <Twitch className="size-4" aria-hidden="true" />
+                  </a>
+                </div>
+              </div>
+              {(
+                [
+                  {
+                    heading: "PRODUCT",
+                    links: [
+                      ["Rodin", () => toast.info("Rodin", { description: "You are in it — the Rodin workspace." })],
+                      ["ChatAvatar", () => toast.info("ChatAvatar", { description: "A separate reference product — not part of this clone." })],
+                    ],
+                  },
+                  {
+                    heading: "FEATURES",
+                    links: [
+                      ["Text to 3D", () => toast.info("Text to 3D", { description: "Available in the workspace — switch the input card to text mode." })],
+                      ["Image to 3D", () => toast.info("Image to 3D", { description: "The workspace's default mode — drop an image on the input card." })],
+                      ["AI Video Generator", () => toast.info("AI Video Generator", { description: "Reference-parity chrome — not part of this clone." })],
+                      ["AI Image Generator", () => toast.info("AI Image Generator", { description: "Reference-parity chrome — not part of this clone." })],
+                      ["OmniCraft", () => toast.info("OmniCraft", { description: "A separate reference product — not part of this clone." })],
+                    ],
+                  },
+                  {
+                    heading: "PLUG-INS",
+                    links: [
+                      ["Blender", stubToast("Blender")],
+                      ["Unreal", stubToast("Unreal")],
+                      ["Unity", stubToast("Unity")],
+                      ["Godot", stubToast("Godot")],
+                      ["C4D", stubToast("C4D")],
+                      ["Maya", stubToast("Maya")],
+                      ["OV/Isaac", stubToast("OV/Isaac")],
+                    ],
+                  },
+                  {
+                    heading: "LEGAL",
+                    links: [
+                      ["Privacy", stubToast("Privacy")],
+                      ["Terms", stubToast("Terms")],
+                    ],
+                  },
+                ] as { heading: string; links: [string, () => void][] }[]
+              ).map((col) => (
+                <nav key={col.heading} aria-label={col.heading}>
+                  <h3 className="text-xs font-bold tracking-widest text-white/80">{col.heading}</h3>
+                  <ul className="mt-4 space-y-2.5">
+                    {col.links.map(([label, onClick]) => (
+                      <li key={label}>
+                        <button
+                          type="button"
+                          onClick={onClick}
+                          className="text-sm text-white/45 transition-colors hover:text-white/85"
+                        >
+                          {label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              ))}
+            </div>
+            <p className="mx-auto mt-12 w-full max-w-[1280px] border-t border-white/8 pt-6 text-xs text-white/35">
+              © 2026 Deemos Corporation. All rights reserved.
+            </p>
+          </footer>
         </div>
       ) : (
       <div className="relative z-10 flex flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
@@ -2682,6 +2844,53 @@ export function Studio({
           void createTask(selected);
         }}
       />
+
+      {/* floating Feedback button (reference bottom-right chrome — the cookie
+          card overlays it until accepted, exactly like the reference guest) */}
+      <button
+        type="button"
+        onClick={() =>
+          toast.info("Feedback", {
+            description: "Reference-parity chrome — this clone's feedback channel is the demo account toast you are reading.",
+          })
+        }
+        className="absolute bottom-6 right-6 z-30 flex h-12 items-center gap-2 rounded-full border border-white/12 bg-[#221d27]/90 px-5 text-sm font-semibold text-white/85 shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-colors hover:border-white/30 hover:text-white"
+      >
+        <MessageCircle className="size-4" aria-hidden="true" />
+        Feedback
+      </button>
+
+      {/* cookie preferences card (reference guest state — white card, purple
+          Accept all / outline Preferences, bottom-right) */}
+      {!cookieOk && (
+        <div
+          role="dialog"
+          aria-label="Cookie preferences"
+          className="absolute bottom-6 right-6 z-40 w-[340px] rounded-2xl bg-white p-5 text-[#1f2023] shadow-[0_18px_50px_rgba(0,0,0,0.5)]"
+        >
+          <p className="text-base font-bold">Cookie preferences</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-[#4a4b52]">
+            We use essential cookies to keep Hyper3D working and optional cookies to understand usage, improve the
+            experience, and support relevant marketing.
+          </p>
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={() => acceptCookies(true)}
+              className="h-[38px] flex-1 rounded-lg bg-[#7c5cff] text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              Accept all
+            </button>
+            <button
+              type="button"
+              onClick={() => acceptCookies(false)}
+              className="h-[38px] flex-1 rounded-lg border border-[#c9c9cf] bg-white text-sm font-semibold text-[#1f2023] transition-colors hover:bg-[#f4f4f6]"
+            >
+              Preferences
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

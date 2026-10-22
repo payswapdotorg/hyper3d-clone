@@ -25,7 +25,8 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hyper3D Rodin – Best AI 3D Model Generator",
+  title:
+    "Rodin AI - Free AI 3D Model Generator For Everyone | Instantly Create Stunning 3D Assets, 3D Models, and 3D Objects - Create 3D Designs Powered by AI | Hyper3D",
   description:
     "Rodin generates high-quality 3D assets that are nearly production-ready for supported workflows. Turn text prompts or images into detailed 3D assets in seconds — no 3D experience required.",
   keywords: [
@@ -38,7 +39,8 @@ export const metadata: Metadata = {
     "GLB export",
   ],
   openGraph: {
-    title: "Hyper3D Rodin – Best AI 3D Model Generator",
+    title:
+      "Rodin AI - Free AI 3D Model Generator For Everyone | Instantly Create Stunning 3D Assets, 3D Models, and 3D Objects",
     description:
       "Meet Hyper3D, the world's highest-quality, most controllable AI 3D model generator.",
     type: "website",
