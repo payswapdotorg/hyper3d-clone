@@ -74,8 +74,11 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { SmartImage } from "../smart-image";
+import { AssetDetail, type AssetDetailData } from "./asset-detail";
 import { EffortModal } from "./effort-modal";
 import { ModelSelectionPopover } from "./model-selection-popover";
+import { PricingOverlay } from "./pricing-overlay";
+import { StoryFeed } from "./story-feed";
 import { OrientationPopup } from "./orientation-popup";
 import { PresetsModal, presetHint, type PresetGeometry } from "./presets-modal";
 import { TaskRail, type RailTask } from "./task-rail";
@@ -282,17 +285,36 @@ function RodinWordmark({ className }: { className?: string }) {
   );
 }
 
+/* Hero tip pool — the reference rotates operational tips through the quote
+ * slot (agent-walked recon: Feynman default, then the tip pool its DOM
+ * carries). */
+const HERO_TIPS: string[] = [
+  "The best way to understand is to create. What I cannot create, I do not understand.",
+  "Redos are free, but confirmation costs credits.",
+  "Drink water to speed up generation!",
+  "Best balance of quality and speed? Default Mode.",
+  "RGBA image? Click to use alpha channel!",
+  "Remix or enhance input images before generation.",
+  "Tired of generating? Search assets by text or image!",
+  "Use OmniCraft HDRI Generation for 8K panoramas and HDRI.",
+  "We support 5 languages now!",
+  "Business subscriptions have cheaper Credits per unit.",
+  "Many OmniCraft features run locally — no uploads required.",
+  "Upload your model → Get textures in OmniCraft.",
+];
+
 /* Featured gallery tiles (reference ASSET section) — this clone's own demo
- * renders, honestly labelled. */
-const FEATURED_TILES: { src: string; title: string; author: string; likes: number; hue: string }[] = [
-  { src: "/images/gallery-mech.png", title: "Scout Mech", author: "Rodin Gen-2.5", likes: 48, hue: "#b98acf" },
-  { src: "/images/gallery-helmet.png", title: "Legion Helmet", author: "Rodin Gen-2.5", likes: 35, hue: "#d2b6df" },
-  { src: "/images/gallery-drone.png", title: "Cargo Drone", author: "Rodin Gen-1.5", likes: 27, hue: "#ca6650" },
-  { src: "/images/gallery-creature.png", title: "Reef Creature", author: "Rodin Gen-2.5", likes: 41, hue: "#e6765d" },
-  { src: "/images/gallery-sword.png", title: "Rune Blade", author: "Rodin Gen-1.5", likes: 22, hue: "#ecc16c" },
-  { src: "/images/gallery-potions.png", title: "Potion Shelf", author: "Rodin Gen-2.5", likes: 31, hue: "#9e76ac" },
-  { src: "/images/gallery-bike.png", title: "Trail Bike", author: "Rodin Gen-1.5", likes: 19, hue: "#d67830" },
-  { src: "/images/gallery-chest.png", title: "Traveler Chest", author: "Rodin Gen-2.5", likes: 26, hue: "#c9b7cf" },
+ * renders, honestly labelled. detail fields feed the asset-detail view
+ * (reference: tile click → /workspace/rodin/{uuid}). */
+const FEATURED_TILES: { src: string; title: string; author: string; likes: number; hue: string; model: string; effort: string; tags: string[]; prompt: string }[] = [
+  { src: "/images/gallery-mech.png", title: "Scout Mech", author: "Rodin Gen-2.5", likes: 48, hue: "#b98acf", model: "Gen-2.5", effort: "High", tags: ["complex", "game-ready", "character"], prompt: "a rugged scout mech with matte panels, worn metal and lilac accents" },
+  { src: "/images/gallery-helmet.png", title: "Legion Helmet", author: "Rodin Gen-2.5", likes: 35, hue: "#d2b6df", model: "Gen-2.5", effort: "High", tags: ["hard-surface", "game-ready", "prop"], prompt: "a ornate legion helmet with gold trim and battle scratches" },
+  { src: "/images/gallery-drone.png", title: "Cargo Drone", author: "Rodin Gen-1.5", likes: 27, hue: "#ca6650", model: "Gen-1.5", effort: "Default", tags: ["hard-surface", "prop"], prompt: "a cargo drone with red accents and worn metal" },
+  { src: "/images/gallery-creature.png", title: "Reef Creature", author: "Rodin Gen-2.5", likes: 41, hue: "#e6765d", model: "Gen-2.5", effort: "Medium", tags: ["organic", "character", "textured"], prompt: "a reef creature with coral growths and bioluminescent spots" },
+  { src: "/images/gallery-sword.png", title: "Rune Blade", author: "Rodin Gen-1.5", likes: 22, hue: "#ecc16c", model: "Gen-1.5", effort: "Default", tags: ["hard-surface", "prop", "game-ready"], prompt: "a rune blade with glowing engravings and gold hilt" },
+  { src: "/images/gallery-potions.png", title: "Potion Shelf", author: "Rodin Gen-2.5", likes: 31, hue: "#9e76ac", model: "Gen-2.5", effort: "Medium", tags: ["stylized", "prop", "set-dressing"], prompt: "a wooden potion shelf with glass bottles and corked vials" },
+  { src: "/images/gallery-bike.png", title: "Trail Bike", author: "Rodin Gen-1.5", likes: 19, hue: "#d67830", model: "Gen-1.5", effort: "Default", tags: ["vehicle", "hard-surface"], prompt: "a trail bike with knobby tires and orange frame" },
+  { src: "/images/gallery-chest.png", title: "Traveler Chest", author: "Rodin Gen-2.5", likes: 26, hue: "#c9b7cf", model: "Gen-2.5", effort: "Low", tags: ["prop", "stylized", "game-ready"], prompt: "a traveler chest with iron bands and carved wood" },
 ];
 
 /** Reference-parity footer link — honest chrome (the reference's external
@@ -337,6 +359,28 @@ export function Studio({
   const [isPrivate, setIsPrivate] = useState(false);
   const [creationMode, setCreationMode] = useState<CreationModeId>("generate-objects");
   const [presetsOpen, setPresetsOpen] = useState(false);
+
+  /* ---- interaction parity (UX-recon 2026-10-22, agent-walked on the live
+   * reference): Subscribe → full membership overlay; gallery tile → asset
+   * detail; EXPLORE → story feed; rotating hero tips; chat widget ---- */
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [detailAsset, setDetailAsset] = useState<AssetDetailData | null>(null);
+  const [storyOpen, setStoryOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [tipIndex, setTipIndex] = useState(0);
+  /* card sub-tab flavor for image mode (reference: Remix Gen / Turbo Gen
+   * pills stacked at the card's bottom-right; Remix = remix-your-idea
+   * caption, Turbo = Single image / Multi-view toggle) */
+  const [imageTab, setImageTab] = useState<"remix" | "turbo">("remix");
+  const [multiView, setMultiView] = useState(false);
+  const [editingTab, setEditingTab] = useState<"parts" | "refine" | "modify">("parts");
+
+  /* the reference rotates a tip pool in the hero quote slot (recon
+   * innerText pool: Feynman default + operational tips) */
+  useEffect(() => {
+    const t = window.setInterval(() => setTipIndex((i) => (i + 1) % HERO_TIPS.length), 6000);
+    return () => window.clearInterval(t);
+  }, []);
   const [redoBusy, setRedoBusy] = useState<"geometry" | "material" | null>(null);
 
   const [prompt, setPrompt] = useState(initial.prompt);
@@ -1118,14 +1162,9 @@ export function Studio({
           </span>
           <button
             type="button"
-            onClick={() =>
-              toast.info("Subscribe", {
-                description:
-                  "The reference's paid tiers are not part of this clone — the demo wallet already covers every feature here (first generation free).",
-              })
-            }
+            onClick={() => setPricingOpen(true)}
+            aria-label="Subscribe — membership plans"
             className="group relative flex h-[37px] w-[139px] items-center justify-center rounded-[30px] border border-white/15 bg-white/[0.08] text-lg font-semibold transition-colors hover:border-white/25"
-            aria-label="Subscribe (demo notice)"
           >
             <span className="absolute inset-0 flex items-center justify-center text-white transition-opacity group-hover:opacity-0">
               Subscribe
@@ -1243,9 +1282,16 @@ export function Studio({
               {/* zoom-probed 2026-10-22: the reference's pill ends with a
                   three-line menu icon after Video */}
               <span className="contents" aria-hidden="false">
-              {(["Avatar", "3D", "Video"] as const).map((t) => (
+              {(["Avatar", "3D", "Video"] as const).map((t) => {
+                const drop =
+                  t === "Avatar"
+                    ? "Image Text/Image to 3D Avatar"
+                    : t === "3D"
+                      ? "Image 3D Large Model"
+                      : "Image Video Generators";
+                return (
+                <span key={t} className="group relative">
                 <button
-                  key={t}
                   type="button"
                   onClick={
                     t === "3D"
@@ -1276,16 +1322,40 @@ export function Studio({
                     t
                   )}
                 </button>
-              ))}
+                {/* hover dropdown (reference nav_show: per-tab tool description,
+                    248px glass card under the tab) */}
+                <span className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 w-[248px] -translate-x-1/2 rounded-[18px] border border-white/10 bg-[#17181c]/95 p-3 text-center text-xs font-semibold text-white/75 opacity-0 shadow-[0_14px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+                  {drop}
+                </span>
+                </span>
+                );
+              })}
               </span>
-              <button
-                type="button"
-                aria-label="Workspace menu"
-                onClick={() => toast.info("Menu", { description: "Reference-parity chrome — the 3D workspace is fully wired in this clone." })}
-                className="text-white/50 transition-colors hover:text-white/85"
-              >
-                <Menu className="size-4" aria-hidden="true" />
-              </button>
+              <span className="group relative">
+                <button
+                  type="button"
+                  aria-label="Workspace menu"
+                  onClick={() => toast.info("Menu", { description: "Reference-parity chrome — the 3D workspace is fully wired in this clone." })}
+                  className="text-white/50 transition-colors hover:text-white/85"
+                >
+                  <Menu className="size-4" aria-hidden="true" />
+                </button>
+                {/* OmniCraft grid dropdown (reference nav_show on the menu icon:
+                    tool grid + Add-On DCC description) */}
+                <span className="pointer-events-none absolute right-0 top-full z-30 mt-2 w-[300px] rounded-[18px] border border-white/10 bg-[#17181c]/95 p-3.5 opacity-0 shadow-[0_14px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+                  <span className="block text-[11px] font-bold text-white/85">OmniCraft｜Toolbag for 3D</span>
+                  <span className="mt-2 grid grid-cols-2 gap-1">
+                    {["Texture Generator", "Image Enhancer", "Image Remix", "HDRI Generation", "Rodin Search", "Vector to 3D", "Mesh Editor", "Model Viewer", "Format Convertor"].map((tool) => (
+                      <span key={tool} className="truncate rounded-lg bg-white/[0.05] px-2 py-1.5 text-[10px] font-semibold text-white/65">
+                        {tool}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="mt-2.5 block text-[10px] leading-relaxed text-white/45">
+                    Add-On lets you use almost all Rodin features in DCC software.
+                  </span>
+                </span>
+              </span>
             </nav>
 
             {/* hero — the reference's own animated SVG wordmark + version tabs + quotes */}
@@ -1303,9 +1373,20 @@ export function Studio({
                   <span className="ml-0.5 size-[5px] rounded-full bg-[#e65a4e]" aria-hidden="true" />
                 </span>
               </div>
-              <div className="mt-[7px] flex flex-col items-center gap-1 text-sm text-[#cfcfcf]">
-                <span>The best way to understand is to create.</span>
-                <span>What I cannot create, I do not understand.</span>
+              <div className="mt-[7px] flex min-h-[36px] w-full max-w-[560px] flex-col items-center justify-center gap-1 px-4 text-center text-sm text-[#cfcfcf]">
+                {/* rotating tip slot (agent-walked recon: the reference rotates
+                    its operational tip pool here; Feynman is the default) */}
+                <span key={tipIndex} className="animate-in fade-in duration-700">
+                  {HERO_TIPS[tipIndex].length > 62
+                    ? HERO_TIPS[tipIndex].split(". ").map((line, i, arr) => (
+                        <span key={i}>
+                          {line}
+                          {i < arr.length - 1 ? "." : ""}
+                          {i === 0 && arr.length > 1 ? <br /> : null}
+                        </span>
+                      ))
+                    : HERO_TIPS[tipIndex]}
+                </span>
               </div>
             </div>
 
@@ -1438,7 +1519,7 @@ export function Studio({
                   ) : (
                     <label
                       htmlFor="workspace-upload"
-                      className="absolute inset-x-0 bottom-[38px] top-[42px] flex cursor-pointer flex-col items-center justify-center gap-3 transition-colors hover:bg-white/[0.03]"
+                      className="absolute inset-x-0 bottom-[38px] top-[42px] flex cursor-pointer flex-col items-center justify-center gap-1.5 transition-colors hover:bg-white/[0.03]"
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={(e) => {
                         e.preventDefault();
@@ -1450,26 +1531,157 @@ export function Studio({
                         <span className="absolute left-1/2 top-1/2 h-[5px] w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
                         <span className="absolute left-1/2 top-1/2 h-10 w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
                       </span>
+                      {/* sub-tab flavor (reference: Remix Gen = "Remix Images
+                          with your idea", Turbo Gen = Single image / Multi-view
+                          + Upload photos from any angle) */}
+                      {mode === "image-to-3d" && imageTab === "remix" && (
+                        <span className="text-[8.5px] leading-tight text-white/45">Remix Images with your idea</span>
+                      )}
+                      {mode === "image-to-3d" && imageTab === "turbo" && (
+                        <>
+                          <span className="flex items-center gap-1">
+                            {(["Single image", "Multi-view"] as const).map((v, i) => (
+                              <span
+                                key={v}
+                                role="button"
+                                tabIndex={0}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setMultiView(i === 1);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setMultiView(i === 1);
+                                  }
+                                }}
+                                className={cn(
+                                  "rounded-full px-1.5 py-0.5 text-[8px] font-bold transition-colors",
+                                  (i === 1) === multiView ? "bg-white/85 text-[#17181c]" : "bg-white/[0.08] text-white/60",
+                                )}
+                              >
+                                {v}
+                              </span>
+                            ))}
+                          </span>
+                          <span className="text-[8px] leading-tight text-white/40">Upload photos from any angle</span>
+                        </>
+                      )}
                     </label>
                   )
                 ) : (
-                  <div className="absolute inset-x-3 bottom-[42px] top-[42px] flex items-center justify-center rounded-lg border border-dashed border-white/12 px-3 text-center text-[10px] leading-relaxed text-white/45">
-                    {mode === "editing-3d"
-                      ? "Coming soon in this clone — mesh editing is a stub (honest)."
-                      : "Coming soon in this clone — WorldGen scenes are a stub (honest)."}
+                  <div className="absolute inset-x-2.5 bottom-[42px] top-[42px] flex flex-col items-center justify-center gap-2 text-center">
+                    {mode === "editing-3d" ? (
+                      <>
+                        {/* reference 3D Editing card: upload custom reference
+                            image if needed + Supports .obj .fbx .glb +
+                            Parts/Refine/Modify tabs + Frontview hint */}
+                        <label htmlFor="workspace-upload" className="flex cursor-pointer flex-col items-center gap-1.5" onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files; if (f && f.length > 0) void handleFiles(f); }}>
+                          <span className="relative size-8" aria-hidden="true">
+                            <span className="absolute left-1/2 top-1/2 h-[4px] w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
+                            <span className="absolute left-1/2 top-1/2 h-8 w-[4px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
+                          </span>
+                          <span className="text-[9px] leading-tight text-white/55">Upload custom reference image if needed</span>
+                          <span className="font-mono text-[8.5px] text-white/40">Supports .obj .fbx .glb</span>
+                        </label>
+                        <div className="flex items-center gap-1" role="tablist" aria-label="Editing operation">
+                          {(["parts", "refine", "modify"] as const).map((op) => (
+                            <button
+                              key={op}
+                              type="button"
+                              role="tab"
+                              aria-selected={editingTab === op}
+                              onClick={() => setEditingTab(op)}
+                              className={cn(
+                                "rounded-full px-2 py-0.5 text-[9px] font-bold capitalize transition-colors",
+                                editingTab === op ? "bg-[#d2b6df]/25 text-white" : "text-white/50 hover:text-white/80",
+                              )}
+                            >
+                              {op}
+                            </button>
+                          ))}
+                        </div>
+                        <span className="text-[8px] leading-tight text-white/40">View selection affects the editing results.</span>
+                      </>
+                    ) : (
+                      <>
+                        {/* reference WorldGen card: Upload a scene image +
+                            Pick objects + Creation Mode pills (Build Myself /
+                            Generate Objects / Complete Scene disabled) */}
+                        <label htmlFor="workspace-upload" className="flex cursor-pointer flex-col items-center gap-1.5" onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files; if (f && f.length > 0) void handleFiles(f); }}>
+                          <span className="relative size-8" aria-hidden="true">
+                            <span className="absolute left-1/2 top-1/2 h-[4px] w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
+                            <span className="absolute left-1/2 top-1/2 h-8 w-[4px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
+                          </span>
+                          <span className="text-[9px] leading-tight text-white/55">Upload a scene image.</span>
+                        </label>
+                        <div className="flex flex-col items-center gap-1">
+                          {(
+                            [
+                              { id: "build-myself", label: "Build Myself", sub: "Manual", on: false },
+                              { id: "generate-objects", label: "Generate Objects", sub: "AI Assist", on: true },
+                              { id: "complete-scene", label: "Complete Scene", sub: "Full AI", on: false, disabled: true },
+                            ] as const
+                          ).map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              disabled={c.disabled}
+                              onClick={() => c.id !== "complete-scene" && setCreationMode(c.id)}
+                              className={cn(
+                                "flex w-[150px] items-center justify-between rounded-lg px-2 py-1 text-left transition-colors",
+                                c.disabled ? "cursor-not-allowed opacity-40" : "hover:bg-white/[0.05]",
+                                creationMode === c.id && !c.disabled && "bg-white/[0.07]",
+                              )}
+                            >
+                              <span className="text-[9px] font-bold text-white/85">{c.label}</span>
+                              <span className="text-[8px] text-white/45">{c.sub}</span>
+                            </button>
+                          ))}
+                        </div>
+                        <span className="text-[8px] text-white/40">Pick objects.</span>
+                      </>
+                    )}
                   </div>
                 )}
-                {/* image/text toggle pill (lilac glass, gradient text) */}
+                {/* image/text toggle pill (lilac glass, gradient text) + the
+                    reference's Remix Gen / Turbo Gen sub-pills stacked at the
+                    card's bottom-right (DOM-probed: 73×21 / 70×21 at the pill
+                    row's right end) */}
                 {GENERATING_MODES.includes(mode) && (
-                  <button
-                    type="button"
-                    onClick={() => setMode(mode === "image-to-3d" ? "text-to-3d" : "image-to-3d")}
-                    className="absolute bottom-3 left-1/2 flex h-[30px] w-[168px] -translate-x-1/2 items-center justify-center rounded-[17px] bg-[#d2b6df]/15 text-base font-bold backdrop-blur-[60px] transition-colors hover:bg-[#d2b6df]/25"
-                  >
-                    <span className="h3d-grad-text-warm">
-                      {mode === "image-to-3d" ? "Text to Image/3D" : "Image to 3D"}
-                    </span>
-                  </button>
+                  <>
+                    {mode === "image-to-3d" && (
+                      <span className="absolute bottom-[34px] right-1.5 z-10 flex flex-col gap-1">
+                        {(["remix", "turbo"] as const).map((tab) => (
+                          <button
+                            key={tab}
+                            type="button"
+                            aria-pressed={imageTab === tab}
+                            onClick={() => setImageTab(tab)}
+                            className={cn(
+                              "h-[18px] rounded-full px-2 text-[8.5px] font-bold backdrop-blur-md transition-colors",
+                              imageTab === tab
+                                ? "bg-[#d2b6df]/30 text-white"
+                                : "bg-[#d2b6df]/10 text-white/55 hover:text-white/85",
+                            )}
+                          >
+                            {tab === "remix" ? "Remix Gen" : "Turbo Gen"}
+                          </button>
+                        ))}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setMode(mode === "image-to-3d" ? "text-to-3d" : "image-to-3d")}
+                      className="absolute bottom-3 left-1/2 flex h-[30px] w-[168px] -translate-x-1/2 items-center justify-center rounded-[17px] bg-[#d2b6df]/15 text-base font-bold backdrop-blur-[60px] transition-colors hover:bg-[#d2b6df]/25"
+                    >
+                      <span className="h3d-grad-text-warm">
+                        {mode === "image-to-3d" ? "Text to Image/3D" : "Image to 3D"}
+                      </span>
+                    </button>
+                  </>
                 )}
               </div>
               <input
@@ -1921,14 +2133,21 @@ export function Studio({
 
           {/* ASSET section — DOM-probed 2026-10-22: row 1 = ASSET (bold) +
               EXPLORE (muted) + search/Filter right; row 2 = Featured pill
-              below-left; no Share button. Gallery grid, Load More. */}
+              below-left; no Share button. Gallery grid, Load More.
+              UX-recon (agent-walked): EXPLORE swaps to the story feed
+              (reference routes /tab/story); tile click opens the asset
+              detail (reference /workspace/rodin/{uuid}). */}
           <section className="mx-auto mt-14 w-full max-w-[1280px] px-6 pb-20 md:px-20" aria-label="Assets">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-              <h2 className="text-[26px] font-bold leading-none text-white">ASSET</h2>
+              <h2 className={cn("text-[26px] font-bold leading-none", storyOpen ? "text-white/40" : "text-white")}>ASSET</h2>
               <button
                 type="button"
-                onClick={() => toast.info("EXPLORE", { description: "The community feed is reference-parity chrome — this clone shows the Featured demo set." })}
-                className="text-[26px] font-bold leading-none text-white/40 transition-colors hover:text-white/70"
+                onClick={() => {
+                  setStoryOpen(true);
+                  if (typeof document !== "undefined") document.querySelector(".h3d-scroll")?.scrollTo({ top: 0 });
+                }}
+                aria-pressed={storyOpen}
+                className={cn("text-[26px] font-bold leading-none transition-colors", storyOpen ? "text-white" : "text-white/40 hover:text-white/70")}
               >
                 EXPLORE
               </button>
@@ -1950,16 +2169,68 @@ export function Studio({
                 </button>
               </div>
             </div>
+            {/* story feed (reference EXPLORE) vs Featured gallery */}
+            {storyOpen ? (
+              <StoryFeed
+                onBack={() => {
+                  setStoryOpen(false);
+                  if (typeof document !== "undefined") document.querySelector(".h3d-scroll")?.scrollTo({ top: 0 });
+                }}
+              />
+            ) : (
+              <>
             <div className="mt-3">
               <span className="flex h-[38px] w-[106px] items-center justify-center rounded-[39px] border border-[#e6765d] text-base text-[#cfcfcf]">
                 Featured
               </span>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {/* OmniCraft promo tile (reference: 300×126 promo card inside the
+                  gallery grid — toolbag upsell with per-tool pricing chips) */}
+              <aside
+                aria-label="OmniCraft promo"
+                className="relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-2xl border border-white/8 bg-[linear-gradient(160deg,rgba(210,182,223,0.10),rgba(23,24,28,0.6))] p-3.5"
+              >
+                <div>
+                  <p className="text-sm font-bold text-white">OmniCraft｜Toolbag for 3D</p>
+                  <div className="mt-3 space-y-1.5">
+                    {[
+                      ["Texture Generator", "Free Trial"],
+                      ["Image Enhancer", "Free to all"],
+                      ["Image Remix", "Free to Subscriber"],
+                      ["HDRI Generation", "Free Trial"],
+                    ].map(([tool, tag]) => (
+                      <p key={tool} className="flex items-center justify-between text-[10px]">
+                        <span className="text-white/70">{tool}</span>
+                        <span className="rounded-full bg-white/[0.07] px-1.5 py-0.5 text-[8.5px] font-bold text-[#d2b6df]">{tag}</span>
+                      </p>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toast.info("OmniCraft", { description: "The reference's toolbag is a separate product — not part of this clone." })}
+                  className="h-8 w-full rounded-full bg-white text-[11px] font-bold text-[#17181c] transition-colors hover:bg-white/90"
+                >
+                  Try OmniCraft
+                </button>
+              </aside>
               {FEATURED_TILES.map((tile) => (
                 <figure
                   key={tile.src}
-                  className="group relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]"
+                  className="group relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03] transition-colors hover:border-white/20"
+                  onClick={() =>
+                    setDetailAsset({
+                      src: tile.src,
+                      title: tile.title,
+                      author: tile.author,
+                      likes: tile.likes,
+                      model: tile.model,
+                      effort: tile.effort,
+                      tags: tile.tags,
+                      prompt: tile.prompt,
+                    })
+                  }
                 >
                   <img
                     src={tile.src}
@@ -2002,6 +2273,8 @@ export function Studio({
                 Load More <ChevronDown className="size-4" aria-hidden="true" />
               </button>
             </div>
+              </>
+            )}
           </section>
 
           {/* footer — the reference's own page footer (brand + email + socials,
@@ -3140,19 +3413,80 @@ export function Studio({
       />
 
       {/* floating Feedback button (reference bottom-right chrome — the cookie
-          card overlays it until accepted, exactly like the reference guest) */}
+          card overlays it until accepted, exactly like the reference guest).
+          UX-recon (agent-walked): the reference's Feedback opens a chat
+          widget — "Chat with us" / "Notifications" tabs + message form. */}
       <button
         type="button"
-        onClick={() =>
-          toast.info("Feedback", {
-            description: "Reference-parity chrome — this clone's feedback channel is the demo account toast you are reading.",
-          })
-        }
+        onClick={() => setChatOpen((v) => !v)}
+        aria-expanded={chatOpen}
+        aria-label="Feedback — chat with us"
         className="absolute bottom-6 right-6 z-30 flex h-12 items-center gap-2 rounded-full border border-white/12 bg-[#221d27]/90 px-5 text-sm font-semibold text-white/85 shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-colors hover:border-white/30 hover:text-white"
       >
         <MessageCircle className="size-4" aria-hidden="true" />
         Feedback
       </button>
+
+      {/* chat widget (reference: Feedback → Chat with us / Notifications
+          tabs + message form w/ Submit) */}
+      {chatOpen && (
+        <div
+          role="dialog"
+          aria-label="Chat with us"
+          className="absolute bottom-20 right-6 z-40 flex w-[300px] flex-col overflow-hidden rounded-[22px] border border-white/12 bg-[#17181c]/95 shadow-[0_18px_50px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+        >
+          <div className="flex border-b border-white/10" role="tablist" aria-label="Support">
+            {(["Chat with us", "Notifications"] as const).map((t, i) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={i === 0}
+                className={cn(
+                  "flex-1 py-2.5 text-xs font-bold transition-colors",
+                  i === 0 ? "border-b-2 border-[#d2b6df] text-white" : "text-white/50 hover:text-white/80",
+                )}
+              >
+                {t}
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-label="Close chat"
+              onClick={() => setChatOpen(false)}
+              className="px-3 text-white/50 transition-colors hover:text-white"
+            >
+              ×
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 p-3.5">
+            <p className="text-[11px] leading-relaxed text-white/55">
+              Hi! This clone's support channel is this honest notice — the workspace itself is fully wired.
+            </p>
+            <textarea
+              aria-label="Message"
+              placeholder="Type your message…"
+              rows={3}
+              className="w-full resize-none rounded-xl border border-white/10 bg-black/30 p-2.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-white/25"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                toast.info("Chat with us", { description: "The reference's live chat is not part of this clone — feedback stays local." })
+              }
+              className="h-9 rounded-full bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-xs font-bold text-[#17181c]"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* membership pricing overlay (reference: Subscribe → full-screen view) */}
+      {pricingOpen && <PricingOverlay onClose={() => setPricingOpen(false)} />}
+
+      {/* asset detail overlay (reference: gallery tile click → asset view) */}
+      {detailAsset && <AssetDetail asset={detailAsset} onClose={() => setDetailAsset(null)} />}
 
       {/* cookie preferences card (reference guest state — white card with the
           reference's purple top glow, deep-violet #4A00E0 Accept all /
