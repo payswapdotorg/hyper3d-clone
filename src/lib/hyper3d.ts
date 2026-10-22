@@ -61,12 +61,15 @@ export const GEN_VERSIONS: { id: GenVersionId; label: string; note: string }[] =
   { id: "gen-2.5", label: "Gen-2.5 Agent-Ready", note: "5 efforts · agentic · neural engine" },
 ];
 
-/** Gen-2 era mode names (reference: hyper3d.ai blog, Feb 2026). */
-export type LegacyModeId = "default" | "speedy";
+/** Gen-2 era mode names (reference Model Selection popover, UX-recon
+ *  2026-10-22: Default / Focal / Zero / Speedy with one-line sub-texts). */
+export type LegacyModeId = "default" | "focal" | "zero" | "speedy";
 
 export const LEGACY_MODES: { id: LegacyModeId; label: string; blurb: string; effort: EffortId }[] = [
-  { id: "default", label: "Default", blurb: "Balanced results", effort: "medium" },
-  { id: "speedy", label: "Speedy", blurb: "Quick drafts", effort: "low" },
+  { id: "default", label: "Default", blurb: "Balanced quality and speed", effort: "medium" },
+  { id: "focal", label: "Focal", blurb: "More detail, slightly slower", effort: "high" },
+  { id: "zero", label: "Zero", blurb: "Clearer, sharper, and slower", effort: "high" },
+  { id: "speedy", label: "Speedy", blurb: "Fast model", effort: "low" },
 ];
 
 /* --------------------------- material selector -------------------------- */

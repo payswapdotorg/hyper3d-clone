@@ -21,6 +21,7 @@ import dynamic from "next/dynamic";
 import {
   Boxes,
   Bot,
+  Check,
   ChevronDown,
   ChevronRight,
   Coins,
@@ -47,10 +48,12 @@ import {
   RotateCw,
   Search,
   Settings,
+  SlidersHorizontal,
   Sparkles,
   Triangle,
   Twitch,
   Twitter,
+  Trash2,
   Type,
   Upload,
   UserRound,
@@ -72,6 +75,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { SmartImage } from "../smart-image";
 import { EffortModal } from "./effort-modal";
+import { ModelSelectionPopover } from "./model-selection-popover";
+import { OrientationPopup } from "./orientation-popup";
+import { PresetsModal, presetHint, type PresetGeometry } from "./presets-modal";
 import { TaskRail, type RailTask } from "./task-rail";
 import type { UserInfo } from "@/lib/use-session";
 import type { CaptionResult } from "@/lib/caption";
@@ -114,6 +120,7 @@ import {
   ENGINE_SLOT_OF,
   IMAGE_LABELS,
   VIEW_DIRECTIONS,
+  type ViewDirection as PickerDirection,
 } from "@/lib/direction-picker";
 import { exportModel } from "@/lib/exporters";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -142,6 +149,15 @@ const PROMPT_PLACEHOLDERS: Record<GenMode, string> = {
   "text-to-3d": "a rugged sci-fi cargo drone, matte panels, worn metal, red accents…",
   "editing-3d": "split into parts, refine the hilt, add gold trim…",
   worldgen: "a floating island village, waterfalls, rope bridges…",
+};
+
+/** One thumbnail card in the reference upload strip. */
+type StripImageEntry = {
+  id: string;
+  dataUrl: string;
+  name: string;
+  file: File;
+  direction: PickerDirection;
 };
 
 const TEXTURE_MODES: { id: TextureMode; label: string }[] = [
@@ -328,6 +344,24 @@ export function Studio({
   const [analyzing, setAnalyzing] = useState(false);
   const [caption, setCaption] = useState<CaptionResult | null>(null);
 
+  /* ---- reference upload-strip state (UX-recon 2026-10-22): images line up
+     LEFT of the + entry card, each with a per-image direction popup and a
+     hover remix button. The strip is the single upload source of truth;
+     `upload`/`extraViews` stay derived from it. ---- */
+  const [stripImages, setStripImages] = useState<StripImageEntry[]>([]);
+  const [oriPopupFor, setOriPopupFor] = useState<string | null>(null);
+  const [remixFor, setRemixFor] = useState<string | null>(null);
+  const [remixText, setRemixText] = useState("");
+  const [remixStyle, setRemixStyle] = useState<string | null>(null);
+  /* reference option-picking state: shared Model Selection popover,
+     GENERATE-row Presets modal, batch upsell tooltip, prompt polish */
+  const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
+  const [refPresetsOpen, setRefPresetsOpen] = useState(false);
+  const [presetGeometry, setPresetGeometry] = useState<PresetGeometry>("Detailed");
+  const [captionOverride, setCaptionOverride] = useState(false);
+  const [batchTip, setBatchTip] = useState(false);
+  const [polishing, setPolishing] = useState(false);
+
   const [activeTask, setActiveTask] = useState<string | null>(null);
   const [card, setCard] = useState<TaskCard | null>(null);
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
@@ -411,19 +445,47 @@ export function Studio({
 
   /* ---------------- upload + caption ---------------- */
 
-  const handleFile = useCallback(
-    async (file: File) => {
-      if (!/^image\/(png|jpeg|jpg|webp)$/.test(file.type)) {
+  /* strip mirror for async handlers (avoids stale closures) */
+  const stripRef = useRef<StripImageEntry[]>([]);
+  stripRef.current = stripImages;
+
+  const readFileAsDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+
+  /* Reference upload-strip flow (UX-recon 2026-10-22): the + entry accepts
+     MULTIPLE files at once; each lands as its own 172px thumbnail card in
+     the strip to the LEFT of the + entry (which always stays). The first
+     image is the primary reference — the caption analysis runs on it and
+     fills the prompt (unless Caption Override is on). No view switch: the
+     landing cluster persists through analysis, exactly like the reference. */
+  const handleFiles = useCallback(
+    async (files: FileList | File[]) => {
+      const list = Array.from(files).filter((f) => /^image\/(png|jpeg|jpg|webp)$/.test(f.type));
+      if (list.length === 0) {
         toast.error("Unsupported image", { description: "Use .png, .jpg or .webp reference images." });
         return;
       }
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
-      setUpload({ dataUrl, name: file.name, file });
+      const wasEmpty = stripRef.current.length === 0;
+      const next = [...stripRef.current];
+      for (const file of list.slice(0, 8 - stripRef.current.length)) {
+        const dataUrl = await readFileAsDataUrl(file);
+        next.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          dataUrl,
+          name: file.name,
+          file,
+          direction: "unknown",
+        });
+      }
+      setStripImages(next);
+      if (!wasEmpty) return; // extra views: no caption re-run
+      const file = next[0]?.file;
+      if (!file) return;
       setCaption(null);
       setAnalyzing(true);
       try {
@@ -433,7 +495,7 @@ export function Studio({
         if (!res.ok) throw new Error(`analysis failed (${res.status})`);
         const result = (await res.json()) as CaptionResult;
         setCaption(result);
-        if (result.prompt) setPrompt(result.prompt);
+        if (result.prompt && !captionOverride) setPrompt(result.prompt);
         toast.success("Reference analyzed", {
           description: result.prompt,
         });
@@ -445,8 +507,45 @@ export function Studio({
         setAnalyzing(false);
       }
     },
-    [],
+    [captionOverride],
   );
+
+  /* strip → derived upload/extraViews (the GENERATE pipeline keeps its
+     existing shape: images[0] = primary, the rest = direction-tagged views) */
+  useEffect(() => {
+    const first = stripImages[0];
+    setUpload(first ? { dataUrl: first.dataUrl, name: first.name, file: first.file } : null);
+    setExtraViews(
+      stripImages
+        .slice(1)
+        .filter((v) => v.direction !== "unknown")
+        .map((v) => ({ direction: v.direction, dataUrl: v.dataUrl, file: v.file })),
+    );
+  }, [stripImages]);
+
+  /* prompt polish — the reference prompt card's "correct" button (real LLM
+     call through /api/task/prompt_polish) */
+  const polishPrompt = useCallback(async () => {
+    if (!prompt.trim() || polishing) return;
+    setPolishing(true);
+    try {
+      const res = await fetch("/api/task/prompt_polish", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) throw new Error(`polish failed (${res.status})`);
+      const body = (await res.json()) as { prompt: string; corrected: boolean };
+      setPrompt(body.prompt);
+      toast.success(body.corrected ? "Prompt corrected" : "Prompt already clean", {
+        description: body.corrected ? body.prompt : "No spelling or grammar changes needed.",
+      });
+    } catch {
+      toast.error("Could not correct the prompt", { description: "The language model did not respond." });
+    } finally {
+      setPolishing(false);
+    }
+  }, [prompt, polishing]);
 
   /* ---------------- generation ---------------- */
 
@@ -654,7 +753,12 @@ export function Studio({
         onNeedAuth("Sign in to generate — your first preview is free.");
         return;
       }
-      const promptText = prompt.trim();
+      /* Presets modal wiring (reference GENERATE-row Presets): a non-default
+         geometry preset appends its style hint to the prompt — honest,
+         prompt-driven behavior recorded on the task card. */
+      const base = prompt.trim();
+      const hint = presetGeometry !== "Detailed" ? presetHint(presetGeometry) : null;
+      const promptText = hint ? (base ? `${base}, ${hint}` : `A 3D object, ${hint}`) : base;
       if (!promptText && !upload) {
         toast.error("Add a prompt", { description: "Describe what Rodin should build, or upload a reference image." });
         return;
@@ -955,8 +1059,11 @@ export function Studio({
   /* Reference-style empty state: nothing generated yet, nothing in flight —
      render the controls as the reference /workspace/rodin landing (scrollable
      hero + 180px input card cluster + GENERATE capsule + ASSET gallery)
-     instead of the three-pane dashboard. */
-  const emptyStudio = !viewerUrl && !card && !generating && !creating && !analyzing;
+     instead of the three-pane dashboard. NOTE (UX-recon 2026-10-22): image
+     analysis no longer flips the view — the reference keeps the landing
+     cluster with the thumbnail strip while the caption runs in the
+     background; only real generation work switches to the dashboard. */
+  const emptyStudio = !viewerUrl && !card && !generating && !creating;
 
   /* floating tool panel on the empty landing (materials / presets / quality /
      directions) — the reference hides these behind icon rails + popovers */
@@ -1233,11 +1340,68 @@ export function Studio({
                 })}
               </div>
 
+              {/* upload strip (UX-recon 2026-10-22): uploaded images line up as
+                  172px thumbnail cards to the LEFT of the + entry card (which
+                  always stays) — the reference's multi-image layout. Click a
+                  thumbnail → direction popup; hover → teal→yellow gradient
+                  remix button (reference newrodin_imgBtn). */}
+              {mode === "image-to-3d" && stripImages.length > 0 && (
+                <div className="flex items-center gap-2 sm:mr-2">
+                  {stripImages.map((img, i) => (
+                    <div
+                      key={img.id}
+                      className="group relative h-[160px] w-[160px] shrink-0 cursor-pointer overflow-hidden rounded-[19px] bg-black/20 backdrop-blur-md md:h-[172px] md:w-[172px]"
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Image ${i + 1} — ${DIRECTION_LABELS[img.direction]} view. Select the direction of this image.`}
+                        onClick={() => setOriPopupFor(img.id)}
+                        className="absolute inset-0 h-full w-full cursor-pointer"
+                      />
+                      <img
+                        src={img.dataUrl}
+                        alt={`${img.name} — ${DIRECTION_LABELS[img.direction]} view`}
+                        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                      />
+                      {/* direction chip (bottom-left, shows once a direction is picked) */}
+                      {img.direction !== "unknown" && (
+                        <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-sm">
+                          {DIRECTION_LABELS[img.direction]}
+                        </span>
+                      )}
+                      {/* caption-analysis pulse on the primary image (subtle —
+                          the reference keeps the landing quiet) */}
+                      {i === 0 && analyzing && (
+                        <span className="pointer-events-none absolute left-1.5 top-1.5 flex size-5 items-center justify-center rounded-full bg-black/65 backdrop-blur-sm">
+                          <Loader2 className="size-3 animate-spin text-white/85" aria-label="Analyzing reference" />
+                        </span>
+                      )}
+                      {/* remix button (reference: 24px circle, teal→yellow gradient) */}
+                      <button
+                        type="button"
+                        aria-label={`Remix image ${i + 1}`}
+                        title="Remix"
+                        onClick={() => {
+                          setRemixFor(img.id);
+                          setRemixText("");
+                          setRemixStyle(null);
+                        }}
+                        className="absolute right-[5px] top-[5px] flex size-6 items-center justify-center rounded-full bg-[linear-gradient(126.18deg,rgba(0,216,213,1)_1.15%,rgba(255,211,37,1)_92.97%)] opacity-0 shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-opacity hover:brightness-110 focus:opacity-100 group-hover:opacity-100"
+                      >
+                        <Sparkles className="size-3 text-[#17181c]" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* the 180×180 input card (radius 20) — DOM-probed 2026-10-22:
                   the reference's content field reads near-black (deeper than
                   the old black/18), so the blobs don't lift it. Header row has
-                  the mode icon beside the label (reference modeMenuIcon) */}
-              <div className="relative h-[180px] w-[180px] overflow-hidden rounded-[20px] border border-white/8 bg-black/45">
+                  the mode icon beside the label (reference modeMenuIcon).
+                  In image mode the + zone ALWAYS stays (the images live in
+                  the strip to the left — reference behavior). */}
+              <div className="relative h-[180px] w-[180px] shrink-0 overflow-hidden rounded-[20px] border border-white/8 bg-black/45">
                 <p className="flex items-center justify-center gap-1.5 pt-3 text-center text-base font-bold text-white">
                   {(() => {
                     const ModeIcon = mode === "editing-3d" ? PencilRuler : mode === "worldgen" ? Globe : mode === "text-to-3d" ? Type : ImageIcon;
@@ -1246,15 +1410,40 @@ export function Studio({
                   {mode === "editing-3d" ? "3D Editing" : mode === "worldgen" ? "WorldGen" : mode === "text-to-3d" ? "Text to 3D" : "Image to 3D"}
                 </p>
                 {GENERATING_MODES.includes(mode) ? (
-                  mode === "image-to-3d" && !upload ? (
+                  mode === "text-to-3d" ? (
+                    <>
+                      <textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Describe the item you want to generate..."
+                        aria-label="Prompt"
+                        className="absolute inset-x-2 bottom-[42px] top-[42px] resize-none bg-transparent text-sm text-[#ebebeb] outline-none placeholder:text-white/30"
+                      />
+                      {/* correct button — the reference prompt card's
+                          spell/grammar fix (real LLM call) */}
+                      <button
+                        type="button"
+                        onClick={() => void polishPrompt()}
+                        disabled={!prompt.trim() || polishing}
+                        className="absolute bottom-[46px] right-2 flex items-center gap-1 rounded-full border border-white/12 bg-black/40 px-2.5 py-1 text-[10px] font-semibold text-white/70 backdrop-blur-sm transition-colors hover:border-white/30 hover:text-white disabled:opacity-40"
+                      >
+                        {polishing ? (
+                          <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+                        ) : (
+                          <Check className="size-3" aria-hidden="true" />
+                        )}
+                        correct
+                      </button>
+                    </>
+                  ) : (
                     <label
                       htmlFor="workspace-upload"
                       className="absolute inset-x-0 bottom-[38px] top-[42px] flex cursor-pointer flex-col items-center justify-center gap-3 transition-colors hover:bg-white/[0.03]"
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={(e) => {
                         e.preventDefault();
-                        const file = e.dataTransfer.files?.[0];
-                        if (file) void handleFile(file);
+                        const files = e.dataTransfer.files;
+                        if (files && files.length > 0) void handleFiles(files);
                       }}
                     >
                       <span className="relative size-10" aria-hidden="true">
@@ -1262,27 +1451,6 @@ export function Studio({
                         <span className="absolute left-1/2 top-1/2 h-10 w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
                       </span>
                     </label>
-                  ) : mode === "text-to-3d" ? (
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="Describe the item you want to generate..."
-                      aria-label="Prompt"
-                      className="absolute inset-x-2 bottom-[42px] top-[42px] resize-none bg-transparent text-sm text-[#ebebeb] outline-none placeholder:text-white/30"
-                    />
-                  ) : (
-                    <div className="absolute inset-0">
-                      <img src={upload?.dataUrl} alt="Uploaded reference" className="absolute inset-0 h-full w-full object-cover" />
-                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-black/60 py-1.5 text-[10px] text-white/80 backdrop-blur-sm">
-                        {analyzing ? (
-                          <>
-                            <Loader2 className="size-3 animate-spin" aria-hidden="true" /> analyzing…
-                          </>
-                        ) : (
-                          "click ＋ to replace"
-                        )}
-                      </span>
-                    </div>
                   )
                 ) : (
                   <div className="absolute inset-x-3 bottom-[42px] top-[42px] flex items-center justify-center rounded-lg border border-dashed border-white/12 px-3 text-center text-[10px] leading-relaxed text-white/45">
@@ -1308,10 +1476,11 @@ export function Studio({
                 id="workspace-upload"
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
+                multiple
                 className="sr-only"
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void handleFile(file);
+                  const files = e.target.files;
+                  if (files && files.length > 0) void handleFiles(files);
                   e.target.value = "";
                 }}
               />
@@ -1381,7 +1550,7 @@ export function Studio({
                 <button
                   type="button"
                   aria-label="Prompt presets and seed"
-                  title="Presets"
+                  title="Prompt presets and seed"
                   onClick={() => setToolPanel(toolPanel === "presets" ? null : "presets")}
                   className={cn(
                     "flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
@@ -1595,13 +1764,18 @@ export function Studio({
                   )}
                   aria-hidden="true"
                 />
-                {creating || generating || analyzing ? (
+                {creating || generating ? (
                   <span className="relative z-10 flex items-center gap-2 text-lg font-bold text-white/60">
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Working…
                   </span>
                 ) : (
                   <>
-                    <span className="relative z-10 text-lg font-bold text-white transition-opacity group-hover:opacity-0">
+                    <span
+                      className={cn(
+                        "relative z-10 text-lg font-bold text-white transition-opacity group-hover:opacity-0",
+                        analyzing && "opacity-50",
+                      )}
+                    >
                       GENERATE
                     </span>
                     <span className="h3d-grad-text-warm pointer-events-none absolute inset-0 z-10 flex items-center justify-center text-lg font-bold opacity-0 transition-opacity group-hover:opacity-100">
@@ -1611,18 +1785,53 @@ export function Studio({
                 )}
               </button>
               <div className="flex items-center gap-3">
-                <span
-                  className="flex items-center gap-1 text-[11px] font-semibold text-white/50"
-                  title="Batch size — Business plan feature in the reference; this clone keeps batch 1"
-                >
-                  ×1
-                  <ChevronRight className="size-3" aria-hidden="true" />
+                {/* batch chip — reference opens the upsell tooltip
+                    "Unlock 5x and 10x tiers with Business Plan" on click */}
+                <span className="relative">
+                  <button
+                    type="button"
+                    aria-label="Batch size"
+                    aria-expanded={batchTip}
+                    onClick={() => setBatchTip((v) => !v)}
+                    onBlur={() => setBatchTip(false)}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-white/50 transition-colors hover:text-white/85"
+                  >
+                    ×1
+                    <ChevronRight className="size-3" aria-hidden="true" />
+                  </button>
+                  {batchTip && (
+                    <>
+                      <span className="fixed inset-0 z-20" onClick={() => setBatchTip(false)} aria-hidden="true" />
+                      <span
+                        role="tooltip"
+                        className="absolute bottom-full left-1/2 z-30 mb-2 w-[224px] -translate-x-1/2 rounded-xl border border-white/12 bg-[#1c1a20]/95 p-3 text-center text-[11px] leading-snug text-white/75 backdrop-blur-xl"
+                      >
+                        Unlock <span className="font-semibold text-white">5x and 10x</span> tiers
+                        with{" "}
+                        <span className="font-semibold text-[#ff9d9d] underline underline-offset-2">Business Plan</span>
+                        <span className="mt-1 block text-[10px] text-white/40">
+                          This clone keeps batch ×1 — every generation is full quality.
+                        </span>
+                      </span>
+                    </>
+                  )}
                 </span>
+                {/* Presets — the reference GENERATE-row Presets modal
+                    (Geometry pills + Prompt + Caption Override) */}
                 <button
                   type="button"
-                  onClick={() =>
-                    genVersion === "gen-2.5" ? setEffortModalOpen(true) : setToolPanel(toolPanel === "quality" ? null : "quality")
-                  }
+                  onClick={() => setRefPresetsOpen(true)}
+                  title="Presets"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-white/50 transition-colors hover:text-white/85"
+                >
+                  <SlidersHorizontal className="size-3" aria-hidden="true" />
+                  Presets
+                </button>
+                {/* settings icon — opens the shared Model Selection popover
+                    (reference: all three pickers open the same panel) */}
+                <button
+                  type="button"
+                  onClick={() => setModelPopoverOpen(true)}
                   title="Generation settings"
                   aria-label="Generation settings"
                   className="flex size-[29px] items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
@@ -1630,43 +1839,28 @@ export function Studio({
                   <Settings className="size-[18px]" aria-hidden="true" />
                 </button>
               </div>
-              {/* gen-1.5 quality panel (Default / Speedy) */}
-              {toolPanel === "quality" && genVersion === "gen-1.5" && (
-                <div className="absolute top-full mt-2 flex gap-1 rounded-xl border border-white/10 bg-[#1c1a20]/95 p-1.5 backdrop-blur-xl">
-                  {LEGACY_MODES.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      aria-pressed={legacyMode === m.id}
-                      onClick={() => {
-                        setLegacyMode(m.id);
-                        setToolPanel(null);
-                      }}
-                      className={cn(
-                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
-                        legacyMode === m.id ? "h3d-mode-active text-white" : "text-white/60 hover:text-white",
-                      )}
-                    >
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* controls row — DOM-probed 2026-10-22 (single-instant band scan,
                 full parent-chain visibility): the reference's VISIBLE row is
                 exactly three controls — [bot icon + OFF pill] · ‹ Gen-2.5 › ·
-                [diamond + High + chevron]. The Agentic Mode label, Vibe
-                Modeling caption, 5-min chip and 1-Credit coin are all hidden
-                popover content in the reference (opacity-0 parents). */}
+                [diamond + High + chevron]. UX-recon 2026-10-22: the ‹Gen-2.5›
+                pill and the effort pill BOTH open the shared Model Selection
+                popover; picking applies immediately and closes (no confirm);
+                the Agentic pill gates guests behind the sign-in panel. */}
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
               <button
                 type="button"
                 aria-pressed={agentic}
                 aria-label="Agentic Mode"
                 disabled={!agenticAvailable}
-                onClick={() => setAgentic(!agentic)}
+                onClick={() => {
+                  if (!user) {
+                    onNeedAuth("Sign in to use Agentic Mode — Vibe Modeling lets AI plan and build.");
+                    return;
+                  }
+                  setAgentic(!agentic);
+                }}
                 title={agenticAvailable ? "Toggle agentic generation (Vibe Modeling — let AI plan and build)" : "Gen-2.5 line only"}
                 className={cn(
                   "flex items-center gap-2",
@@ -1685,12 +1879,8 @@ export function Studio({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const next = genVersion === "gen-2.5" ? "gen-1.5" : "gen-2.5";
-                  setGenVersion(next);
-                  if (next === "gen-1.5") setAgentic(false);
-                }}
-                title="Switch generator version"
+                onClick={() => setModelPopoverOpen(true)}
+                title="Model Selection"
                 className="flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-sm font-bold text-white transition-colors hover:border-white/25"
               >
                 <ChevronDown className="size-3 rotate-90 text-white/50" aria-hidden="true" />
@@ -1699,9 +1889,7 @@ export function Studio({
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  genVersion === "gen-2.5" ? setEffortModalOpen(true) : setToolPanel(toolPanel === "quality" ? null : "quality")
-                }
+                onClick={() => setModelPopoverOpen(true)}
                 title="Quality"
                 className="flex items-center gap-1.5 text-sm text-white/90"
               >
@@ -2014,14 +2202,15 @@ export function Studio({
             </div>
           )}
 
-          {/* effort — Gen-2.5: five efforts; Gen-1.5: Default / Speedy */}
+          {/* effort / quality — the same picker surface as the reference's
+              Model Selection popover (segmented control, no engine jargon) */}
           {genVersion === "gen-1.5" ? (
-            <div className="space-y-2.5">
-              <Label className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Mode</Label>
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-h3d-muted">Quality</Label>
               <div
                 className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
                 role="radiogroup"
-                aria-label="Generation mode (Gen-1.5)"
+                aria-label="Gen-1.5 quality"
               >
                 {LEGACY_MODES.map((m) => (
                   <button
@@ -2036,71 +2225,95 @@ export function Studio({
                     )}
                   >
                     <span className="block text-xs font-semibold">{m.label}</span>
-                    <span className="block font-mono text-[9px] text-white/40">{m.blurb}</span>
+                    <span className="block text-[9px] text-white/40">{m.blurb}</span>
                   </button>
                 ))}
               </div>
-              <p className="font-mono text-[9px] text-white/30">Gen-1.5 V1.2 maps Default→Medium, Speedy→Low effort.</p>
             </div>
           ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Thinking Effort</Label>
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-h3d-muted">Thinking Effort</Label>
               <button
                 type="button"
-                className="min-h-9 font-mono text-[11px] text-h3d-violet underline-offset-2 hover:underline"
-                onClick={() => setEffortModalOpen(true)}
+                className="min-h-9 text-[11px] font-semibold text-h3d-violet underline-offset-2 hover:underline"
+                onClick={() => setModelPopoverOpen(true)}
               >
                 {effortInfo.label} · ~{effortInfo.seconds}s
               </button>
             </div>
-            <Slider
-              value={[effortIndex < 0 ? 2 : effortIndex]}
-              min={0}
-              max={EFFORTS.length - 1}
-              step={1}
-              onValueChange={([v]) => setEffort(EFFORTS[v].id)}
+            <div
+              role="radiogroup"
               aria-label="Thinking effort"
-              className="py-2 [&_[data-slot=slider-thumb]]:size-5 [&_[data-slot=slider-thumb]]:border-h3d-purple [&_[data-slot=slider-range]]:bg-h3d-purple"
-            />
-            <div className="flex justify-between font-mono text-[9px] uppercase text-white/40">
-              {EFFORTS.map((e) => (
-                <span key={e.id}>{e.id === "extreme-low" ? "XLow" : e.id === "extreme-high" ? "XHigh" : e.label}</span>
+              className="grid grid-cols-5 gap-1 rounded-xl border border-white/10 bg-black/25 p-1"
+            >
+              {EFFORTS.map((e, i) => (
+                <button
+                  key={e.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={effortIndex === i}
+                  onClick={() => setEffort(e.id)}
+                  title={e.blurb}
+                  className={cn(
+                    "flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 py-1.5 transition-colors",
+                    effortIndex === i ? "bg-[#8b5cf6]/45 text-white" : "bg-white/[0.04] text-white/60 hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  <span className="text-center text-[9.5px] font-semibold leading-tight">
+                    {e.id === "extreme-low" ? "XLow" : e.id === "extreme-high" ? "XHigh" : e.label}
+                  </span>
+                  <span className="text-[9px] text-white/40">~{e.seconds}s</span>
+                </button>
               ))}
             </div>
           </div>
           )}
 
-          {/* upload (image mode) */}
+          {/* upload strip summary (image mode) — the strip is the single
+              upload source; each chip re-opens its direction popup */}
           {mode === "image-to-3d" && (
             <div className="space-y-2">
-              <Label className="font-mono text-[11px] uppercase tracking-wider text-h3d-muted">Input image</Label>
-              {upload ? (
-                <div className="relative overflow-hidden rounded-xl border border-white/12">
-                  <img
-                    src={upload.dataUrl}
-                    alt="Uploaded reference image"
-                    className="h-36 w-full object-cover"
-                  />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon"
-                    className="absolute right-2 top-2 size-8 border border-white/15 bg-black/60 hover:bg-black/80"
-                    aria-label="Remove uploaded image"
-                    onClick={() => {
-                      setUpload(null);
-                      setCaption(null);
-                    }}
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-h3d-muted">Input images</Label>
+              {stripImages.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {stripImages.map((img, i) => (
+                    <div key={img.id} className="group relative">
+                      <button
+                        type="button"
+                        onClick={() => setOriPopupFor(img.id)}
+                        className="block h-[72px] w-[72px] overflow-hidden rounded-xl border border-white/15 transition-colors hover:border-white/35"
+                        title={`${img.name} — ${DIRECTION_LABELS[img.direction]} view. Click to set the direction.`}
+                        aria-label={`Image ${i + 1}, ${DIRECTION_LABELS[img.direction]} view. Select the direction of this image.`}
+                      >
+                        <img src={img.dataUrl} alt={`${img.name} — ${DIRECTION_LABELS[img.direction]} view`} className="h-full w-full object-cover" />
+                        <span className="absolute inset-x-0 bottom-0 bg-black/70 px-1 py-0.5 text-center text-[9px] font-semibold text-white/85 backdrop-blur-sm">
+                          {DIRECTION_LABELS[img.direction]}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Remove image ${i + 1}`}
+                        onClick={() => setStripImages((imgs) => imgs.filter((x) => x.id !== img.id))}
+                        className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full border border-white/20 bg-black/85 text-white/85 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                      >
+                        <X className="size-2.5" aria-hidden="true" />
+                      </button>
+                      {i === 0 && analyzing && (
+                        <span className="absolute left-1 top-1 flex size-4 items-center justify-center rounded-full bg-black/70">
+                          <Loader2 className="size-2.5 animate-spin text-white/85" aria-label="Analyzing reference" />
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  <label
+                    htmlFor="studio-upload"
+                    className="flex h-[72px] w-[72px] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-white/15 text-white/40 transition-colors hover:border-h3d-purple/50 hover:text-white/70"
+                    title="Add another view"
                   >
-                    <X className="size-4" aria-hidden="true" />
-                  </Button>
-                  {analyzing && (
-                    <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-black/70 px-3 py-2 font-mono text-[10px] text-h3d-violet backdrop-blur-sm">
-                      <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-                      rodin_mesh_image_process · analyzing reference…
-                    </span>
-                  )}
+                    <Plus className="size-4" aria-hidden="true" />
+                    <span className="text-[9px] font-medium">Add view</span>
+                  </label>
                 </div>
               ) : (
                 <label
@@ -2110,23 +2323,24 @@ export function Studio({
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
-                    const file = e.dataTransfer.files?.[0];
-                    if (file) void handleFile(file);
+                    const files = e.dataTransfer.files;
+                    if (files && files.length > 0) void handleFiles(files);
                   }}
                 >
                   <Upload className="size-5 text-h3d-purple" aria-hidden="true" />
-                  <span className="text-xs font-medium text-white/75">Drop an image or click to upload</span>
-                  <span className="font-mono text-[10px] text-white/35">.png · .jpg · .webp — auto-captioned by the vision model</span>
+                  <span className="text-xs font-medium text-white/75">Drop images or click to upload</span>
+                  <span className="text-[10px] text-white/35">.png · .jpg · .webp — the first image is auto-captioned</span>
                 </label>
               )}
               <input
                 id="studio-upload"
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
+                multiple
                 className="sr-only"
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void handleFile(file);
+                  const files = e.target.files;
+                  if (files && files.length > 0) void handleFiles(files);
                   e.target.value = "";
                 }}
               />
@@ -2141,87 +2355,14 @@ export function Studio({
                       style={{ backgroundColor: hex }}
                     />
                   ))}
-                  <span className="font-mono text-[10px] text-white/45">
+                  <span className="text-[10px] text-white/45">
                     {caption.components.length} components · {caption.form}
                   </span>
                 </div>
               )}
-
-              {/* direction picker — 11 reference labels, optional extra views (Quality tier) */}
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-2.5">
-                <div className="flex items-center justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                    Extra views <span className="text-white/30">(optional · pose-free)</span>
-                  </p>
-                  <span className="font-mono text-[10px] text-white/35">{extraViews.length}/4</span>
-                </div>
-                <div className="mt-2 grid grid-cols-4 gap-1.5">
-                  {VIEW_DIRECTIONS.map((dir) => {
-                    const existing = extraViews.find((v) => v.direction === dir);
-                    const engineFed = ENGINE_SLOT_OF[dir] !== null;
-                    return existing ? (
-                      <div key={dir} className="group relative">
-                        <img
-                          src={existing.dataUrl}
-                          alt={`${DIRECTION_LABELS[dir]} view`}
-                          className="h-12 w-full rounded-md border border-h3d-purple/50 object-cover"
-                        />
-                        <span className="absolute inset-x-0 bottom-0 rounded-b-md bg-black/70 px-1 py-0.5 text-center font-mono text-[8px] uppercase text-white/80">
-                          {DIRECTION_SHORT[dir]}
-                        </span>
-                        <button
-                          type="button"
-                          aria-label={`Remove ${DIRECTION_LABELS[dir]} view`}
-                          onClick={() => setExtraViews((vs) => vs.filter((v) => v.direction !== dir))}
-                          className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full border border-white/20 bg-black/80 text-white/80 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
-                        >
-                          <X className="size-2.5" aria-hidden="true" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label
-                        key={dir}
-                        className={cn(
-                          "flex h-12 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed text-white/40 transition-colors hover:border-h3d-purple/50 hover:text-white/70",
-                          engineFed ? "border-white/15" : "border-white/10",
-                        )}
-                        title={`Add a ${DIRECTION_LABELS[dir]} view${engineFed ? " (fed to the neural engine's " + ENGINE_SLOT_OF[dir] + " slot)" : " (recorded on the task card; no engine slot)"}`}
-                      >
-                        <Plus className="size-3" aria-hidden="true" />
-                        <span className="font-mono text-[8px] uppercase">{DIRECTION_SHORT[dir]}</span>
-                        <input
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp"
-                          className="sr-only"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            e.target.value = "";
-                            if (!file) return;
-                            if (extraViews.length >= 4) {
-                              toast.info("Up to 4 extra views", { description: "The engine takes 1 main image + up to 4 views (5 total)." });
-                              return;
-                            }
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                              const dataUrl = String(reader.result);
-                              setExtraViews((vs) => [
-                                ...vs.filter((v) => v.direction !== dir),
-                                { direction: dir, dataUrl, file },
-                              ]);
-                            };
-                            void reader.readAsDataURL(file);
-                          }}
-                        />
-                      </label>
-                    );
-                  })}
-                </div>
-                <p className="mt-1.5 font-mono text-[9px] leading-relaxed text-white/30">
-                  11 reference labels (F/FL/FR/L/UP/R/BL/B/BR/DN/?). Front·Back·Left·Right feed the
-                  engine directly; diagonal/up/down are recorded on the task card. Unknown (?) is the
-                  reference default — skip freely, one image is enough.
-                </p>
-              </div>
+              <p className="text-[10px] leading-relaxed text-white/35">
+                Click a thumbnail to set its direction — Unknown is fine, one image is enough.
+              </p>
             </div>
           )}
 
@@ -2837,6 +2978,153 @@ export function Studio({
           onRefresh={() => (rail === "mine" ? void refreshMine() : void refreshFeatured())}
         />
       </footer>
+      )}
+
+      {/* Model Selection popover — the reference's shared option picker
+          (controls-row pills + settings icon all open this one panel;
+          picking applies immediately, no confirm step) */}
+      {modelPopoverOpen && (
+        <ModelSelectionPopover
+          genVersion={genVersion}
+          effort={effort}
+          legacyMode={legacyMode}
+          onPickEffort={(e) => {
+            setEffort(e);
+            setGenVersion("gen-2.5");
+            setModelPopoverOpen(false);
+          }}
+          onPickLegacy={(m) => {
+            setLegacyMode(m);
+            setGenVersion("gen-1.5");
+            setAgentic(false);
+            setModelPopoverOpen(false);
+          }}
+          onClose={() => setModelPopoverOpen(false)}
+        />
+      )}
+
+      {/* orientation popup — per-image direction picker (strip thumbnails) */}
+      {oriPopupFor && stripImages.find((i) => i.id === oriPopupFor) && (
+        <OrientationPopup
+          imageLabel={stripImages.find((i) => i.id === oriPopupFor)!.name}
+          direction={stripImages.find((i) => i.id === oriPopupFor)!.direction}
+          onPick={(dir) => {
+            setStripImages((imgs) => imgs.map((i) => (i.id === oriPopupFor ? { ...i, direction: dir } : i)));
+            setOriPopupFor(null);
+          }}
+          onClose={() => setOriPopupFor(null)}
+        />
+      )}
+
+      {/* Presets modal — the reference GENERATE-row Presets panel
+          (mounted only while open) */}
+      {refPresetsOpen && (
+        <PresetsModal
+          onClose={() => setRefPresetsOpen(false)}
+          prompt={prompt}
+          onPromptChange={setPrompt}
+          captionOverride={captionOverride}
+          onCaptionOverrideChange={setCaptionOverride}
+          geometry={presetGeometry}
+          onGeometryChange={setPresetGeometry}
+          onGenerate={() => handleGenerate()}
+        />
+      )}
+
+      {/* remix modal — the reference per-image Remix panel (compact): style
+          pills + free-text edit; Replace/Append are prompt-driven (honest —
+          the reference image is kept, the style/text feeds generation) */}
+      {remixFor && stripImages.find((i) => i.id === remixFor) && (
+        <>
+          <div className="fixed inset-0 z-[90] bg-black/50" onClick={() => setRemixFor(null)} aria-hidden="true" />
+          <div
+            role="dialog"
+            aria-label="Remix"
+            className="fixed left-1/2 top-1/2 z-[91] flex w-[min(339px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-[25px] border-2 border-white/12 bg-[rgba(255,255,255,0.05)] p-4 pt-3 backdrop-blur-[30px] shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-white">Remix</h2>
+              <button
+                type="button"
+                aria-label="Close remix"
+                onClick={() => setRemixFor(null)}
+                className="flex size-6 items-center justify-center rounded-full text-white/50 transition-colors hover:text-white"
+              >
+                <X className="size-3.5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="relative overflow-hidden rounded-[17px]">
+              <img
+                src={stripImages.find((i) => i.id === remixFor)!.dataUrl}
+                alt="Reference to remix"
+                className="h-[150px] w-full object-cover"
+              />
+              <button
+                type="button"
+                aria-label="Remove this image"
+                title="Remove this image"
+                onClick={() => {
+                  setStripImages((imgs) => imgs.filter((i) => i.id !== remixFor));
+                  setRemixFor(null);
+                }}
+                className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-white/80 backdrop-blur-sm transition-colors hover:bg-black/85 hover:text-white"
+              >
+                <Trash2 className="size-3.5" aria-hidden="true" />
+              </button>
+            </div>
+            <input
+              value={remixText}
+              onChange={(e) => setRemixText(e.target.value)}
+              placeholder="You can enter text to edit this image..."
+              aria-label="Remix instructions"
+              className="h-10 w-full rounded-full border border-white/12 bg-black/30 px-4 text-[13px] text-white outline-none placeholder:text-white/30 focus:border-white/30"
+            />
+            <div className="flex flex-wrap gap-1.5">
+              {["Back-view", "Side-view", "Clay", "Anime", "Brick", "Voxel", "Toy", "Fuse"].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={remixStyle === s}
+                  onClick={() => setRemixStyle(remixStyle === s ? null : s)}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-[11px] font-semibold transition-colors",
+                    remixStyle === s
+                      ? "border-white/40 bg-white/15 text-white"
+                      : "border-white/12 bg-white/[0.04] text-white/60 hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setRemixFor(null)}
+                className="rounded-full border border-white/20 px-4 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:bg-white/10"
+              >
+                Append
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const tag = [remixText.trim(), remixStyle].filter(Boolean).join(", ");
+                  if (tag) setPrompt((p) => (p.trim() ? `${p.trim()}, ${tag}` : tag));
+                  setRemixFor(null);
+                  toast.success("Remix applied", {
+                    description: "The style and instructions now guide the generation — the reference image stays unchanged.",
+                  });
+                }}
+                className="rounded-full bg-[linear-gradient(126.18deg,#00d8d5_1.15%,#ffd325_92.97%)] px-4 py-1.5 text-[12px] font-bold text-[#17181c] transition-opacity hover:opacity-90"
+              >
+                Replace
+              </button>
+            </div>
+            <p className="text-center text-[10px] leading-snug text-white/35">
+              Styles apply to the generation prompt — the reference image is kept as-is.
+            </p>
+          </div>
+        </>
       )}
 
       {/* effort modal (blueprint §2.3) */}
