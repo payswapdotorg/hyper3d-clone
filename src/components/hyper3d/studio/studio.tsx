@@ -20,7 +20,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Boxes,
+  Bot,
   ChevronDown,
+  ChevronRight,
   Coins,
   Compass,
   Dices,
@@ -28,22 +30,23 @@ import {
   Eye,
   Gem,
   Globe,
-  Group,
   Heart,
   Image as ImageIcon,
   Instagram,
   Layers,
-  Link2,
   Linkedin,
   Loader2,
   Lock,
+  LockOpen,
   MessageCircle,
+  Menu,
   Palette,
   Pause,
   PencilRuler,
   Plus,
   RotateCw,
   Search,
+  Settings,
   Sparkles,
   Triangle,
   Twitch,
@@ -51,6 +54,7 @@ import {
   Type,
   Upload,
   UserRound,
+  Users,
   Video,
   Wand2,
   X,
@@ -988,26 +992,21 @@ export function Studio({
       : agentic
         ? "10 Credits"
         : "1 Credit";
-  const costChipLabel = !user
-    ? "Sign in to start"
-    : mine.length === 0
-      ? "1 Credit"
-      : agentic
-        ? "10 Credits"
-        : "1 Credit";
 
   /* ---------------- render ---------------- */
 
   return (
     <div id="main-content" className="fixed inset-0 z-50 flex flex-col h3d-studio-bg" aria-label="Rodin Studio workspace">
-      {/* reference top bar — HYPER3D + 7-Day Trial gradient pill (hover →
-          Subscribe) left, Add On / API / MCP&CLI / Login + globe right
-          (DOM-extracted look; the gradient matches the reference's
-          linear-gradient(112.97deg, #9EC9FF, #FFAEB0)). */}
+      {/* reference top bar — HYPER3D (the reference's own logo mark) + dark
+          Subscribe pill (hover → gradient 7-Day Trial) left, Add On (with the
+          reference's orange mark) / API / MCP&CLI / Login + globe right
+          (DOM-extracted: default pill = rgba(255,255,255,0.08) "Subscribe",
+          hover swaps to the linear-gradient(112.97deg, #9EC9FF, #FFAEB0)
+          7-Day Trial state). */}
       <header className="relative z-20 flex h-[81px] shrink-0 items-center justify-between px-6 sm:px-10">
         <div className="flex items-center gap-5">
           <span className="flex items-center gap-2 text-white" aria-label="HYPER3D">
-            <Boxes className="size-6" aria-hidden="true" />
+            <img src="/images/hyper3d-logo.png" alt="" aria-hidden="true" className="h-[24px] w-auto sm:h-[28px] md:h-[32px]" />
             <span className="text-xl font-bold tracking-tight">HYPER3D</span>
           </span>
           <button
@@ -1018,16 +1017,16 @@ export function Studio({
                   "The reference's paid tiers are not part of this clone — the demo wallet already covers every feature here (first generation free).",
               })
             }
-            className="group relative flex h-[37px] w-[139px] items-center justify-center rounded-[30px] border border-white/15 bg-white/5 text-lg font-semibold transition-colors hover:border-white/25"
+            className="group relative flex h-[37px] w-[139px] items-center justify-center rounded-[30px] border border-white/15 bg-white/[0.08] text-lg font-semibold transition-colors hover:border-white/25"
             aria-label="Subscribe (demo notice)"
           >
+            <span className="absolute inset-0 flex items-center justify-center text-white transition-opacity group-hover:opacity-0">
+              Subscribe
+            </span>
             <span
-              className="absolute inset-0 flex items-center justify-center rounded-[30px] bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-lg font-bold text-[#17181c] opacity-100 transition-opacity group-hover:opacity-0"
+              className="absolute inset-0 flex items-center justify-center rounded-[30px] bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-lg font-bold text-[#17181c] opacity-0 transition-opacity group-hover:opacity-100"
             >
               7-Day Trial
-            </span>
-            <span className="absolute inset-0 flex items-center justify-center text-white opacity-0 transition-opacity group-hover:opacity-100">
-              Subscribe
             </span>
           </button>
         </div>
@@ -1037,9 +1036,15 @@ export function Studio({
             onClick={() =>
               toast.info("Add On", { description: "Add-ons live outside this clone's scope — the workspace itself is fully wired." })
             }
-            className="hidden text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white xl:block"
+            className="hidden items-center gap-1 text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white xl:block"
           >
-            Add On
+            <span className="mt-[2px]">Add On</span>
+            {/* the reference's orange add-on mark (blender_new.svg look — an
+                orange ring, DOM-extracted 24x22) */}
+            <svg viewBox="0 0 24 22" className="h-[20px] w-[24px]" aria-hidden="true">
+              <circle cx="12" cy="11" r="8.4" fill="none" stroke="#f5792a" strokeWidth="3.4" />
+              <circle cx="12" cy="11" r="2.6" fill="#f5792a" />
+            </svg>
           </button>
           <button
             type="button"
@@ -1097,7 +1102,7 @@ export function Studio({
 
       {/* atmosphere — the reference's three fixed gradient blobs (DOM-extracted
           geometry + gradients, blur(100px)) behind everything. */}
-      <div className="h3d-blob z-0" style={{ left: "51%", top: "25%", width: 403, height: 403, background: "rgba(210, 181, 223, 0.34)" }} aria-hidden="true" />
+      <div className="h3d-blob z-0" style={{ left: "51%", top: "25%", width: 403, height: 403, background: "rgba(210, 181, 223, 0.26)" }} aria-hidden="true" />
       <div
         className="h3d-blob z-0"
         style={{
@@ -1128,6 +1133,9 @@ export function Studio({
           <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center px-4">
             {/* subnav — Avatar / 3D / Video text tabs in a glass pill (3D active, as the reference) */}
             <nav className="mt-[19px] flex items-center gap-7 rounded-full border border-white/10 bg-black/25 px-6 py-2.5 backdrop-blur-md" aria-label="Product line">
+              {/* zoom-probed 2026-10-22: the reference's pill ends with a
+                  three-line menu icon after Video */}
+              <span className="contents" aria-hidden="false">
               {(["Avatar", "3D", "Video"] as const).map((t) => (
                 <button
                   key={t}
@@ -1143,39 +1151,50 @@ export function Studio({
                   className={cn(
                     "flex items-center gap-1 text-sm font-bold transition-colors",
                     t === "3D" ? "cursor-default text-white" : "text-white/50 hover:text-white/80",
+                    t === "Video" && "group",
                   )}
                   aria-current={t === "3D" ? "page" : undefined}
                 >
-                  {t}
-                  {t === "Video" && <ChevronDown className="size-3" aria-hidden="true" />}
+                  {/* DOM-probed 2026-10-22: the reference's Video tab has no
+                      chevron — it remix-swaps Video → Image on hover */}
+                  {t === "Video" ? (
+                    <span className="relative inline-flex h-[1em] w-[52px] items-center justify-center">
+                      <span className="absolute inset-0 text-center transition-opacity group-hover:opacity-0">Video</span>
+                      <span className="absolute inset-0 text-center opacity-0 transition-opacity group-hover:opacity-100">Image</span>
+                      {/* two of four VLM passes see a small red "new" dot on
+                          the reference's Video tab (likely a pseudo-element) */}
+                      <span className="absolute -right-1 top-0 size-[5px] rounded-full bg-[#e65a4e] transition-opacity group-hover:opacity-0" aria-hidden="true" />
+                    </span>
+                  ) : (
+                    t
+                  )}
                 </button>
               ))}
+              </span>
+              <button
+                type="button"
+                aria-label="Workspace menu"
+                onClick={() => toast.info("Menu", { description: "Reference-parity chrome — the 3D workspace is fully wired in this clone." })}
+                className="text-white/50 transition-colors hover:text-white/85"
+              >
+                <Menu className="size-4" aria-hidden="true" />
+              </button>
             </nav>
 
             {/* hero — the reference's own animated SVG wordmark + version tabs + quotes */}
             <div className="mt-10 flex flex-col items-center sm:mt-[53px]">
               <RodinWordmark className="h-[49px] w-[213px] sm:h-[78px] sm:w-[356px] md:h-[85px] md:w-[391px] lg:h-[93px] lg:w-[427px]" />
               <div className="mt-3 flex items-center gap-2" role="radiogroup" aria-label="Generator version">
-                {GEN_VERSIONS.map((v) => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={genVersion === v.id}
-                    onClick={() => {
-                      setGenVersion(v.id);
-                      if (v.id === "gen-1.5") setAgentic(false);
-                    }}
-                    title={v.note}
-                    className={cn(
-                      "flex items-center gap-1.5 px-1 text-[12.8px] font-bold transition-colors",
-                      genVersion === v.id ? "text-white" : "text-white/30 hover:text-white/70",
-                    )}
-                  >
-                    {v.label}
-                    {v.id === "gen-2.5" && <span className="ml-0.5 size-[5px] rounded-full bg-[#e65a4e]" aria-hidden="true" />}
-                  </button>
-                ))}
+                {/* DOM truth (2026-10-22 probe): the reference hides the
+                    Gen-1.5 V1.2 tab (parent opacity 0) — only the active
+                    Gen-2.5 Agent-Ready tab + red "new" dot is visible. */}
+                <span
+                  className="flex items-center gap-1.5 px-1 text-[12.8px] font-bold text-white"
+                  title={GEN_VERSIONS.find((v) => v.id === genVersion)?.note}
+                >
+                  {GEN_VERSIONS.find((v) => v.id === genVersion)?.label ?? "Gen-2.5 Agent-Ready"}
+                  <span className="ml-0.5 size-[5px] rounded-full bg-[#e65a4e]" aria-hidden="true" />
+                </span>
               </div>
               <div className="mt-[7px] flex flex-col items-center gap-1 text-sm text-[#cfcfcf]">
                 <span>The best way to understand is to create.</span>
@@ -1214,9 +1233,11 @@ export function Studio({
                 })}
               </div>
 
-              {/* the 180×180 input card (radius 20, black/18) — header row has
+              {/* the 180×180 input card (radius 20) — DOM-probed 2026-10-22:
+                  the reference's content field reads near-black (deeper than
+                  the old black/18), so the blobs don't lift it. Header row has
                   the mode icon beside the label (reference modeMenuIcon) */}
-              <div className="relative h-[180px] w-[180px] overflow-hidden rounded-[20px] border border-white/8 bg-black/[0.18]">
+              <div className="relative h-[180px] w-[180px] overflow-hidden rounded-[20px] border border-white/8 bg-black/45">
                 <p className="flex items-center justify-center gap-1.5 pt-3 text-center text-base font-bold text-white">
                   {(() => {
                     const ModeIcon = mode === "editing-3d" ? PencilRuler : mode === "worldgen" ? Globe : mode === "text-to-3d" ? Type : ImageIcon;
@@ -1311,7 +1332,11 @@ export function Studio({
                   )}
                 >
                   <Wand2 className="size-3.5 text-white/80" aria-hidden="true" />
-                  <span className="absolute -right-0.5 -top-0.5 size-[7px] rounded-full border border-[#121317] bg-[#e65a4e]" aria-hidden="true" />
+                  {/* DOM-probed 2026-10-22: the reference's wand badge is a
+                      red-orange circle carrying the number 1 */}
+                  <span className="absolute -right-1 -top-1 flex size-[13px] items-center justify-center rounded-full bg-[#f0552e] text-[8px] font-bold leading-none text-white" aria-hidden="true">
+                    1
+                  </span>
                 </button>
                 {mode === "image-to-3d" && upload && (
                   <button
@@ -1351,7 +1376,7 @@ export function Studio({
                   }
                   className="flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15"
                 >
-                  <Group className="size-3.5 text-white/80" aria-hidden="true" />
+                  <Users className="size-3.5 text-white/80" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
@@ -1534,22 +1559,26 @@ export function Studio({
               </div>
             )}
 
-            {/* GENERATE cluster — private lock + glass capsule w/ blurred
-                terracotta→lilac glow + quality/batch/cost chips */}
-            <div className="mt-[38px] flex items-center gap-3">
+            {/* GENERATE capsule — DOM-probed 2026-10-22: the reference's
+                206x68 glass capsule stands ALONE (no lock, no flanking
+                quality/batch chips — those live in the controls row below) */}
+            <div className="relative mt-[38px] flex items-center justify-center gap-[54px]">
+              {/* DOM-probed 2026-10-22 (single-instant band scan): the
+                  reference DOES flank the capsule — a bare ~21x20 lock icon
+                  60px left, and a ×1 chip + link + 29px settings icon right
+                  (they are IMGs, which is why the svg-only probes missed them). */}
               <button
                 type="button"
                 aria-pressed={isPrivate}
                 title={isPrivate ? "Private — hidden from the gallery" : "Public — visible in the gallery"}
                 onClick={() => setIsPrivate(!isPrivate)}
-                className={cn(
-                  "flex size-[60px] items-center justify-center rounded-full border transition-colors",
-                  isPrivate
-                    ? "border-[#e6765d]/60 bg-[#e6765d]/15"
-                    : "border-white/12 bg-white/[0.04] hover:border-white/25",
-                )}
+                className="flex size-5 items-center justify-center transition-opacity hover:opacity-70"
               >
-                <Lock className={cn("size-[18px]", isPrivate ? "text-[#e6765d]" : "text-white/70")} aria-hidden="true" />
+                {isPrivate ? (
+                  <Lock className="size-5 text-[#e6765d]" aria-hidden="true" />
+                ) : (
+                  <LockOpen className="size-5 text-white/55" aria-hidden="true" />
+                )}
               </button>
               <button
                 type="button"
@@ -1575,42 +1604,35 @@ export function Studio({
                     <span className="relative z-10 text-lg font-bold text-white transition-opacity group-hover:opacity-0">
                       GENERATE
                     </span>
-                    <span className="h3d-grad-text-warm absolute inset-0 z-10 flex items-center justify-center text-lg font-bold opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="h3d-grad-text-warm pointer-events-none absolute inset-0 z-10 flex items-center justify-center text-lg font-bold opacity-0 transition-opacity group-hover:opacity-100">
                       {generateHoverLabel}
                     </span>
                   </>
                 )}
               </button>
-              <div className="flex flex-col items-start gap-2">
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex items-center gap-1 text-[11px] font-semibold text-white/50"
+                  title="Batch size — Business plan feature in the reference; this clone keeps batch 1"
+                >
+                  ×1
+                  <ChevronRight className="size-3" aria-hidden="true" />
+                </span>
                 <button
                   type="button"
                   onClick={() =>
                     genVersion === "gen-2.5" ? setEffortModalOpen(true) : setToolPanel(toolPanel === "quality" ? null : "quality")
                   }
-                  className="flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-80"
-                  title="Quality / effort"
+                  title="Generation settings"
+                  aria-label="Generation settings"
+                  className="flex size-[29px] items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
                 >
-                  <span className="h3d-grad-text-warm">{qualityChipLabel}</span>
-                  <ChevronDown className="size-3 text-white/50" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    toast.info("Batch is a Business plan feature", {
-                      description: `The reference gates fast-mode batch (up to ${BATCH_MAX} variations/run) to the Business plan — this clone keeps batch 1, same honest gate.`,
-                      duration: 8000,
-                    })
-                  }
-                  className="flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/80 transition-colors hover:border-white/25"
-                  aria-label="Batch size — Business plan feature"
-                >
-                  <Link2 className="size-3" aria-hidden="true" />
-                  x1
+                  <Settings className="size-[18px]" aria-hidden="true" />
                 </button>
               </div>
               {/* gen-1.5 quality panel (Default / Speedy) */}
               {toolPanel === "quality" && genVersion === "gen-1.5" && (
-                <div className="absolute mt-2 flex gap-1 rounded-xl border border-white/10 bg-[#1c1a20]/95 p-1.5 backdrop-blur-xl">
+                <div className="absolute top-full mt-2 flex gap-1 rounded-xl border border-white/10 bg-[#1c1a20]/95 p-1.5 backdrop-blur-xl">
                   {LEGACY_MODES.map((m) => (
                     <button
                       key={m.id}
@@ -1632,22 +1654,26 @@ export function Studio({
               )}
             </div>
 
-            {/* controls row — reference DOM order: Zap+OFF/ON pill · "Agentic
-                Mode" label · ‹ version › pill · Gem + quality · 5 min ·
-                1 Credit · the agentic caption */}
+            {/* controls row — DOM-probed 2026-10-22 (single-instant band scan,
+                full parent-chain visibility): the reference's VISIBLE row is
+                exactly three controls — [bot icon + OFF pill] · ‹ Gen-2.5 › ·
+                [diamond + High + chevron]. The Agentic Mode label, Vibe
+                Modeling caption, 5-min chip and 1-Credit coin are all hidden
+                popover content in the reference (opacity-0 parents). */}
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
               <button
                 type="button"
                 aria-pressed={agentic}
+                aria-label="Agentic Mode"
                 disabled={!agenticAvailable}
                 onClick={() => setAgentic(!agentic)}
-                title={agenticAvailable ? "Toggle agentic generation" : "Gen-2.5 line only"}
+                title={agenticAvailable ? "Toggle agentic generation (Vibe Modeling — let AI plan and build)" : "Gen-2.5 line only"}
                 className={cn(
                   "flex items-center gap-2",
                   agenticAvailable ? "cursor-pointer" : "cursor-default opacity-40",
                 )}
               >
-                <Zap className={cn("size-4", agentic ? "text-[#e6765d]" : "text-white/50")} aria-hidden="true" />
+                <Bot className={cn("size-5", agentic ? "text-[#e6765d]" : "text-white/50")} aria-hidden="true" />
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-[11px] font-bold",
@@ -1656,7 +1682,6 @@ export function Studio({
                 >
                   {agentic ? "ON" : "OFF"}
                 </span>
-                <span className="text-sm font-semibold text-white/95">Agentic Mode</span>
               </button>
               <button
                 type="button"
@@ -1669,7 +1694,7 @@ export function Studio({
                 className="flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-sm font-bold text-white transition-colors hover:border-white/25"
               >
                 <ChevronDown className="size-3 rotate-90 text-white/50" aria-hidden="true" />
-                {GEN_VERSIONS.find((v) => v.id === genVersion)?.label}
+                {genVersion === "gen-2.5" ? "Gen-2.5" : "Gen-1.5"}
                 <ChevronDown className="size-3 -rotate-90 text-white/50" aria-hidden="true" />
               </button>
               <button
@@ -1682,23 +1707,8 @@ export function Studio({
               >
                 <Gem className="size-3.5 text-[#ecc16c]" aria-hidden="true" />
                 {qualityChipLabel}
+                <ChevronDown className="size-3.5 text-white/50" aria-hidden="true" />
               </button>
-              <span className="flex h-6 items-center rounded-full bg-white/8 px-2.5 text-[11px] font-semibold text-white/75" title="Typical run time">
-                5 min
-              </span>
-              <span
-                className="flex h-8 items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-2.5 text-xs font-semibold text-white/85"
-                title={costChipLabel}
-              >
-                <Coins className="size-3.5 text-h3d-gold" aria-hidden="true" />
-                {costChipLabel}
-              </span>
-              {agentic && (
-                <span className="text-[11px] text-white/45">Vibe Modeling. Let AI plan and build.</span>
-              )}
-              {genVersion === "gen-1.5" && !agentic && (
-                <span className="text-[11px] text-white/45">standard pipeline</span>
-              )}
             </div>
 
             {neuralBusy && (
@@ -1721,8 +1731,9 @@ export function Studio({
             )}
           </div>
 
-          {/* ASSET section — tabs + Featured pill left, Share/search/Filter
-              right, gallery grid, Load More (reference DOM layout) */}
+          {/* ASSET section — DOM-probed 2026-10-22: row 1 = ASSET (bold) +
+              EXPLORE (muted) + search/Filter right; row 2 = Featured pill
+              below-left; no Share button. Gallery grid, Load More. */}
           <section className="mx-auto mt-14 w-full max-w-[1280px] px-6 pb-20 md:px-20" aria-label="Assets">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               <h2 className="text-[26px] font-bold leading-none text-white">ASSET</h2>
@@ -1733,17 +1744,7 @@ export function Studio({
               >
                 EXPLORE
               </button>
-              <span className="flex h-[38px] w-[106px] items-center justify-center rounded-[39px] border border-[#e6765d] text-base text-[#cfcfcf]">
-                Featured
-              </span>
               <div className="ml-auto flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => toast.info("Share", { description: "Asset sharing is reference-parity chrome in this clone." })}
-                  className="flex h-[38px] items-center rounded-full border border-white/12 px-4 text-sm text-white/70 transition-colors hover:border-white/25 hover:text-white"
-                >
-                  Share
-                </button>
                 <button
                   type="button"
                   aria-label="Search assets"
@@ -1760,6 +1761,11 @@ export function Studio({
                   Filter <ChevronDown className="size-3.5" aria-hidden="true" />
                 </button>
               </div>
+            </div>
+            <div className="mt-3">
+              <span className="flex h-[38px] w-[106px] items-center justify-center rounded-[39px] border border-[#e6765d] text-base text-[#cfcfcf]">
+                Featured
+              </span>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {FEATURED_TILES.map((tile) => (
@@ -1816,7 +1822,7 @@ export function Studio({
             <div className="mx-auto grid w-full max-w-[1280px] grid-cols-2 gap-10 md:grid-cols-5">
               <div className="col-span-2 md:col-span-1">
                 <span className="flex items-center gap-2 text-white" aria-label="HYPER3D">
-                  <Boxes className="size-6" aria-hidden="true" />
+                        <img src="/images/hyper3d-logo.png" alt="" aria-hidden="true" className="h-[24px] w-auto sm:h-[28px] md:h-[32px]" />
                   <span className="text-xl font-bold tracking-tight">HYPER3D</span>
                 </span>
                 <p className="mt-3 text-sm text-white/45">hello@deemos.com</p>
@@ -2860,15 +2866,20 @@ export function Studio({
         Feedback
       </button>
 
-      {/* cookie preferences card (reference guest state — white card, purple
-          Accept all / outline Preferences, bottom-right) */}
+      {/* cookie preferences card (reference guest state — white card with the
+          reference's purple top glow, deep-violet #4A00E0 Accept all /
+          outline Preferences, centered title, bottom-right) */}
       {!cookieOk && (
         <div
           role="dialog"
           aria-label="Cookie preferences"
-          className="absolute bottom-6 right-6 z-40 w-[340px] rounded-2xl bg-white p-5 text-[#1f2023] shadow-[0_18px_50px_rgba(0,0,0,0.5)]"
+          className="absolute bottom-6 right-6 z-40 w-[340px] overflow-hidden rounded-2xl bg-white p-5 text-[#1f2023] shadow-[0_18px_50px_rgba(0,0,0,0.5)]"
         >
-          <p className="text-base font-bold">Cookie preferences</p>
+          <span
+            className="absolute inset-x-0 top-0 h-[4px] bg-[linear-gradient(103.48deg,#4a00e0_6.45%,#4a00e0_107.33%)] shadow-[0_0_14px_rgba(74,0,224,0.55)]"
+            aria-hidden="true"
+          />
+          <p className="text-center text-base font-bold">Cookie preferences</p>
           <p className="mt-2 text-[13px] leading-relaxed text-[#4a4b52]">
             We use essential cookies to keep Hyper3D working and optional cookies to understand usage, improve the
             experience, and support relevant marketing.
@@ -2877,7 +2888,7 @@ export function Studio({
             <button
               type="button"
               onClick={() => acceptCookies(true)}
-              className="h-[38px] flex-1 rounded-lg bg-[#7c5cff] text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="h-[38px] flex-1 rounded-lg bg-[#4a00e0] text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               Accept all
             </button>
