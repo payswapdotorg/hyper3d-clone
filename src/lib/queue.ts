@@ -160,8 +160,20 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
   const imageMime =
     options.imageMime ?? (typeof settings.input_mime === "string" ? settings.input_mime : undefined);
 
-  /** Finalize: poster render + DonePreview persist (idempotent by state). */
+  /** Finalize: poster render + DonePreview persist (idempotent by state).
+   * Cancel-safe (Task 48 audit): the task row is re-read right before the
+   * final write — if the user canceled mid-run (userState flipped to
+   * "failed" by POST /cancel), the pipeline must NOT overwrite the canceled
+   * state with a result the user explicitly declined. */
   const finalize = async (spec: SceneSpec, usedTokens: number, wallStart: number): Promise<void> => {
+    const current = await db.task.findUnique({
+      where: { id: taskId },
+      select: { userState: true },
+    });
+    if (!current || current.userState === "failed") {
+      return; // canceled (or deleted) while the pipeline was running — keep it canceled
+    }
+
     // Render the poster from the real geometry.
     const group = buildScene(spec);
     const poster = renderPoster(group);

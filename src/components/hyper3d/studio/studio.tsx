@@ -303,9 +303,21 @@ const HERO_TIPS: string[] = [
   "Upload your model → Get textures in OmniCraft.",
 ];
 
-/* Featured gallery tiles (reference ASSET section) — this clone's own demo
- * renders, honestly labelled. detail fields feed the asset-detail view
- * (reference: tile click → /workspace/rodin/{uuid}). */
+/* Featured gallery tiles (reference ASSET section) — Task 48: these are
+ * now the seed of the DB-backed gallery (identical instant paint; replaced
+ * by /api/task/list rows on mount). The uuid matches the seeded gallery
+ * task so likes/sort/search work before and after the fetch lands. */
+const TILE_UUIDS = [
+  "seed-g01-mech",
+  "seed-g02-helmet",
+  "seed-g03-drone",
+  "seed-g04-creature",
+  "seed-g05-sword",
+  "seed-g06-potions",
+  "seed-g07-bike",
+  "seed-g08-chest",
+] as const;
+
 const FEATURED_TILES: { src: string; title: string; author: string; likes: number; hue: string; model: string; effort: string; tags: string[]; prompt: string }[] = [
   { src: "/images/gallery-mech.png", title: "Scout Mech", author: "Rodin Gen-2.5", likes: 48, hue: "#b98acf", model: "Gen-2.5", effort: "High", tags: ["complex", "game-ready", "character"], prompt: "a rugged scout mech with matte panels, worn metal and lilac accents" },
   { src: "/images/gallery-helmet.png", title: "Legion Helmet", author: "Rodin Gen-2.5", likes: 35, hue: "#d2b6df", model: "Gen-2.5", effort: "High", tags: ["hard-surface", "game-ready", "prop"], prompt: "a ornate legion helmet with gold trim and battle scratches" },
@@ -316,6 +328,52 @@ const FEATURED_TILES: { src: string; title: string; author: string; likes: numbe
   { src: "/images/gallery-bike.png", title: "Trail Bike", author: "Rodin Gen-1.5", likes: 19, hue: "#d67830", model: "Gen-1.5", effort: "Default", tags: ["vehicle", "hard-surface"], prompt: "a trail bike with knobby tires and orange frame" },
   { src: "/images/gallery-chest.png", title: "Traveler Chest", author: "Rodin Gen-2.5", likes: 26, hue: "#c9b7cf", model: "Gen-2.5", effort: "Low", tags: ["prop", "stylized", "game-ready"], prompt: "a traveler chest with iron bands and carved wood" },
 ];
+
+/** Task 48: the gallery item the UI renders (static tile or DB row). */
+interface GalleryItem {
+  uuid: string;
+  src: string;
+  title: string;
+  author: string;
+  likes: number;
+  hue: string;
+  model: string;
+  effort: string;
+  tags: string[];
+  prompt: string;
+  liked?: boolean;
+}
+
+const tileToGalleryItem = (tile: (typeof FEATURED_TILES)[number], i: number): GalleryItem => ({
+  uuid: TILE_UUIDS[i],
+  src: tile.src,
+  title: tile.title,
+  author: tile.author,
+  likes: tile.likes,
+  hue: tile.hue,
+  model: tile.model,
+  effort: tile.effort,
+  tags: tile.tags,
+  prompt: tile.prompt,
+});
+
+/** Compact-card row from /api/task/list → gallery item. */
+const rowToGalleryItem = (row: Record<string, unknown>): GalleryItem => {
+  const g = (row.gallery ?? {}) as Record<string, unknown>;
+  const genVersion = typeof g.gen_version === "string" ? g.gen_version : "gen-2.5";
+  return {
+    uuid: String(row.task_uuid ?? ""),
+    src: typeof g.image === "string" ? g.image : String(row.image_url ?? ""),
+    title: typeof g.title === "string" ? g.title : String(row.prompt ?? "").slice(0, 40),
+    author: genVersion === "gen-1.5" ? "Rodin Gen-1.5" : "Rodin Gen-2.5",
+    likes: typeof g.likes === "number" ? g.likes : 0,
+    hue: typeof g.hue === "string" ? g.hue : "#b98acf",
+    model: genVersion === "gen-1.5" ? "Gen-1.5" : "Gen-2.5",
+    effort: typeof g.effort === "string" ? g.effort : "medium",
+    tags: Array.isArray(g.tags) ? (g.tags as unknown[]).map(String) : [],
+    prompt: String(row.prompt ?? ""),
+  };
+};
 
 /** Reference-parity footer link — honest chrome (the reference's external
  * destinations are not part of this clone). */
@@ -374,6 +432,73 @@ export function Studio({
   const [imageTab, setImageTab] = useState<"remix" | "turbo">("remix");
   const [multiView, setMultiView] = useState(false);
   const [editingTab, setEditingTab] = useState<"parts" | "refine" | "modify">("parts");
+
+  /* ---- Task 48 backend audit: the ASSET gallery is DB-backed — real
+     search (?q=), sort (?sort=), pagination (Load More) and likes
+     (POST /api/task/:uuid/like) through /api/task/list. FEATURED_TILES
+     stays as the instant paint; the fetch replaces it with live rows. ---- */
+  const [gallery, setGallery] = useState<GalleryItem[]>(FEATURED_TILES.map(tileToGalleryItem));
+  const [galleryQ, setGalleryQ] = useState("");
+  const [gallerySort, setGallerySort] = useState<"featured" | "latest" | "liked">("featured");
+  const [galleryOffset, setGalleryOffset] = useState(0);
+  const [galleryHasMore, setGalleryHasMore] = useState(true);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchDraft, setSearchDraft] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  const refreshGallery = useCallback(
+    async (opts?: { q?: string; sort?: "featured" | "latest" | "liked"; append?: boolean }) => {
+      const q = opts?.q ?? galleryQ;
+      const sort = opts?.sort ?? gallerySort;
+      const offset = opts?.append ? galleryOffset + 8 : 0;
+      setGalleryLoading(true);
+      try {
+        const params = new URLSearchParams({ filter: "featured", q, sort, limit: "8", offset: String(offset) });
+        const res = await fetch(`/api/task/list?${params.toString()}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { items: unknown[]; total: number; has_more: boolean };
+        const page = data.items.map((r) => rowToGalleryItem(r as Record<string, unknown>));
+        setGallery((prev) => (opts?.append ? [...prev, ...page] : page));
+        setGalleryOffset(offset);
+        setGalleryHasMore(data.has_more);
+      } catch {
+        /* non-fatal — the static paint stays */
+      } finally {
+        setGalleryLoading(false);
+      }
+    },
+    [galleryQ, gallerySort, galleryOffset],
+  );
+
+  /* Initial gallery fetch (once) — q/sort/append refetches pass explicit
+   * opts through refreshGallery; this mount effect only replaces the static
+   * paint with the live DB rows. */
+  useEffect(() => {
+    void refreshGallery();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* Like toggle (Task 48): optimistic on the tile, confirmed by the API,
+     reverted on failure; guests gate behind the sign-in panel. */
+  const toggleLike = async (item: GalleryItem) => {
+    if (!user) {
+      onNeedAuth("Sign in to like assets.");
+      return;
+    }
+    setGallery((prev) =>
+      prev.map((g) => (g.uuid === item.uuid ? { ...g, liked: !g.liked, likes: g.likes + (g.liked ? -1 : 1) } : g)),
+    );
+    try {
+      const res = await fetch(`/api/task/${item.uuid}/like`, { method: "POST" });
+      if (!res.ok) throw new Error("like failed");
+      const data = (await res.json()) as { liked: boolean; num_like: number };
+      setGallery((prev) => prev.map((g) => (g.uuid === item.uuid ? { ...g, liked: data.liked, likes: data.num_like } : g)));
+    } catch {
+      setGallery((prev) => prev.map((g) => (g.uuid === item.uuid ? { ...g, liked: item.liked, likes: item.likes } : g)));
+      toast.error("Could not update like", { description: "Please try again." });
+    }
+  };
 
   /* the reference rotates a tip pool in the hero quote slot (recon
    * innerText pool: Feynman default + operational tips) */
@@ -2152,21 +2277,100 @@ export function Studio({
                 EXPLORE
               </button>
               <div className="ml-auto flex items-center gap-3">
-                <button
-                  type="button"
-                  aria-label="Search assets"
-                  onClick={() => toast.info("Search", { description: "Search is reference-parity chrome in this clone." })}
-                  className="flex size-[38px] items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <Search className="size-4" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toast.info("Filter", { description: "Featured sort only — reference-parity chrome." })}
-                  className="flex h-[38px] items-center gap-1.5 rounded-full border border-white/12 px-4 text-sm text-white/70 transition-colors hover:border-white/25 hover:text-white"
-                >
-                  Filter <ChevronDown className="size-3.5" aria-hidden="true" />
-                </button>
+                {/* Task 48: real search — click reveals the input (reference
+                    behavior); Enter/clear submits to ?q= on the gallery list */}
+                {searchOpen ? (
+                  <form
+                    className="relative"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setGalleryQ(searchDraft.trim());
+                      setFilterOpen(false);
+                      void refreshGallery({ q: searchDraft.trim() });
+                    }}
+                  >
+                    <input
+                      autoFocus
+                      value={searchDraft}
+                      onChange={(e) => setSearchDraft(e.target.value)}
+                      onBlur={() => {
+                        if (!searchDraft.trim()) setSearchOpen(false);
+                      }}
+                      placeholder="Search assets by text"
+                      aria-label="Search assets by text"
+                      className="h-[38px] w-56 rounded-full border border-white/20 bg-black/40 pl-9 pr-8 text-sm text-white placeholder:text-white/35 focus:border-white/40 focus:outline-none"
+                    />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/50" aria-hidden="true" />
+                    {searchDraft && (
+                      <button
+                        type="button"
+                        aria-label="Clear search"
+                        onClick={() => {
+                          setSearchDraft("");
+                          setGalleryQ("");
+                          void refreshGallery({ q: "" });
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 transition-colors hover:text-white"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </form>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label="Search assets"
+                    onClick={() => setSearchOpen(true)}
+                    className="flex size-[38px] items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    <Search className="size-4" aria-hidden="true" />
+                  </button>
+                )}
+                {/* Task 48: real sort — Featured (curated) / Latest / Most
+                    Liked, served by ?sort= on the gallery list */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    aria-expanded={filterOpen}
+                    aria-haspopup="menu"
+                    onClick={() => setFilterOpen((o) => !o)}
+                    className="flex h-[38px] items-center gap-1.5 rounded-full border border-white/12 px-4 text-sm text-white/70 transition-colors hover:border-white/25 hover:text-white"
+                  >
+                    Filter <ChevronDown className={cn("size-3.5 transition-transform", filterOpen && "rotate-180")} aria-hidden="true" />
+                  </button>
+                  {filterOpen && (
+                    <div
+                      role="menu"
+                      aria-label="Sort gallery"
+                      className="absolute right-0 top-full z-40 mt-2 w-44 overflow-hidden rounded-[18px] border border-white/10 bg-[#17181c]/95 p-1.5 shadow-[0_14px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                    >
+                      {([
+                        ["featured", "Featured"],
+                        ["latest", "Latest"],
+                        ["liked", "Most Liked"],
+                      ] as const).map(([value, label]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={gallerySort === value}
+                          onClick={() => {
+                            setGallerySort(value);
+                            setFilterOpen(false);
+                            void refreshGallery({ sort: value });
+                          }}
+                          className={cn(
+                            "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                            gallerySort === value ? "bg-white/10 text-white" : "text-white/65 hover:bg-white/5 hover:text-white",
+                          )}
+                        >
+                          {label}
+                          {gallerySort === value && <Check className="size-3.5 text-[#d2b6df]" aria-hidden="true" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             {/* story feed (reference EXPLORE) vs Featured gallery */}
@@ -2181,7 +2385,7 @@ export function Studio({
               <>
             <div className="mt-3">
               <span className="flex h-[38px] w-[106px] items-center justify-center rounded-[39px] border border-[#e6765d] text-base text-[#cfcfcf]">
-                Featured
+                {gallerySort === "featured" ? "Featured" : gallerySort === "latest" ? "Latest" : "Most Liked"}
               </span>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -2215,12 +2419,13 @@ export function Studio({
                   Try OmniCraft
                 </button>
               </aside>
-              {FEATURED_TILES.map((tile) => (
+              {gallery.map((tile) => (
                 <figure
-                  key={tile.src}
+                  key={tile.uuid}
                   className="group relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03] transition-colors hover:border-white/20"
                   onClick={() =>
                     setDetailAsset({
+                      uuid: tile.uuid,
                       src: tile.src,
                       title: tile.title,
                       author: tile.author,
@@ -2241,10 +2446,17 @@ export function Studio({
                   <button
                     type="button"
                     aria-label={`Like ${tile.title}`}
-                    onClick={() => toast.info("Likes", { description: "Likes are reference-parity chrome — counters are demo values." })}
-                    className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/40 text-white/70 opacity-0 backdrop-blur-sm transition-opacity hover:text-[#ff6b6b] group-hover:opacity-100"
+                    aria-pressed={Boolean(tile.liked)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void toggleLike(tile);
+                    }}
+                    className={cn(
+                      "absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm transition-all hover:text-[#ff6b6b] group-hover:opacity-100",
+                      tile.liked ? "opacity-100 text-[#ff6b6b]" : "text-white/70 opacity-0",
+                    )}
                   >
-                    <Heart className="size-3.5" aria-hidden="true" />
+                    <Heart className={cn("size-3.5", tile.liked && "fill-[#ff6b6b]")} aria-hidden="true" />
                   </button>
                   <figcaption className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/80 to-transparent p-3">
                     <span
@@ -2260,19 +2472,27 @@ export function Studio({
                 </figure>
               ))}
             </div>
-            <div className="mt-8 flex justify-center">
-              <button
-                type="button"
-                onClick={() =>
-                  toast.info("Load More", {
-                    description: "The Featured set is the full demo gallery — the reference's infinite community feed is not part of this clone.",
-                  })
-                }
-                className="flex h-[47px] w-[157px] items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] text-sm font-semibold text-white/80 backdrop-blur-sm transition-colors hover:border-white/30 hover:text-white"
-              >
-                Load More <ChevronDown className="size-4" aria-hidden="true" />
-              </button>
-            </div>
+            {/* Task 48: real pagination — Load More appends the next page
+                (?limit=8&offset=+8); the pill hides when has_more is false */}
+            {gallery.length === 0 && !galleryLoading ? (
+              <p className="mt-14 text-center text-sm text-white/50" role="status">
+                {galleryQ ? `No assets match “${galleryQ}”.` : "No assets yet."}
+              </p>
+            ) : (
+              <div className="mt-8 flex justify-center">
+                {galleryHasMore && (
+                  <button
+                    type="button"
+                    disabled={galleryLoading}
+                    onClick={() => void refreshGallery({ append: true })}
+                    className="flex h-[47px] w-[157px] items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] text-sm font-semibold text-white/80 backdrop-blur-sm transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+                  >
+                    {galleryLoading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <ChevronDown className="size-4" aria-hidden="true" />}
+                    Load More
+                  </button>
+                )}
+              </div>
+            )}
               </>
             )}
           </section>
@@ -3486,7 +3706,32 @@ export function Studio({
       {pricingOpen && <PricingOverlay onClose={() => setPricingOpen(false)} />}
 
       {/* asset detail overlay (reference: gallery tile click → asset view) */}
-      {detailAsset && <AssetDetail asset={detailAsset} onClose={() => setDetailAsset(null)} />}
+      {detailAsset && (
+        <AssetDetail
+          asset={detailAsset}
+          onClose={() => setDetailAsset(null)}
+          onToggleLike={
+            detailAsset.uuid && user
+              ? async (a) => {
+                  try {
+                    const res = await fetch(`/api/task/${a.uuid}/like`, { method: "POST" });
+                    if (!res.ok) throw new Error("like failed");
+                    const data = (await res.json()) as { liked: boolean; num_like: number };
+                    /* keep the gallery tile in sync with the detail view */
+                    setGallery((prev) =>
+                      prev.map((g) => (g.uuid === a.uuid ? { ...g, liked: data.liked, likes: data.num_like } : g)),
+                    );
+                    setDetailAsset((prev) => (prev ? { ...prev, likes: data.num_like } : prev));
+                    return data;
+                  } catch {
+                    toast.error("Could not update like", { description: "Please try again." });
+                    return null;
+                  }
+                }
+              : undefined
+          }
+        />
+      )}
 
       {/* cookie preferences card (reference guest state — white card with the
           reference's purple top glow, deep-violet #4A00E0 Accept all /

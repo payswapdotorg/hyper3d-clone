@@ -12,8 +12,10 @@ import { Loader2 } from "lucide-react";
  * gradient Sign In button, Sign Up link, OR divider, white Google button,
  * dark GitHub button, SSO text link. Closes on outside click.
  *
- * Same props + endpoint as the old centered dialog (drop-in swap):
- * POST /api/auth/sign-in with the demo wallet.
+ * Task 48 backend audit: the Sign Up link is REAL now — the panel flips to
+ * a sign-up mode (username + email + password) that POSTs
+ * /api/auth/sign-up (new accounts start at the reference's 40 free
+ * credits) and lands the user signed in via the same onSuccess flow.
  */
 export function SignInDialog({
   open,
@@ -28,6 +30,8 @@ export function SignInDialog({
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [signUp, setSignUp] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,14 +42,24 @@ export function SignInDialog({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/sign-in", {
+      const res = await fetch(signUp ? "/api/auth/sign-up" : "/api/auth/sign-in", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify(
+          signUp
+            ? { email: email.trim(), password, username: username.trim() || undefined }
+            : { email: email.trim(), password },
+        ),
       });
       if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(body.error === "invalid_credentials" ? "Wrong email or password." : `Sign-in failed (${res.status}).`);
+        const body = (await res.json().catch(() => ({}))) as { error?: string; message?: string; issues?: string[] };
+        if (signUp && res.status === 409) {
+          setError(body.message ?? "An account with this email already exists — sign in instead.");
+        } else if (signUp && Array.isArray(body.issues) && body.issues.length > 0) {
+          setError(body.issues.join(" "));
+        } else {
+          setError(body.error === "invalid_credentials" ? "Wrong email or password." : `Request failed (${res.status}).`);
+        }
         return;
       }
       setPassword("");
@@ -67,7 +81,7 @@ export function SignInDialog({
       <div className="fixed inset-0 z-[21010]" onClick={() => onOpenChange(false)} aria-hidden="true" />
       <aside
         role="dialog"
-        aria-label="Sign in"
+        aria-label={signUp ? "Sign up" : "Sign in"}
         className="fixed right-[25px] top-[25px] z-[21011] flex h-[calc(100vh-50px)] min-h-[600px] w-[min(480px,calc(100vw-32px))] flex-col overflow-y-auto rounded-[25px] border-2 border-white/12 bg-[rgba(255,255,255,0.05)] p-8 backdrop-blur-[30px] shadow-[0_24px_80px_rgba(0,0,0,0.5)] md:min-h-[725px]"
       >
         {/* logo header */}
@@ -81,6 +95,22 @@ export function SignInDialog({
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col gap-4">
+          {signUp && (
+            <div className="space-y-1.5">
+              <label htmlFor="h3d-username" className="text-[13px] font-semibold text-white/85">
+                Username
+              </label>
+              <input
+                id="h3d-username"
+                type="text"
+                autoComplete="username"
+                placeholder="Your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="h-12 w-full rounded-full border border-white/10 bg-[#3a3a42] px-5 text-sm text-white outline-none transition-colors placeholder:text-white/35 focus:border-white/30"
+              />
+            </div>
+          )}
           <div className="space-y-1.5">
             <label htmlFor="h3d-email" className="text-[13px] font-semibold text-white/85">
               Email Address
@@ -103,22 +133,25 @@ export function SignInDialog({
             <input
               id="h3d-password"
               type="password"
-              autoComplete="current-password"
-              placeholder="Your password"
+              autoComplete={signUp ? "new-password" : "current-password"}
+              placeholder={signUp ? "At least 8 characters" : "Your password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={signUp ? 8 : undefined}
               className="h-12 w-full rounded-full border border-white/10 bg-[#3a3a42] px-5 text-sm text-white outline-none transition-colors placeholder:text-white/35 focus:border-white/30"
             />
-            <button
-              type="button"
-              className="text-[12.5px] text-white/60 underline-offset-2 transition-colors hover:text-white hover:underline"
-              onClick={() =>
-                setError("Password reset is not wired in this clone — use the demo account below.")
-              }
-            >
-              Forgot password?
-            </button>
+            {!signUp && (
+              <button
+                type="button"
+                className="text-[12.5px] text-white/60 underline-offset-2 transition-colors hover:text-white hover:underline"
+                onClick={() =>
+                  setError("Password reset is not wired in this clone — use the demo account below.")
+                }
+              >
+                Forgot password?
+              </button>
+            )}
           </div>
 
           {error && (
@@ -134,8 +167,10 @@ export function SignInDialog({
           >
             {busy ? (
               <>
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Signing in…
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" /> {signUp ? "Creating account…" : "Signing in…"}
               </>
+            ) : signUp ? (
+              "Sign Up"
             ) : (
               "Sign In"
             )}
@@ -144,11 +179,12 @@ export function SignInDialog({
           <button
             type="button"
             className="text-center text-[13px] text-white/75 underline-offset-2 transition-colors hover:text-white hover:underline"
-            onClick={() =>
-              setError("Sign-up is not wired in this clone — the demo account below is pre-provisioned.")
-            }
+            onClick={() => {
+              setSignUp((v) => !v);
+              setError(null);
+            }}
           >
-            Sign Up to create a new account!
+            {signUp ? "Already have an account? Sign in!" : "Sign Up to create a new account!"}
           </button>
 
           {/* OR divider */}

@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { ledger } from "@/lib/ledger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
  * Cancel a running task (the studio's Cancel button during a neural run or
- * a server pipeline). Marks the task failed with an honest "canceled" error
- * — pay_by_result tasks were never charged, so there is nothing to refund.
+ * a server pipeline). Marks the task failed with an honest "canceled" error.
+ * Pay-by-result tasks were never charged — nothing to refund. Legacy
+ * creation-charged tasks (creditsSpent > 0) are refunded in full (Task 48
+ * audit: pay only for what you keep).
  */
 export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: string }> }) {
   const { uuid } = await ctx.params;
@@ -34,8 +37,19 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ uuid: stri
       userState: "failed",
       error: "Canceled by user",
       settings,
+      ...(task.creditsSpent > 0 ? { creditsSpent: 0 } : {}),
     },
   });
 
-  return NextResponse.json({ canceled: true });
+  // Refund a creation-time charge (legacy non-pay-by-result tasks only).
+  let refunded = 0;
+  if (task.creditsSpent > 0) {
+    refunded = await ledger.grant({
+      userId: user.id,
+      amount: task.creditsSpent,
+      reason: "cancel_refund",
+    });
+  }
+
+  return NextResponse.json({ canceled: true, ...(refunded ? { refunded } : {}) });
 }

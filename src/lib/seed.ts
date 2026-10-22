@@ -23,9 +23,180 @@ interface FeaturedSeed {
   type: "RodinAgentic" | "RodinStandard";
   spec: unknown;
   usage: { elapsed_seconds: number; used_tokens: number };
+  /** Task 48 backend audit: landing-gallery metadata (the 8 static-art
+   *  tiles the UI previously hardcoded — now real DB rows with like counts,
+   *  titles, tags and search/sort/pagination support). */
+  gallery?: {
+    title: string;
+    tags: string[];
+    likes: number;
+    image: string; // static gallery art (/images/gallery-*.png)
+    hue: string; // avatar-dot accent
+    genVersion: "gen-1.5" | "gen-2.5";
+    effort: string;
+  };
+  /** Controls featured sort order ("featured" = oldest first). */
+  created?: string;
 }
 
 const SEED_TASKS: FeaturedSeed[] = [
+  /* ---- Task 48: the 8 landing-gallery tiles as real DB rows (page 1 of the
+   *  featured gallery — createdAt 2026-10-15 so they sort before the poster
+   *  seeds; static art overrides keep the parity-verified visuals). ---- */
+  {
+    id: "seed-g01-mech",
+    prompt: "a rugged scout mech with matte panels, worn metal and lilac accents",
+    type: "RodinAgentic",
+    gallery: { title: "Scout Mech", tags: ["complex", "game-ready", "character"], likes: 48, image: "/images/gallery-mech.png", hue: "#b98acf", genVersion: "gen-2.5", effort: "high" },
+    created: "2026-10-15T09:00:00.000Z",
+    spec: {
+      name: "Scout Mech",
+      palette: ["#455a64", "#607d8b", "#b98acf", "#90a4ae"],
+      objects: [
+        { type: "box", params: { width: 1.3, height: 1.5, depth: 0.9 }, transform: { position: [0, 1.35, 0] }, material: { color: "#455a64", metalness: 0.6, roughness: 0.4 } },
+        { type: "box", params: { width: 0.55, height: 0.4, depth: 0.55 }, transform: { position: [0, 2.25, 0.12] }, material: { color: "#607d8b", metalness: 0.55, roughness: 0.35 } },
+        { type: "box", params: { width: 0.5, height: 0.22, depth: 0.3 }, transform: { position: [0, 2.25, 0.5] }, material: { color: "#b98acf", metalness: 0.3, roughness: 0.35 } },
+        { type: "cylinder", params: { radiusTop: 0.28, radiusBottom: 0.34, height: 1.0, radialSegments: 14 }, transform: { position: [0.45, 0.5, 0] }, material: { color: "#90a4ae", metalness: 0.5, roughness: 0.4 } },
+        { type: "cylinder", params: { radiusTop: 0.28, radiusBottom: 0.34, height: 1.0, radialSegments: 14 }, transform: { position: [-0.45, 0.5, 0] }, material: { color: "#90a4ae", metalness: 0.5, roughness: 0.4 } },
+      ],
+    },
+    usage: { elapsed_seconds: 512.2, used_tokens: 1584320 },
+  },
+  {
+    id: "seed-g02-helmet",
+    prompt: "a ornate legion helmet with gold trim and battle scratches",
+    type: "RodinAgentic",
+    gallery: { title: "Legion Helmet", tags: ["hard-surface", "game-ready", "prop"], likes: 35, image: "/images/gallery-helmet.png", hue: "#d2b6df", genVersion: "gen-2.5", effort: "high" },
+    created: "2026-10-15T09:10:00.000Z",
+    spec: {
+      name: "Legion Helmet",
+      palette: ["#546e7a", "#78909c", "#ecc16c", "#cfd8dc"],
+      objects: [
+        { type: "sphere", params: { radius: 0.85, widthSegments: 28, heightSegments: 18 }, transform: { position: [0, 1.15, 0], scale: [1, 0.92, 1.05] }, material: { color: "#546e7a", metalness: 0.55, roughness: 0.35 } },
+        { type: "torus", params: { radius: 0.86, tube: 0.09, radialSegments: 12, tubularSegments: 40 }, transform: { position: [0, 1.05, 0], rotation: [Math.PI / 2 + 0.25, 0, 0] }, material: { color: "#ecc16c", metalness: 0.75, roughness: 0.25 } },
+        { type: "box", params: { width: 0.16, height: 0.75, depth: 0.1 }, transform: { position: [0, 0.95, 0.82], rotation: [0.3, 0, 0] }, material: { color: "#ecc16c", metalness: 0.7, roughness: 0.3 } },
+        { type: "cylinder", params: { radiusTop: 0.1, radiusBottom: 0.14, height: 0.6, radialSegments: 10 }, transform: { position: [0, 1.85, -0.15], rotation: [-0.35, 0, 0] }, material: { color: "#78909c", metalness: 0.5, roughness: 0.4 } },
+      ],
+    },
+    usage: { elapsed_seconds: 380.7, used_tokens: 1210432 },
+  },
+  {
+    id: "seed-g03-drone",
+    prompt: "a cargo drone with red accents and worn metal",
+    type: "RodinStandard",
+    gallery: { title: "Cargo Drone", tags: ["hard-surface", "prop"], likes: 27, image: "/images/gallery-drone.png", hue: "#ca6650", genVersion: "gen-1.5", effort: "default" },
+    created: "2026-10-15T09:20:00.000Z",
+    spec: {
+      name: "Cargo Drone",
+      palette: ["#546e7a", "#90a4ae", "#e65a4e", "#cfd8dc"],
+      objects: [
+        { type: "box", params: { width: 1.7, height: 0.4, depth: 2.1 }, transform: { position: [0, 1.1, 0] }, material: { color: "#546e7a", metalness: 0.5, roughness: 0.45 } },
+        { type: "box", params: { width: 1.1, height: 0.55, depth: 1.2 }, transform: { position: [0, 1.55, 0] }, material: { color: "#e65a4e", metalness: 0.4, roughness: 0.4 } },
+        { type: "cylinder", params: { radiusTop: 0.09, radiusBottom: 0.09, height: 1.3, radialSegments: 10 }, transform: { position: [1.05, 1.1, 0.8], rotation: [Math.PI / 2, 0, 0] }, material: { color: "#90a4ae", metalness: 0.55 } },
+        { type: "cylinder", params: { radiusTop: 0.09, radiusBottom: 0.09, height: 1.3, radialSegments: 10 }, transform: { position: [-1.05, 1.1, 0.8], rotation: [Math.PI / 2, 0, 0] }, material: { color: "#90a4ae", metalness: 0.55 } },
+        { type: "cylinder", params: { radiusTop: 0.09, radiusBottom: 0.09, height: 1.3, radialSegments: 10 }, transform: { position: [1.05, 1.1, -0.8], rotation: [Math.PI / 2, 0, 0] }, material: { color: "#90a4ae", metalness: 0.55 } },
+        { type: "cylinder", params: { radiusTop: 0.09, radiusBottom: 0.09, height: 1.3, radialSegments: 10 }, transform: { position: [-1.05, 1.1, -0.8], rotation: [Math.PI / 2, 0, 0] }, material: { color: "#90a4ae", metalness: 0.55 } },
+      ],
+    },
+    usage: { elapsed_seconds: 88.4, used_tokens: 261120 },
+  },
+  {
+    id: "seed-g04-creature",
+    prompt: "a reef creature with coral growths and bioluminescent spots",
+    type: "RodinAgentic",
+    gallery: { title: "Reef Creature", tags: ["organic", "character", "textured"], likes: 41, image: "/images/gallery-creature.png", hue: "#e6765d", genVersion: "gen-2.5", effort: "medium" },
+    created: "2026-10-15T09:30:00.000Z",
+    spec: {
+      name: "Reef Creature",
+      palette: ["#e6765d", "#f0a68c", "#7ec8a9", "#d2b6df"],
+      objects: [
+        { type: "sphere", params: { radius: 0.95, widthSegments: 26, heightSegments: 18 }, transform: { position: [0, 0.95, 0], scale: [1.15, 0.85, 1] }, material: { color: "#e6765d", roughness: 0.5, metalness: 0.05 } },
+        { type: "sphere", params: { radius: 0.32, widthSegments: 18, heightSegments: 14 }, transform: { position: [0.75, 1.5, 0.2] }, material: { color: "#f0a68c", roughness: 0.45 } },
+        { type: "cone", params: { radius: 0.22, height: 0.85, radialSegments: 7 }, transform: { position: [-0.7, 1.7, -0.1], rotation: [0.1, 0.5, -0.15] }, material: { color: "#7ec8a9", roughness: 0.35 } },
+        { type: "cone", params: { radius: 0.16, height: 0.6, radialSegments: 6 }, transform: { position: [0.45, 1.75, -0.35], rotation: [-0.12, 0.8, 0.1] }, material: { color: "#d2b6df", roughness: 0.3 } },
+        { type: "sphere", params: { radius: 0.18, widthSegments: 14, heightSegments: 10 }, transform: { position: [-0.3, 0.55, 0.75] }, material: { color: "#7ec8a9", roughness: 0.25 } },
+      ],
+    },
+    usage: { elapsed_seconds: 445.9, used_tokens: 1403392 },
+  },
+  {
+    id: "seed-g05-sword",
+    prompt: "a rune blade with glowing engravings and gold hilt",
+    type: "RodinStandard",
+    gallery: { title: "Rune Blade", tags: ["hard-surface", "prop", "game-ready"], likes: 22, image: "/images/gallery-sword.png", hue: "#ecc16c", genVersion: "gen-1.5", effort: "default" },
+    created: "2026-10-15T09:40:00.000Z",
+    spec: {
+      name: "Rune Blade",
+      palette: ["#cfd8dc", "#90a4ae", "#ecc16c", "#b98acf"],
+      objects: [
+        { type: "box", params: { width: 0.16, height: 2.6, depth: 0.05 }, transform: { position: [0, 1.85, 0], rotation: [0, 0, 0.06] }, material: { color: "#cfd8dc", metalness: 0.85, roughness: 0.2 } },
+        { type: "cone", params: { radius: 0.13, height: 0.35, radialSegments: 4 }, transform: { position: [0.02, 3.24, 0], rotation: [0, Math.PI / 4, 0.06] }, material: { color: "#cfd8dc", metalness: 0.85, roughness: 0.2 } },
+        { type: "box", params: { width: 0.65, height: 0.09, depth: 0.12 }, transform: { position: [0, 0.55, 0], rotation: [0, 0, 0.06] }, material: { color: "#ecc16c", metalness: 0.8, roughness: 0.25 } },
+        { type: "cylinder", params: { radiusTop: 0.055, radiusBottom: 0.055, height: 0.55, radialSegments: 12 }, transform: { position: [0, 0.28, 0] }, material: { color: "#90a4ae", metalness: 0.7, roughness: 0.3 } },
+        { type: "sphere", params: { radius: 0.11, widthSegments: 16, heightSegments: 12 }, transform: { position: [0, 0.02, 0] }, material: { color: "#b98acf", roughness: 0.2, metalness: 0.3 } },
+      ],
+    },
+    usage: { elapsed_seconds: 74.6, used_tokens: 218048 },
+  },
+  {
+    id: "seed-g06-potions",
+    prompt: "a wooden potion shelf with glass bottles and corked vials",
+    type: "RodinAgentic",
+    gallery: { title: "Potion Shelf", tags: ["stylized", "prop", "set-dressing"], likes: 31, image: "/images/gallery-potions.png", hue: "#9e76ac", genVersion: "gen-2.5", effort: "medium" },
+    created: "2026-10-15T09:50:00.000Z",
+    spec: {
+      name: "Potion Shelf",
+      palette: ["#8d6e63", "#6d4c41", "#9e76ac", "#7ec8a9"],
+      objects: [
+        { type: "box", params: { width: 2.2, height: 0.12, depth: 0.7 }, transform: { position: [0, 1.0, 0] }, material: { color: "#8d6e63", roughness: 0.7 } },
+        { type: "box", params: { width: 2.2, height: 0.12, depth: 0.7 }, transform: { position: [0, 1.9, 0] }, material: { color: "#8d6e63", roughness: 0.7 } },
+        { type: "box", params: { width: 0.14, height: 2.3, depth: 0.7 }, transform: { position: [1.1, 1.15, 0] }, material: { color: "#6d4c41", roughness: 0.75 } },
+        { type: "cylinder", params: { radiusTop: 0.14, radiusBottom: 0.17, height: 0.5, radialSegments: 14 }, transform: { position: [-0.55, 1.32, 0] }, material: { color: "#9e76ac", roughness: 0.15, opacity: 0.85 } },
+        { type: "cylinder", params: { radiusTop: 0.12, radiusBottom: 0.15, height: 0.42, radialSegments: 14 }, transform: { position: [0.5, 2.17, 0] }, material: { color: "#7ec8a9", roughness: 0.15, opacity: 0.85 } },
+      ],
+    },
+    usage: { elapsed_seconds: 398.1, used_tokens: 1247232 },
+  },
+  {
+    id: "seed-g07-bike",
+    prompt: "a trail bike with knobby tires and orange frame",
+    type: "RodinStandard",
+    gallery: { title: "Trail Bike", tags: ["vehicle", "hard-surface"], likes: 19, image: "/images/gallery-bike.png", hue: "#d67830", genVersion: "gen-1.5", effort: "default" },
+    created: "2026-10-15T10:00:00.000Z",
+    spec: {
+      name: "Trail Bike",
+      palette: ["#d67830", "#455a64", "#263238", "#cfd8dc"],
+      objects: [
+        { type: "torus", params: { radius: 0.62, tube: 0.2, radialSegments: 12, tubularSegments: 28 }, transform: { position: [0, 0.62, 0.95], rotation: [0, Math.PI / 2, 0] }, material: { color: "#263238", roughness: 0.9 } },
+        { type: "torus", params: { radius: 0.62, tube: 0.2, radialSegments: 12, tubularSegments: 28 }, transform: { position: [0, 0.62, -0.95], rotation: [0, Math.PI / 2, 0] }, material: { color: "#263238", roughness: 0.9 } },
+        { type: "box", params: { width: 0.12, height: 0.1, depth: 1.9 }, transform: { position: [0, 0.95, 0], rotation: [0.12, 0, 0] }, material: { color: "#d67830", metalness: 0.4, roughness: 0.4 } },
+        { type: "box", params: { width: 0.5, height: 0.14, depth: 0.9 }, transform: { position: [0, 1.32, -0.35], rotation: [0.45, 0, 0] }, material: { color: "#455a64", metalness: 0.5, roughness: 0.4 } },
+        { type: "cylinder", params: { radiusTop: 0.07, radiusBottom: 0.07, height: 0.7, radialSegments: 10 }, transform: { position: [0, 1.42, 0.55], rotation: [0.5, 0, 0] }, material: { color: "#cfd8dc", metalness: 0.6, roughness: 0.35 } },
+      ],
+    },
+    usage: { elapsed_seconds: 96.2, used_tokens: 287744 },
+  },
+  {
+    id: "seed-g08-chest",
+    prompt: "a traveler chest with iron bands and carved wood",
+    type: "RodinAgentic",
+    gallery: { title: "Traveler Chest", tags: ["prop", "stylized", "game-ready"], likes: 26, image: "/images/gallery-chest.png", hue: "#c9b7cf", genVersion: "gen-2.5", effort: "low" },
+    created: "2026-10-15T10:10:00.000Z",
+    spec: {
+      name: "Traveler Chest",
+      palette: ["#8d6e63", "#5d4037", "#9e9e9e", "#ecc16c"],
+      objects: [
+        { type: "box", params: { width: 1.9, height: 1.0, depth: 1.1 }, transform: { position: [0, 0.5, 0] }, material: { color: "#8d6e63", roughness: 0.65 } },
+        { type: "box", params: { width: 1.94, height: 0.34, depth: 1.14 }, transform: { position: [0, 1.2, 0], rotation: [0, 0, 0] }, material: { color: "#5d4037", roughness: 0.6 } },
+        { type: "box", params: { width: 0.18, height: 1.36, depth: 1.14 }, transform: { position: [0.75, 0.68, 0] }, material: { color: "#9e9e9e", metalness: 0.6, roughness: 0.4 } },
+        { type: "box", params: { width: 0.18, height: 1.36, depth: 1.14 }, transform: { position: [-0.75, 0.68, 0] }, material: { color: "#9e9e9e", metalness: 0.6, roughness: 0.4 } },
+        { type: "box", params: { width: 0.3, height: 0.16, depth: 0.14 }, transform: { position: [0, 0.75, 0.58] }, material: { color: "#ecc16c", metalness: 0.75, roughness: 0.3 } },
+      ],
+    },
+    usage: { elapsed_seconds: 302.5, used_tokens: 946176 },
+  },
+  /* ---- the original 8 poster-rendered seeds (page 2 of the featured
+   *  gallery — real spec-backed scenes with poster renders). ---- */
   {
     id: "seed-0001-apple",
     prompt: "A red fresh apple. simple geometry.",
@@ -206,6 +377,7 @@ export async function ensureSeeded(options: SeedOptions = {}): Promise<void> {
       const existing = await db.task.findUnique({ where: { id: seed.id } });
       if (existing) continue;
       const spec = parseSceneSpec(seed.spec) as SceneSpec;
+      const created = new Date(seed.created ?? "2026-10-16T12:00:00.000Z");
       await db.task.create({
         data: {
           id: seed.id,
@@ -219,12 +391,28 @@ export async function ensureSeeded(options: SeedOptions = {}): Promise<void> {
           modelUrl: `/api/task/${seed.id}/export?format=glb`,
           videoUrl: null,
           usage: seed.usage,
-          settings: { height: 8, version: "v3", type: "model_generate", effort: "medium" },
+          settings: {
+            height: 8,
+            version: "v3",
+            type: "model_generate",
+            effort: seed.gallery?.effort ?? "medium",
+            ...(seed.gallery ? { gen_version: seed.gallery.genVersion } : {}),
+            ...(seed.gallery ? { gallery_hue: seed.gallery.hue } : {}),
+          },
           creditsSpent: seed.type === "RodinAgentic" ? 10 : 0,
           isFeatured: true,
           generationUuid: `${seed.id}-gen-v3`,
-          generateTime: new Date("2026-10-16T12:00:00.000Z"),
-          createdAt: new Date("2026-10-16T12:00:00.000Z"),
+          generateTime: created,
+          createdAt: created,
+          // Task 48 gallery metadata (landing tiles as real rows)
+          ...(seed.gallery
+            ? {
+                title: seed.gallery.title,
+                tags: seed.gallery.tags as unknown as object,
+                likeCount: seed.gallery.likes,
+                galleryImage: seed.gallery.image,
+              }
+            : {}),
         },
       });
     }

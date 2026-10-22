@@ -33,12 +33,27 @@ export interface AssetDetailData {
   effort: string;
   tags: string[];
   prompt: string;
+  /** Task 48: the DB task uuid — present when the tile came from the live
+   *  gallery (likes become real). */
+  uuid?: string;
 }
 
 const FORMATS = [".obj", ".fbx", ".glb", ".usdz", ".stl"] as const;
 
-export function AssetDetail({ asset, onClose }: { asset: AssetDetailData; onClose: () => void }) {
+export function AssetDetail({
+  asset,
+  onClose,
+  onToggleLike,
+}: {
+  asset: AssetDetailData;
+  onClose: () => void;
+  /** Task 48: real like toggle (POST /api/task/:uuid/like, resolved by the
+   *  studio — returns the authoritative liked/count or null on failure). */
+  onToggleLike?: (asset: AssetDetailData) => Promise<{ liked: boolean; num_like: number } | null>;
+}) {
   const [liked, setLiked] = useState(false);
+  const [likes, setLikes] = useState(asset.likes);
+  const [likeBusy, setLikeBusy] = useState(false);
   const [formats, setFormats] = useState<string[]>([".glb"]);
   const [simReady, setSimReady] = useState(true);
   const [usdz, setUsdz] = useState(false);
@@ -109,7 +124,22 @@ export function AssetDetail({ asset, onClose }: { asset: AssetDetailData; onClos
               type="button"
               aria-label={liked ? "Unlike" : "Like"}
               aria-pressed={liked}
-              onClick={() => setLiked((v) => !v)}
+              disabled={likeBusy}
+              onClick={async () => {
+                /* Task 48: real toggle when the studio provides the backend
+                 * (DB-backed tile); local-only flip otherwise. */
+                if (!onToggleLike) {
+                  setLiked((v) => !v);
+                  return;
+                }
+                setLikeBusy(true);
+                const res = await onToggleLike(asset);
+                setLikeBusy(false);
+                if (res) {
+                  setLiked(res.liked);
+                  setLikes(res.num_like);
+                }
+              }}
               className={cn(
                 "flex size-9 items-center justify-center rounded-full transition-colors",
                 liked ? "bg-[#ff5f7e]/15 text-[#ff5f7e]" : "bg-black/[0.06] text-[#1c1b22]/70 hover:bg-black/10",

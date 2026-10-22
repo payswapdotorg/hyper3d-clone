@@ -51,6 +51,11 @@ export interface TaskCardRow {
   seed: number | null;
   confirmedAt: Date | null;
   createdAt: Date;
+  // Task 48 gallery fields (optional — present on gallery-backed rows)
+  title?: string | null;
+  tags?: unknown;
+  likeCount?: number;
+  galleryImage?: string | null;
 }
 
 type TaskUsage = { elapsed_seconds?: number; used_tokens?: number } | null;
@@ -170,7 +175,8 @@ export function buildTaskCard(task: TaskCardRow, author: Pick<User, "id" | "user
 }
 
 export function buildCompactCard(task: TaskCardRow): Record<string, unknown> {
-  return {
+  const settings = (task.settings as TaskSettings) ?? {};
+  const card: Record<string, unknown> = {
     task_uuid: task.id,
     type: task.type,
     prompt: task.prompt,
@@ -186,6 +192,21 @@ export function buildCompactCard(task: TaskCardRow): Record<string, unknown> {
     credits_spent: task.creditsSpent,
     confirmed: Boolean(task.confirmedAt),
   };
+  // Task 48: gallery metadata (landing-gallery tiles are real DB rows —
+  // title/tags/like count/static art override + model badge for the UI).
+  if (task.title) {
+    card.gallery = {
+      title: task.title,
+      tags: Array.isArray(task.tags) ? task.tags : [],
+      likes: task.likeCount ?? 0,
+      image: task.galleryImage ?? (task.previewImageUrl ?? null),
+      hue: typeof settings.gallery_hue === "string" ? settings.gallery_hue : "#b98acf",
+      gen_version: typeof settings.gen_version === "string" ? settings.gen_version : "gen-2.5",
+      effort: typeof settings.effort === "string" ? settings.effort : "medium",
+    };
+    card.num_like = task.likeCount ?? 0;
+  }
+  return card;
 }
 
 export function buildHistory(task: TaskCardRow): Record<string, unknown> | null {
