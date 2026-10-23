@@ -78,6 +78,11 @@ import { AssetDetail, type AssetDetailData } from "./asset-detail";
 import { EffortModal } from "./effort-modal";
 import { ModelSelectionPopover } from "./model-selection-popover";
 import { PricingOverlay } from "./pricing-overlay";
+import {
+  CookiePreferencesOverlay,
+  ALL_PREFS,
+  type CookiePrefs,
+} from "./cookie-preferences-overlay";
 import { StoryFeed } from "./story-feed";
 import { OrientationPopup } from "./orientation-popup";
 import { PresetsModal, presetHint, type PresetGeometry } from "./presets-modal";
@@ -519,7 +524,6 @@ export function Studio({
    * paint with the live DB rows. */
   useEffect(() => {
     void refreshGallery();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* Like toggle (Task 48): optimistic on the tile, confirmed by the API,
@@ -1281,8 +1285,12 @@ export function Studio({
      directions) — the reference hides these behind icon rails + popovers */
   const [toolPanel, setToolPanel] = useState<null | "materials" | "presets" | "quality" | "directions">(null);
 
-  /* cookie consent card (reference guest chrome) — shown until accepted */
+  /* cookie consent card (reference guest chrome) — shown until accepted;
+     the banner's Preferences action opens the reference's granular
+     "Manage cookie preferences" modal (t47 recon capture 20) instead of
+     silently saving essential-only */
   const [cookieOk, setCookieOk] = useState(true);
+  const [cookiePrefsOpen, setCookiePrefsOpen] = useState(false);
   useEffect(() => {
     try {
       if (!window.localStorage.getItem(COOKIE_OK_KEY)) setCookieOk(false);
@@ -1290,12 +1298,13 @@ export function Studio({
       /* private mode — skip the card */
     }
   }, []);
-  const acceptCookies = useCallback((all: boolean) => {
+  const saveCookiePrefs = useCallback((prefs: CookiePrefs) => {
     try {
-      window.localStorage.setItem(COOKIE_OK_KEY, all ? "all" : "essential");
+      window.localStorage.setItem(COOKIE_OK_KEY, JSON.stringify(prefs));
     } catch {
       /* ignore */
     }
+    setCookiePrefsOpen(false);
     setCookieOk(true);
   }, []);
 
@@ -3797,20 +3806,32 @@ export function Studio({
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              onClick={() => acceptCookies(true)}
+              onClick={() => saveCookiePrefs(ALL_PREFS)}
               className="h-[38px] flex-1 rounded-lg bg-[#4a00e0] text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               Accept all
             </button>
             <button
               type="button"
-              onClick={() => acceptCookies(false)}
+              onClick={() => setCookiePrefsOpen(true)}
               className="h-[38px] flex-1 rounded-lg border border-[#c9c9cf] bg-white text-sm font-semibold text-[#1f2023] transition-colors hover:bg-[#f4f4f6]"
             >
               Preferences
             </button>
           </div>
         </div>
+      )}
+
+      {/* granular cookie preferences modal (reference: banner Preferences →
+          "Manage cookie preferences" — Essential locked + Analytics /
+          Personalization / Advertising toggles + Essential only / Save
+          preferences actions) */}
+      {cookiePrefsOpen && (
+        <CookiePreferencesOverlay
+          initialPrefs={ALL_PREFS}
+          onSave={saveCookiePrefs}
+          onClose={() => setCookiePrefsOpen(false)}
+        />
       )}
     </div>
   );
