@@ -285,6 +285,49 @@ function RodinWordmark({ className }: { className?: string }) {
   );
 }
 
+/* Add On icon — the reference cross-fades the seven DCC-tool marks
+ * (blender/unreal/unity/godot/c4d/maya/omniverse) every 2s with a 500ms
+ * scale(1↔0.35)+fade ease-in-out transition. DOM-measured 2026-10-23
+ * (Task 49): 2000ms per icon, 7-icon cycle; active img scale(1) opacity 1,
+ * inactive scale(0.35) opacity 0. */
+const ADD_ON_ICONS = [
+  "blender-mark.svg",
+  "unreal-mark.svg",
+  "unity-mark.svg",
+  "godot-mark.svg",
+  "c4d-mark.svg",
+  "maya-mark.svg",
+  "omniverse-mark.svg",
+] as const;
+
+function AddOnIconCarousel() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setIdx((i) => (i + 1) % ADD_ON_ICONS.length), 2000);
+    return () => clearInterval(iv);
+  }, []);
+  return (
+    <span className="relative block h-[22px] w-[24px] overflow-hidden">
+      {ADD_ON_ICONS.map((src, i) => (
+        <img
+          key={src}
+          src={`/images/${src}`}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute left-0 top-[1px] m-0 block h-[20px] w-[24px] border-0"
+          style={{
+            imageRendering: "-webkit-optimize-contrast",
+            opacity: i === idx ? 1 : 0,
+            transform: `scale(${i === idx ? 1 : 0.35}) translateZ(0)`,
+            transformOrigin: "center center",
+            transition: "opacity 500ms ease-in-out, transform 500ms ease-in-out",
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
 /* Hero tip pool — the reference rotates operational tips through the quote
  * slot (agent-walked recon: Feynman default, then the tip pool its DOM
  * carries). */
@@ -1310,12 +1353,10 @@ export function Studio({
             className="hidden items-center gap-1 text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white xl:block"
           >
             <span className="mt-[2px]">Add On</span>
-            {/* the reference's orange add-on mark (blender_new.svg look — an
-                orange ring, DOM-extracted 24x22) */}
-            <svg viewBox="0 0 24 22" className="h-[20px] w-[24px]" aria-hidden="true">
-              <circle cx="12" cy="11" r="8.4" fill="none" stroke="#f5792a" strokeWidth="3.4" />
-              <circle cx="12" cy="11" r="2.6" fill="#f5792a" />
-            </svg>
+            {/* the reference's add-on mark — a 7-icon DCC-tool carousel
+                (Task 49: replaced the static approximation with the
+                DOM-measured cross-fade behavior + real assets) */}
+            <AddOnIconCarousel />
           </button>
           <button
             type="button"
