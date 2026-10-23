@@ -1334,13 +1334,15 @@ export function Studio({
             aria-label="Subscribe — membership plans"
             className="group relative flex h-[37px] w-[139px] items-center justify-center rounded-[30px] border border-white/15 bg-white/[0.08] text-lg font-semibold transition-colors hover:border-white/25"
           >
-            <span className="absolute inset-0 flex items-center justify-center text-white transition-opacity group-hover:opacity-0">
-              Subscribe
-            </span>
-            <span
-              className="absolute inset-0 flex items-center justify-center rounded-[30px] bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-lg font-bold text-[#17181c] opacity-0 transition-opacity group-hover:opacity-100"
-            >
+            {/* the reference's guest default is data-state=trial — gradient
+                "7-Day Trial" visible, hover swaps to "Subscribe" (measured
+                live 2026-10-23: trial label fades+scale(0.78) out, sub
+                label fades in; Task 49 flipped the earlier inverted pair) */}
+            <span className="absolute inset-0 flex items-center justify-center rounded-[30px] bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-lg font-bold text-[#17181c] transition-[opacity,transform] duration-300 ease-in-out group-hover:scale-[0.78] group-hover:opacity-0">
               7-Day Trial
+            </span>
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-white opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
+              Subscribe
             </span>
           </button>
         </div>
