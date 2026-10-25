@@ -48,5 +48,7 @@ export async function POST(req: NextRequest) {
     privileges: ["LowPriorityQueue"],
     features: ["user_queue.low_priority"],
     referral_code: user.referralCode,
+    // t53 G6.3: the referrer's code captured at signup (null = direct signup).
+    referred_by_code: user.referredByCode ?? null,
   });
 }

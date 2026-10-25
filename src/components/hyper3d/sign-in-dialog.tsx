@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 /**
@@ -22,11 +22,17 @@ export function SignInDialog({
   onOpenChange,
   onSuccess,
   intent,
+  mode = "signin",
+  referralCode,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   intent?: string;
+  /** t53 G6: "signup" opens the panel in sign-up mode (deep links). */
+  mode?: "signin" | "signup";
+  /** t53 G6.3: referrer's code (from /r//a/ short links) — prefilled, read-only. */
+  referralCode?: string;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +40,11 @@ export function SignInDialog({
   const [signUp, setSignUp] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Deep-link mode: when the panel opens with mode="signup", flip to sign-up.
+  useEffect(() => {
+    if (open && mode === "signup") setSignUp(true);
+  }, [open, mode]);
 
   if (!open) return null;
 
@@ -47,7 +58,12 @@ export function SignInDialog({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(
           signUp
-            ? { email: email.trim(), password, username: username.trim() || undefined }
+            ? {
+                email: email.trim(),
+                password,
+                username: username.trim() || undefined,
+                referralCode: referralCode || undefined,
+              }
             : { email: email.trim(), password },
         ),
       });
@@ -95,6 +111,22 @@ export function SignInDialog({
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col gap-4">
+          {signUp && referralCode && (
+            <div className="space-y-1.5">
+              <label htmlFor="h3d-referral" className="text-[13px] font-semibold text-white/85">
+                Referral code
+              </label>
+              <input
+                id="h3d-referral"
+                type="text"
+                readOnly
+                value={referralCode}
+                className="h-12 w-full cursor-not-allowed rounded-full border border-white/10 bg-[#3a3a42] px-5 text-sm font-mono text-[#c4b0f0] opacity-80 outline-none"
+              />
+              <p className="text-[11px] text-white/40">Applied from your invite link.</p>
+            </div>
+          )}
+
           {signUp && (
             <div className="space-y-1.5">
               <label htmlFor="h3d-username" className="text-[13px] font-semibold text-white/85">

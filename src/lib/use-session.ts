@@ -25,6 +25,8 @@ export interface UserInfo {
   privileges: string[];
   features: string[];
   referral_code: string;
+  /** t53 G6.3: referrer's code captured at signup (null = direct signup). */
+  referred_by_code?: string | null;
 }
 
 export function useSession(): {

@@ -23,6 +23,14 @@ const SignUpSchema = z.object({
     .min(2, "Username must be at least 2 characters")
     .max(40)
     .optional(),
+  // t53 G6.3: referrer's code from the /r//a/ short links — captured and
+  // stored honestly (no invented bonus economics).
+  referralCode: z
+    .string()
+    .trim()
+    .min(2, "Referral code looks too short")
+    .max(40)
+    .optional(),
 });
 
 function randomReferralCode(): string {
@@ -72,6 +80,7 @@ export async function POST(req: NextRequest) {
       balance: 40, // reference free tier starts at 40 credits
       preferences: { rodin_generation_mode: "standard" },
       referralCode: randomReferralCode(),
+      referredByCode: parsed.data.referralCode || null,
     },
   });
 
