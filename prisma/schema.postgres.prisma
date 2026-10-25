@@ -15,10 +15,10 @@ model User {
   balance      Int           @default(40) // reference free tier starts at 40 credits
   preferences  Json?
   referralCode String        @unique
-  referredByCode String? // t53 G6.3: referrer's code captured at signup (/r/ /a/ short links)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   tasks        Task[]
+  likes        Like[]
   creditEntries CreditEntry[]
 }
 
@@ -55,6 +55,24 @@ model Task {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   creditEntries   CreditEntry[]
+  // ---- Task 48 backend audit: real gallery (search / sort / likes / pagination) ----
+  title           String? // gallery display title ("Scout Mech")
+  tags            Json? // gallery tag chips (string[])
+  likeCount       Int           @default(0) // denormalized like total (seeded with reference-visible counts)
+  galleryImage    String? // static gallery art override (/images/gallery-*.png); falls back to the poster render
+  likes           Like[]
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, taskId]) // one like per user per task — the toggle is idempotent
+  @@index([taskId])
 }
 
 model CreditEntry {

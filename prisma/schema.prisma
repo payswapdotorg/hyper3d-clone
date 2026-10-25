@@ -8,18 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  username      String
-  passwordHash  String
-  balance       Int           @default(40) // reference free tier starts at 40 credits
-  preferences   Json?
-  referralCode  String        @unique
-  referredByCode String? // t53 G6.3: referrer's code captured at signup (/r/ /a/ short links)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  tasks         Task[]
-  likes         Like[]
+  id           String        @id @default(uuid())
+  email        String        @unique
+  username     String
+  passwordHash String
+  balance      Int           @default(40) // reference free tier starts at 40 credits
+  preferences  Json?
+  referralCode String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tasks        Task[]
+  likes        Like[]
   creditEntries CreditEntry[]
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { SignInDialog } from "./sign-in-dialog";
@@ -19,35 +19,10 @@ export function Hyper3DApp() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [signInIntent, setSignInIntent] = useState<string | undefined>(undefined);
   const [afterSignIn, setAfterSignIn] = useState<(() => void) | null>(null);
-  /* t53 G6: deep-link auth state — /signup, /r/<code>, /a/<code> redirect in
-   * with ?auth=signup[&referral_code=<code>]; the panel opens in sign-up mode
-   * with the referrer's code prefilled (read-only, honestly stored). */
-  const [signInMode, setSignInMode] = useState<"signin" | "signup">("signin");
-  const [signInReferral, setSignInReferral] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (user) return; // already signed in — deep-link is moot
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("auth") !== "signup") return;
-    const referral = params.get("referral_code")?.trim().slice(0, 40) || undefined;
-    // One-time client-only initialization from the URL (no event to hook):
-    // the recommended pattern for deep links — rule is over-strict here.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSignInReferral(referral);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSignInMode("signup");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSignInIntent(
-      referral ? "You were invited — create an account to continue." : "Create an account to continue.",
-    );
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSignInOpen(true);
-  }, [user]);
 
   /* ---------- auth flows ---------- */
   const requestAuth = useCallback((intent: string, then?: () => void) => {
     setSignInIntent(intent);
-    setSignInMode("signin");
     setAfterSignIn(then ? () => then : null);
     setSignInOpen(true);
   }, []);
@@ -94,13 +69,10 @@ export function Hyper3DApp() {
 
       <SignInDialog
         open={signInOpen}
-        mode={signInMode}
-        referralCode={signInReferral}
         onOpenChange={(open) => {
           setSignInOpen(open);
           if (!open) {
             setSignInIntent(undefined);
-            setSignInMode("signin");
             setAfterSignIn(null);
           }
         }}
