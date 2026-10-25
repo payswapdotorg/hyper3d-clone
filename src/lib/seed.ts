@@ -9,6 +9,7 @@
  */
 import { db } from "./db";
 import { hashPassword } from "./auth";
+import { ensureLightMigrations } from "./light-migrate";
 import { buildScene } from "./mesh-builder";
 import { renderPoster } from "./render-preview";
 import { parseSceneSpec, type SceneSpec } from "./spec";
@@ -353,9 +354,14 @@ export interface SeedOptions {
   posters?: boolean;
 }
 
+/* t53: app-side light migration guard (see light-migrate.ts) runs first so
+ * every subsequent User query sees the referredByCode column. */
+
 /** Ensure the demo user + featured gallery exist. Idempotent + cheap. */
 export async function ensureSeeded(options: SeedOptions = {}): Promise<void> {
   const posters = options.posters ?? true;
+
+  await ensureLightMigrations();
 
   let demo = await db.user.findUnique({ where: { email: DEMO_EMAIL } });
   if (!demo) {

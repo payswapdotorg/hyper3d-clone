@@ -104,6 +104,11 @@ export async function getSessionUser(req: NextRequest): Promise<SessionUser | nu
   if (!token) return null;
   const payload = verifySessionToken(token);
   if (!payload) return null;
+  // t53: run the light migration guard before the first User select — the
+  // Prisma client now includes referredByCode, which may not exist yet on a
+  // pre-t53 database (once per process, no-op afterwards).
+  const { ensureLightMigrations } = await import("./light-migrate");
+  await ensureLightMigrations();
   const user = await db.user.findUnique({ where: { id: payload.uid } });
   if (!user) return null;
   return user;
