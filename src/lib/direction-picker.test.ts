@@ -29,17 +29,30 @@ describe("direction-picker (multiview state)", () => {
     expect(engineSlots(state)).toEqual([null, null, null, null]);
   });
 
-  it("nextFreeDirection walks F → B → L → R in order", () => {
+  it("nextFreeDirection walks the 11-label reading order and stops at the 4-view cap", () => {
     let state: DirectionState = {};
     const order: string[] = [];
     for (let i = 0; i < 4; i++) {
       const dir = nextFreeDirection(state);
       expect(dir).not.toBeNull();
       order.push(dir as string);
-      state = addView(state, dir as string, view(`v${i}`)).state;
+      const added = addView(state, dir as string, view(`v${i}`));
+      expect(added.ok).toBe(true);
+      state = added.ok ? added.state : state;
     }
-    expect(order).toEqual(["front", "back", "left", "right"]);
-    expect(nextFreeDirection(state)).toBeNull();
+    // Reading order per VIEW_DIRECTIONS: FL, F, FR, L, … — the cap (4) hits first.
+    expect(order).toEqual(["front-left", "front", "front-right", "left"]);
+    expect(canAddView(state)).toBe(false);
+    // With every direction occupied (hand-built, past the addView cap),
+    // there is no free direction left.
+    const all: DirectionState = {};
+    for (const dir of [
+      "front-left", "front", "front-right", "left", "up",
+      "right", "back-left", "back", "back-right", "down", "unknown",
+    ] as const) {
+      all[dir] = view(dir);
+    }
+    expect(nextFreeDirection(all)).toBeNull();
   });
 
   it("addView stores the view in the requested direction", () => {

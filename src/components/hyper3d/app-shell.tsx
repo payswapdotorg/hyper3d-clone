@@ -34,13 +34,13 @@ export function Hyper3DApp() {
     // the recommended pattern for deep links — rule is over-strict here.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSignInReferral(referral);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setSignInMode("signup");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setSignInIntent(
       referral ? "You were invited — create an account to continue." : "Create an account to continue.",
     );
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setSignInOpen(true);
   }, [user]);
 

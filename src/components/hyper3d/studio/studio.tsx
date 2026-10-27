@@ -64,6 +64,7 @@ import {
   Youtube,
   Zap,
   Box,
+  Grip,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -76,6 +77,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { SmartImage } from "../smart-image";
 import { AssetDetail, type AssetDetailData } from "./asset-detail";
 import { EffortModal } from "./effort-modal";
+import { McpConnectModal } from "./mcp-connect-modal";
+import { ControlnetModal } from "./controlnet-modal";
+import { deriveConstraints, type ControlnetMode, type ControlnetState } from "@/lib/controlnet";
 import { ModelSelectionPopover } from "./model-selection-popover";
 import { PricingOverlay } from "./pricing-overlay";
 import {
@@ -465,6 +469,12 @@ export function Studio({
   const [isPrivate, setIsPrivate] = useState(false);
   const [creationMode, setCreationMode] = useState<CreationModeId>("generate-objects");
   const [presetsOpen, setPresetsOpen] = useState(false);
+  const [mcpConnectOpen, setMcpConnectOpen] = useState(false);
+  /* ControlNet spatial constraint (reference affordance, 2026-10-28):
+     derived aspect/fill/anchors ride with every generation while applied. */
+  const [controlnet, setControlnet] = useState<ControlnetState | null>(null);
+  const [controlnetOpen, setControlnetOpen] = useState(false);
+  const [controlnetTab, setControlnetTab] = useState<ControlnetMode>("bbox");
 
   /* ---- interaction parity (UX-recon 2026-10-22, agent-walked on the live
    * reference): Subscribe → full membership overlay; gallery tile → asset
@@ -1014,6 +1024,8 @@ export function Studio({
             material,
             isPrivate,
             ...(mode === "worldgen" ? { creationMode } : {}),
+            // ControlNet spatial constraint (derived aspect/fill/anchors)
+            ...(controlnet ? { controlnet: deriveConstraints(controlnet) ?? undefined } : {}),
           }),
         });
         if (res.status === 401) {
@@ -1046,7 +1058,7 @@ export function Studio({
         setCreating(false);
       }
     },
-    [user, prompt, upload, mode, agentic, agenticAvailable, neuralTier, tier, seed, lockSeed, extraViews, genVersion, legacyMode, material, isPrivate, creationMode, effectiveEffort, startPolling, runNeuralPipeline, onNeedAuth, onSessionRefresh],
+    [user, prompt, upload, mode, agentic, agenticAvailable, neuralTier, tier, seed, lockSeed, extraViews, genVersion, legacyMode, material, isPrivate, creationMode, controlnet, effectiveEffort, startPolling, runNeuralPipeline, onNeedAuth, onSessionRefresh],
   );
 
   /** Pay-by-result confirm gate: charges exactly 1 credit, unlocks exports. */
@@ -1380,12 +1392,11 @@ export function Studio({
           </button>
           <button
             type="button"
-            onClick={() =>
-              toast.info("MCP&CLI", { description: "Not implemented in this clone — honest stub, same position as the reference." })
-            }
+            onClick={() => setMcpConnectOpen(true)}
+            aria-label="Connect Hyper3D MCP"
             className="hidden text-lg font-semibold text-[#b0b0b0] transition-colors hover:text-white md:block"
           >
-            MCP&amp;CLI
+            Connect Hyper3D MCP
           </button>
           <span className="hidden h-4 w-px bg-white/20 md:block" aria-hidden="true" />
           {user ? (
@@ -1910,31 +1921,63 @@ export function Studio({
                     <Compass className="size-3.5 text-white/80" aria-hidden="true" />
                   </button>
                 )}
+                {/* ControlNet rail (reference: three spatial-conditioning
+                    affordances — Bounding Box / Voxel / Point Cloud). All
+                    three open the real constraint editor; the applied
+                    constraint is shown by the active highlight. */}
                 <button
                   type="button"
-                  aria-label="Bounding Box Control — not implemented in this clone"
-                  title="Bounding Box Control (reference ControlNet — stub)"
-                  onClick={() =>
-                    toast.info("Bounding Box Control", {
-                      description: "A reference ControlNet input — not implemented in this clone (honest stub; the slot exists for visual parity).",
-                    })
-                  }
-                  className="flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15"
+                  aria-label={`Bounding Box ControlNet${controlnet ? " — constraint applied" : ""}`}
+                  title="Bounding Box ControlNet"
+                  onClick={() => {
+                    setControlnetTab("bbox");
+                    setControlnetOpen(true);
+                  }}
+                  className={cn(
+                    "relative flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    controlnet?.mode === "bbox" && "bg-white/20",
+                  )}
                 >
                   <Box className="size-3.5 text-white/80" aria-hidden="true" />
+                  {controlnet?.mode === "bbox" && (
+                    <span className="absolute -right-1 -top-1 size-[7px] rounded-full bg-h3d-violet" aria-hidden="true" />
+                  )}
                 </button>
                 <button
                   type="button"
-                  aria-label="Voxel ControlNet — not implemented in this clone"
-                  title="Voxel ControlNet (reference ControlNet — stub)"
-                  onClick={() =>
-                    toast.info("Voxel ControlNet", {
-                      description: "A reference ControlNet input — not implemented in this clone (honest stub; the slot exists for visual parity).",
-                    })
-                  }
-                  className="flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15"
+                  aria-label={`Voxel ControlNet${controlnet ? " — constraint applied" : ""}`}
+                  title="Voxel ControlNet"
+                  onClick={() => {
+                    setControlnetTab("voxel");
+                    setControlnetOpen(true);
+                  }}
+                  className={cn(
+                    "relative flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    controlnet?.mode === "voxel" && "bg-white/20",
+                  )}
                 >
                   <Users className="size-3.5 text-white/80" aria-hidden="true" />
+                  {controlnet?.mode === "voxel" && (
+                    <span className="absolute -right-1 -top-1 size-[7px] rounded-full bg-h3d-violet" aria-hidden="true" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Point Cloud ControlNet${controlnet ? " — constraint applied" : ""}`}
+                  title="Point Cloud ControlNet"
+                  onClick={() => {
+                    setControlnetTab("pointcloud");
+                    setControlnetOpen(true);
+                  }}
+                  className={cn(
+                    "relative flex size-7 items-center justify-center rounded-full bg-white/8 transition-colors hover:bg-white/15",
+                    controlnet?.mode === "pointcloud" && "bg-white/20",
+                  )}
+                >
+                  <Grip className="size-3.5 text-white/80" aria-hidden="true" />
+                  {controlnet?.mode === "pointcloud" && (
+                    <span className="absolute -right-1 -top-1 size-[7px] rounded-full bg-h3d-violet" aria-hidden="true" />
+                  )}
                 </button>
                 <button
                   type="button"
@@ -3143,6 +3186,34 @@ export function Studio({
                 Free preview — your first generation charges no credits
               </p>
             )}
+            {/* ControlNet applied-state chip (working sidebar): the constraint
+                stays editable while the empty-state input cluster is hidden —
+                reopen the editor or remove it from here. */}
+            {controlnet && (
+              <button
+                type="button"
+                onClick={() => {
+                  setControlnetTab(controlnet.mode);
+                  setControlnetOpen(true);
+                }}
+                aria-label={`ControlNet constraint applied, ${(() => { const c = deriveConstraints(controlnet); return c ? c.aspect.map((a) => Math.round(a)).join(" × ") : ""; })()} — click to edit`}
+                className="flex w-full items-center gap-2 rounded-xl border border-h3d-violet/40 bg-h3d-violet/10 px-3 py-2 text-left transition-colors hover:border-h3d-violet/70"
+              >
+                <Box className="size-4 shrink-0 text-h3d-violet" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-semibold text-white/85">ControlNet applied</span>
+                  <span className="block font-mono text-[10px] text-white/45">
+                    {(() => {
+                      const c = deriveConstraints(controlnet);
+                      return c ? `${c.aspect.map((a) => Math.round(a)).join(" × ")} · ${Math.round(c.fill * 100)}% · ${c.anchors} anchor${c.anchors === 1 ? "" : "s"}` : "";
+                    })()}
+                  </span>
+                </span>
+                <span className="shrink-0 rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/60">
+                  Edit
+                </span>
+              </button>
+            )}
             <Button
               className="relative h-12 w-full overflow-hidden rounded-full h3d-gradient-primary text-sm font-bold uppercase tracking-[0.12em] text-white shadow-[0_0_28px_rgba(217,70,239,0.35)] hover:opacity-90"
               onClick={handleGenerate}
@@ -3681,6 +3752,33 @@ export function Studio({
           setAgenticModalShown(true);
           setEffortModalOpen(false);
           void createTask(selected);
+        }}
+      />
+
+      {/* Connect Hyper3D MCP modal (topbar affordance, 2026-10-27 recon) */}
+      <McpConnectModal open={mcpConnectOpen} onOpenChange={(open) => setMcpConnectOpen(open)} />
+
+      {/* ControlNet constraint editor (reference's three spatial-conditioning
+          tabs — Bounding Box / Voxel / Point Cloud, 2026-10-28 recon) */}
+      <ControlnetModal
+        open={controlnetOpen}
+        onOpenChange={(open) => setControlnetOpen(open)}
+        initialTab={controlnetTab}
+        state={controlnet}
+        onApply={(next) => {
+          setControlnet(next);
+          if (next) {
+            const c = deriveConstraints(next);
+            if (c) {
+              toast.success("ControlNet constraint applied", {
+                description: `Proportions ${c.aspect.map((a) => Math.round(a)).join(" × ")} · ${Math.round(c.fill * 100)}% occupancy · ${c.anchors} anchor${c.anchors === 1 ? "" : "s"} — shaping the next generation.`,
+              });
+            }
+          } else {
+            toast.info("ControlNet constraint removed", {
+              description: "Generations run unconstrained again.",
+            });
+          }
         }}
       />
 

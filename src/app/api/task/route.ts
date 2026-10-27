@@ -19,6 +19,16 @@ const CreateTaskSchema = z.object({
   effort: z.enum(["extreme-low", "low", "medium", "high", "extreme-high"]).optional().default("medium"),
   image: z.string().min(8).max(8_000_000).optional(), // data URL or bare base64
   settings: z.object({ height: z.number().finite().min(1).max(100) }).partial().optional(),
+  // ---- ControlNet spatial constraint (reference affordance, 2026-10-28) ----
+  /** Derived from the editor state (lib/controlnet.ts) — aspect/fill/anchors. */
+  controlnet: z
+    .object({
+      mode: z.enum(["bbox", "voxel", "pointcloud"]),
+      aspect: z.tuple([z.number().finite().min(0.01).max(1000), z.number().finite().min(0.01).max(1000), z.number().finite().min(0.01).max(1000)]),
+      fill: z.number().finite().min(0).max(1).optional(),
+      anchors: z.number().int().min(0).max(4096).optional(),
+    })
+    .optional(),
   // ---- engine2 recovery: free neural engine + pay-by-result ----
   /** Tier: "neural" (client-direct Hunyuan3D-2.1) or "fast" (in-house lathe). */
   engine: z.enum(["neural", "fast"]).optional(),
@@ -86,7 +96,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Validation failed", issues: parsed.error.issues.map((i) => i.message) }, { status: 400 });
   }
-  const { type, prompt, effort, image, settings, engine, seed, mvImages, genVersion, legacyMode, material, isPrivate, creationMode, imageLabels } = parsed.data;
+  const { type, prompt, effort, image, settings, controlnet, engine, seed, mvImages, genVersion, legacyMode, material, isPrivate, creationMode, imageLabels } = parsed.data;
 
   // Pay-by-result (engine2): engine-tagged tasks are billed ONLY at confirm —
   // generation + preview are free (mirrors the reference free tier). The old
@@ -141,6 +151,7 @@ export async function POST(req: NextRequest) {
         ...(material ? { material } : {}),
         ...(creationMode ? { creation_mode: creationMode } : {}),
         ...(imageLabels ? { image_labels: imageLabels } : {}),
+        ...(controlnet ? { controlnet } : {}),
       },
       creditsSpent: cost,
       ...(engine ? { engine } : {}),

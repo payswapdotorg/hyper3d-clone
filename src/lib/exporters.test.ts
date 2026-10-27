@@ -94,7 +94,7 @@ describe("model exporters", () => {
   });
 
   it("rejects unknown formats and returns sensible content types", async () => {
-    await expect(exportModel(buildFixture(), "fbx" as ExportFormat)).rejects.toThrow();
+    await expect(exportModel(buildFixture(), "3ds" as ExportFormat)).rejects.toThrow();
     const glb = await exportModel(buildFixture(), "glb");
     expect(glb.contentType).toContain("model/gltf-binary");
     const obj = await exportModel(buildFixture(), "obj");
@@ -103,5 +103,18 @@ describe("model exporters", () => {
     expect(stl.contentType).toContain("model/stl");
     const usdz = await exportModel(buildFixture(), "usdz");
     expect(usdz.contentType).toContain("model/vnd.usdz+zip");
+  });
+
+  it("FBX: ASCII FBX 7.3 — FBXHeaderExtension token, Objects/Geometry blocks, octet-stream", async () => {
+    const { bytes, contentType, ext } = await exportModel(buildFixture(), "fbx");
+    const text = new TextDecoder().decode(bytes);
+    expect(ext).toBe("fbx");
+    expect(contentType).toBe("application/octet-stream");
+    expect(text).toContain("FBXHeaderExtension");
+    expect(text).toContain("FBXHeaderVersion: 1003");
+    expect(text).toContain("Objects:");
+    expect(text).toContain("Geometry:");
+    expect(text).toContain("Vertices:");
+    expect(text).toContain("PolygonVertexIndex:");
   });
 });

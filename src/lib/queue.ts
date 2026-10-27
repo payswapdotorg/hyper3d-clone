@@ -9,12 +9,14 @@
  * complete immediately.
  */
 import { randomUUID } from "node:crypto";
+import * as THREE from "three";
 import { db } from "./db";
 import { buildScene } from "./mesh-builder";
 import { renderPoster } from "./render-preview";
 import { getProvider } from "./providers";
 import { TaskMachine, isComplete } from "./task-machine";
 import { safeParseSceneSpec, type SceneSpec } from "./spec";
+import { aspectWrap, constraintPromptLine, type Constraints } from "./controlnet";
 import type { Prisma } from "@prisma/client";
 
 export type EffortId = "extreme-low" | "low" | "medium" | "high" | "extreme-high";
@@ -143,6 +145,14 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
   const machine = new TaskMachine(task.userState as never);
   const settings = (task.settings as Record<string, unknown> | null) ?? {};
   const effort = typeof settings.effort === "string" ? settings.effort : "medium";
+  // ControlNet spatial constraint (reference affordance, 2026-10-28): the
+  // derived aspect/fill/anchors ride with the task — the planner prompt is
+  // annotated and the generated spec is proportion-wrapped (deterministic,
+  // real geometry effect; absolute positions never survive normalization).
+  const controlnet =
+    settings.controlnet && typeof settings.controlnet === "object"
+      ? (settings.controlnet as Constraints)
+      : null;
   // Serverless deployment adaptation: cap the artificial effort pacing so a
   // single maxDuration-bounded invocation (Vercel) can carry the whole
   // pipeline; local/standalone keeps the faithful pace. The resume path
@@ -256,7 +266,9 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
     const enginePromise = engine({
       id: taskId,
       type: task.type,
-      prompt: task.prompt,
+      // ControlNet: the planner hint rides along with the prompt (spatial
+      // proportions / occupancy / silhouette detail — see lib/controlnet.ts).
+      prompt: controlnet ? `${task.prompt} ${constraintPromptLine(controlnet)}` : task.prompt,
       effort,
       imageBase64,
       imageMime,
@@ -321,19 +333,40 @@ async function runTask(taskId: string, options: EnqueueOptions): Promise<void> {
     }
     const spec = parsed.spec;
 
+    // ControlNet aspect wrap: rescale the generated scene's extent
+    // proportions to the constraint volume (deterministic — measure the
+    // real built extents, wrap the spec in a per-axis scale group). A
+    // 100×40×60 constraint visibly flattens the result; a uniform aspect
+    // leaves the spec untouched.
+    const constrainedSpec = (() => {
+      if (!controlnet || !Array.isArray(controlnet.aspect)) return spec;
+      try {
+        const probe = buildScene(spec);
+        probe.updateMatrixWorld(true);
+        const size = new THREE.Box3().setFromObject(probe).getSize(new THREE.Vector3());
+        return aspectWrap(
+          spec,
+          [Math.abs(size.x) || 0.01, Math.abs(size.y) || 0.01, Math.abs(size.z) || 0.01],
+          [controlnet.aspect[0], controlnet.aspect[1], controlnet.aspect[2]],
+        );
+      } catch {
+        return spec; // a failed wrap must never fail the task
+      }
+    })();
+
     // Spec-first persistence: the moment the spec validates it is written to
     // the task row (with used_tokens parked in settings), so a frozen/killed
     // serverless invocation can complete the task from storage on the next
     // poll — see COMPLETION-RESUME above.
     await db.task.update({
       where: { id: taskId },
-      data: { spec: spec as unknown as Prisma.InputJsonValue },
+      data: { spec: constrainedSpec as unknown as Prisma.InputJsonValue },
     });
     await updateSettings(taskId, (s) => {
       s.spec_tokens = engineResult.r.usage.used_tokens;
     });
 
-    await finalize(spec, engineResult.r.usage.used_tokens, startedAt);
+    await finalize(constrainedSpec, engineResult.r.usage.used_tokens, startedAt);
   } catch (err) {
     const message = err instanceof Error ? err.message : "generation failed";
     try {

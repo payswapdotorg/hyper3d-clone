@@ -192,3 +192,73 @@ the same test suites plus a live golden-path run:
     subscribe-tip), so the clone keeps ProviderA as the engine and the
     RODIN_API_KEY seam in providers/index.ts documents the exact contract
     for a future real-engine pass when the operator enables the add-on.
+
+## Session 2026-10-28 (continuation pass — t54 re-land + ControlNet)
+
+31. **Light migration is dialect-aware.** The t53 re-land's
+    `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS` is a Postgres-only form —
+    on SQLite it is a *syntax* error (`near "EXISTS"`), not the
+    swallowed "duplicate column" failure, so every local cold start logged
+    a `[light-migration]` warning. `lib/light-migrate.ts` now probes
+    `PRAGMA table_info("User")` on SQLite (`file:`/`:memory:` URLs) and adds
+    the bare column only when absent; Postgres keeps `IF NOT EXISTS`.
+    Regression suite `light-migrate.test.ts` covers both the no-op path and
+    the heal path (drop column → fresh module → re-added).
+32. **Connect Hyper3D MCP modal (parity for the topbar affordance).** The
+    live workspace's topbar exposes "Connect Hyper3D MCP", which opens a
+    setup sheet with two copyable blocks: an MCP setup instruction for AI
+    coding agents (name `hyper3d`, Streamable HTTP
+    `https://api.hyper3d.com/api/mcp`, OAuth) and the
+    `npm install --global @hyper3d/cli` command. The clone's former
+    "MCP&CLI" button was an honest stub toast — dead UI, against this
+    build's own principle. It is now a real modal (`mcp-connect-modal.tsx`)
+    with the same function: two copy-to-clipboard blocks (clipboard API
+    with textarea fallback, per-button "Copied" state). The endpoint URL
+    and package name are the public connection facts; the instructional
+    wording is the clone's own, not the reference's marketing copy.
+33. **Stale test contracts re-anchored (130 → 147 tests, 17 suites, all
+    green).** Two tests had drifted from the shipped behavior after the
+    workspace-parity commit: `exporters.test.ts` still expected `fbx` to be
+    *rejected* (the ASCII FBX 7.3 exporter had since made it a first-class
+    format — the rejection probe now uses `"3ds"` and a dedicated FBX
+    structure test asserts the header/geometry blocks); and
+    `direction-picker.test.ts` still expected the four-cardinal walk
+    (`front → back → left → right`) although the picker had grown to the
+    reference's eleven labels in reading order (`front-left` first) — the
+    test now walks that order, asserts the 4-view cap, and checks the
+    all-slots-filled null case with a hand-built state.
+34. **ControlNet — real spatial constraints, not stubs (the reference's
+    three conditioning tabs).** Live recon (2026-10-28): the reference's
+    input cluster exposes "Bounding Box ControlNet" / "Voxel ControlNet" /
+    "PointCloud ControlNet" tabs with W×H×L inputs (defaults 100/100/100);
+    its full editor is login-gated. The clone's rail buttons were honest
+    stub toasts; they are now a real editor (`controlnet-modal.tsx`) with
+    the same three tabs: Bounding Box (W/H/L inputs + live proportion
+    preview), Voxel (8×8 toggleable front-view grid), Point Cloud (16×16
+    click-to-place anchors). **Engine honesty:** every scene is normalized
+    to a fixed bounding box before poster/export, so absolute positions
+    cannot survive — what the engine really consumes is (a) ASPECT — the
+    constraint volume's W:H:L proportions, applied as a deterministic
+    per-axis scale group wrapped around the generated spec (`aspectWrap`,
+    measured from the real built extents via three.js Box3; uniform aspects
+    skip the wrapper); (b) FILL — occupancy share of the drawing, from the
+    marked bounds; (c) ANCHORS — placed cell/point count. All three are
+    derived by `lib/controlnet.ts` (pure, 15-test suite), ride with the
+    task (`POST /api/task` `controlnet` field → `settings.controlnet`), and
+    act twice: the planner prompt is annotated
+    (`constraintPromptLine` — proportions/occupancy/silhouette detail) and
+    the returned spec is proportion-wrapped in the queue. Verified
+    end-to-end: a 100×40×100 bbox flattened a mushroom house (root group
+    scale [1, 0.286, 1], VLM read the poster as "squashed and flat"); an
+    8-cell top-row voxel mark derived 200×25×25 and squashed a river stone
+    to [1, 0.34, 0.43]. The neural (client-driven) path does not apply the
+    wrap — the Hunyuan mesh is the browser's artifact; documented here.
+    The constraint stays editable from the working-state sidebar (applied
+    chip → reopens the editor; Remove clears it), since the empty-state
+    input cluster is hidden once a task exists. Modal is mount-on-open
+    (draft state initialized from props — no setState-in-effect).
+35. **Golden path re-verified end-to-end locally** (2026-10-28): sign-up →
+    40-credit wallet; text-to-3D with and without ControlNet constraints →
+    DonePreview with real spec/poster; byte-checked GLB exports; neural
+    pay-by-result path re-confirmed (mesh POST → confirm → exactly 1
+    credit charged).
