@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
       { source: "/workspace/register", destination: "/?auth=signup", permanent: false },
       { source: "/r/:code", destination: "/?auth=signup&referral_code=:code", permanent: false },
       { source: "/a/:code", destination: "/?auth=signup&referral_code=:code", permanent: false },
+      // t56: the reference's OmniCraft tool routes resolve to the clone's
+      // real toolbag pages (4 live tools + honest not-in-clone panels).
+      { source: "/workspace/omnicraft", destination: "/omnicraft", permanent: false },
+      { source: "/workspace/omnicraft/:tool", destination: "/omnicraft/:tool", permanent: false },
     ];
   },
 };

@@ -191,6 +191,9 @@ export function buildCompactCard(task: TaskCardRow): Record<string, unknown> {
     seed: typeof task.seed === "number" && task.seed !== 0 ? task.seed : null,
     credits_spent: task.creditsSpent,
     confirmed: Boolean(task.confirmedAt),
+    // t56: pay-by-result flag for the OmniCraft Format Convertor's
+    // confirm-first gate (mirrors the reference's rule) — additive passthrough.
+    pay_by_result: settings.pay_by_result === true,
   };
   // Task 48: gallery metadata (landing-gallery tiles are real DB rows —
   // title/tags/like count/static art override + model badge for the UI).

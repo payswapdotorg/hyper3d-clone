@@ -135,6 +135,7 @@ import {
   type ViewDirection as PickerDirection,
 } from "@/lib/direction-picker";
 import { exportModel } from "@/lib/exporters";
+import { OMNICRAFT_TOOLS } from "@/lib/omnicraft";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { SimplifyModifier } from "three/examples/jsm/modifiers/SimplifyModifier.js";
 import * as THREE from "three";
@@ -1529,15 +1530,32 @@ export function Studio({
                   <Menu className="size-4" aria-hidden="true" />
                 </button>
                 {/* OmniCraft grid dropdown (reference nav_show on the menu icon:
-                    tool grid + Add-On DCC description) */}
+                    tool grid + Add-On DCC description). t56: driven by the shared
+                    registry — live tools route to /omnicraft/{slug}, the rest state
+                    honestly why they are not in this clone. */}
                 <span className="pointer-events-none absolute right-0 top-full z-30 mt-2 w-[300px] rounded-[18px] border border-white/10 bg-[#17181c]/95 p-3.5 opacity-0 shadow-[0_14px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
                   <span className="block text-[11px] font-bold text-white/85">OmniCraft｜Toolbag for 3D</span>
                   <span className="mt-2 grid grid-cols-2 gap-1">
-                    {["Texture Generator", "Image Enhancer", "Image Remix", "HDRI Generation", "Rodin Search", "Vector to 3D", "Mesh Editor", "Model Viewer", "Format Convertor"].map((tool) => (
-                      <span key={tool} className="truncate rounded-lg bg-white/[0.05] px-2 py-1.5 text-[10px] font-semibold text-white/65">
-                        {tool}
-                      </span>
-                    ))}
+                    {OMNICRAFT_TOOLS.map((tool) =>
+                      tool.status === "live" ? (
+                        <a
+                          key={tool.slug}
+                          href={`/omnicraft/${tool.slug}`}
+                          title={tool.blurb}
+                          className="truncate rounded-lg bg-white/[0.05] px-2 py-1.5 text-[10px] font-semibold text-white/65 transition-colors hover:bg-violet-400/15 hover:text-white"
+                        >
+                          {tool.name}
+                        </a>
+                      ) : (
+                        <span
+                          key={tool.slug}
+                          title={tool.note}
+                          className="truncate rounded-lg bg-white/[0.03] px-2 py-1.5 text-[10px] font-semibold text-white/30"
+                        >
+                          {tool.name}
+                        </span>
+                      ),
+                    )}
                   </span>
                   <span className="mt-2.5 block text-[10px] leading-relaxed text-white/45">
                     Add-On lets you use almost all Rodin features in DCC software.
@@ -2506,13 +2524,16 @@ export function Studio({
                     ))}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toast.info("OmniCraft", { description: "The reference's toolbag is a separate product — not part of this clone." })}
-                  className="h-8 w-full rounded-full bg-white text-[11px] font-bold text-[#17181c] transition-colors hover:bg-white/90"
+                {/* t56: the toolbag is now real in this clone (/omnicraft) —
+                    the reference's pricing chips stay as parity chrome, and the
+                    CTA routes to the honest tool grid instead of a stub toast. */}
+                <a
+                  href="/omnicraft"
+                  aria-label="Open the OmniCraft toolbag"
+                  className="flex h-8 w-full items-center justify-center rounded-full bg-white text-[11px] font-bold text-[#17181c] transition-colors hover:bg-white/90"
                 >
                   Try OmniCraft
-                </button>
+                </a>
               </aside>
               {gallery.map((tile) => (
                 <figure

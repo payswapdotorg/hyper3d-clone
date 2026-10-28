@@ -11,6 +11,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LOCALES } from "@/lib/hyper3d";
 
+/** t56: footer entries that now have REAL pages in this clone route to them
+ * instead of firing the parity toast — the toolbag is no longer a stub. */
+const REAL_ROUTES: Record<string, string> = {
+  OmniCraft: "/omnicraft",
+  "HDRI Generator": "/omnicraft/hdri",
+  "Vector to 3D": "/omnicraft/vector",
+  "Model Viewer": "/omnicraft/viewer",
+  // footer spells it "Converter", the reference grid "Convertor" — cover both
+  "Format Convertor": "/omnicraft/convertor",
+  "Format Converter": "/omnicraft/convertor",
+};
+
 const COLUMNS: { title: string; links: string[] }[] = [
   {
     title: "Product",
@@ -90,13 +102,22 @@ export function SiteFooter() {
               <ul className="mt-4 space-y-1">
                 {col.links.map((link) => (
                   <li key={link}>
-                    <button
-                      type="button"
-                      className="min-h-9 rounded px-0 py-1 text-left text-sm text-white/60 transition-colors hover:text-white"
-                      onClick={() => linkToast(link)}
-                    >
-                      {link}
-                    </button>
+                    {REAL_ROUTES[link] ? (
+                      <a
+                        href={REAL_ROUTES[link]}
+                        className="min-h-9 rounded px-0 py-1 text-left text-sm text-white/60 transition-colors hover:text-white"
+                      >
+                        {link}
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        className="min-h-9 rounded px-0 py-1 text-left text-sm text-white/60 transition-colors hover:text-white"
+                        onClick={() => linkToast(link)}
+                      >
+                        {link}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
