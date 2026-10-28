@@ -262,3 +262,40 @@ the same test suites plus a live golden-path run:
     DonePreview with real spec/poster; byte-checked GLB exports; neural
     pay-by-result path re-confirmed (mesh POST → confirm → exactly 1
     credit charged).
+
+36. **OmniCraft toolbag made real — 4 live tools, 5 honest stubs** (2026-10-28,
+    t56): recon of the reference showed the toolbag at /workspace/omnicraft/*
+    with a nine-tool grid (Texture Generator, Image Enhancer, Image Remix,
+    HDRI Generation, Rodin Search, Vector to 3D, Mesh Editor, Model Viewer,
+    Format Convertor) and nav Features pages per tool. The clone previously
+    had a static grid + a "separate product" stub toast. Now lib/omnicraft.ts
+    is the single registry (same nine names, reference order) driving the
+    /omnicraft landing grid, per-tool routes, the studio menu dropdown, the
+    promo tile CTA and footer links; /workspace/omnicraft(/:tool) redirects
+    resolve. Live tools: (a) **HDRI Generation** — a prompt-seeded
+    *procedural* engine (lib/hdri.ts): time/weather/palette keywords pin the
+    sky, FNV-1a + mulberry32 fill the rest (same prompt → same sky, forever),
+    sliders always win; equirect painter with seam-free periodic-noise fbm
+    clouds, sun disc/glow, calibrated coverage (measured fbm distribution:
+    threshold 0.75−0.48·density), physical night deepening (palette darkens
+    as the sun drops below the horizon — VLM verification caught the original
+    day-bright-night bug), star field with size variety, and real image
+    palette extraction (4-bit bucket quantization on the dropped image's
+    pixels, in-browser). 360° preview uses the canonical panorama sphere
+    (scale(-1,1,1) — a plain BackSide sphere mirrors the azimuth, which had
+    aimed the camera away from the sun) with the camera aimed at the sun; 2K
+    and 4K PNG downloads are both free (the reference gates 8K). VLM-verified
+    for sunset/starry-night/stormy-morning. (b) **Vector to 3D** —
+    SVGLoader → ExtrudeGeometry with depth/bevel/curve sliders and colors;
+    the preview streams the exact GLB the downloads serve (normalizeForExport
+    centers + uniformly scales — translate, not set, bug caught by test).
+    (c) **Model Viewer** — the studio's real viewer pointed at local object
+    URLs (drop GLB, never uploaded) or remote URLs. (d) **Format Convertor**
+    — lists YOUR tasks (auth-gated), previews the exact export-endpoint GLB,
+    six real format downloads; pay-by-result tasks show the confirm-first
+    gate (buildCompactCard now passes pay_by_result top-level). The five
+    remaining tools state honestly why they are not in the clone (each with
+    its reason on the card and in the dropdown tooltip). 177 tests / 20
+    suites green (+30); lint clean; all four tools browser-verified. A fourth
+    environment reset wiped the working tree mid-session; all t56 work was
+    rebuilt from the conversation record and pushed as 5049384.
