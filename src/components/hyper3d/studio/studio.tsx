@@ -2683,6 +2683,17 @@ export function Studio({
                     ],
                   },
                   {
+                    heading: "STYLES",
+                    links: [
+                      /* t60: the styles tree is real — route, don't toast */
+                      ["Low Poly", "/styles/low-poly"],
+                      ["Voxel", "/styles/voxel"],
+                      ["Anime", "/styles/anime"],
+                      ["Photorealistic", "/styles/photorealistic"],
+                      ["All styles", "/styles"],
+                    ],
+                  },
+                  {
                     heading: "PLUG-INS",
                     links: [
                       ["Blender", stubToast("Blender")],

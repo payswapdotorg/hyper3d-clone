@@ -409,3 +409,53 @@ the same test suites plus a live golden-path run:
     unknown slug → themed 404; VLM-verified index (grouped cards, status
     chips), game-development (green panel, steps, FAQ), animation (amber
     PARTIAL chip) render without layout defects.
+
+40. **Styles tree — the reference's 21 style pages, honestly statused**
+    (2026-10-29, t60): recon of the reference's styles sitemap
+    (landing-sitemap-styles-en.xml) enumerated index + 21 pages
+    (abstract, anime, cartoon, cel-shaded, fantasy, flat, gothic,
+    hand-painted, industrial, isometric, low-poly, medieval, minimalist,
+    modern, organic, photorealistic, pixel-art, realistic, retro,
+    stylized, voxel). The clone previously had NO /styles routes. Now:
+    src/lib/styles.ts (+ style-types.ts + content modules A/B/C) is the
+    single registry (reference sitemap order) rendered through one
+    shared server component (style-page.tsx — breadcrumb bar, hero +
+    CTAs, honest status panel, "…in three steps", "What makes a model
+    read as [style]" signal cards, "[style] prompt recipes that work"
+    with copy-paste-able prompts + honest notes, native-<details> FAQ,
+    cross-links, closing CTA band) served by /styles/[slug]
+    (generateStaticParams, per-page metadata) + a grouped "Style Matrix"
+    index. Status contract, asserted by test: 17 styles are **live** —
+    their core character (exaggerated ratios, chunky geometry, flat
+    palettes, vertical silhouettes, smooth revolves) is expressible
+    through the real levers: prompt-steered spec geometry (shape
+    vocabulary/palette/proportions/segment counts) + per-part
+    MeshStandardMaterial parameters + the real six-format export row;
+    and 4 are **partial** — cel-shaded (no toon shading model),
+    hand-painted (no texture painting), photorealistic (no baked PBR
+    maps), pixel-art (no texture baking at all) — each page says the
+    mesh and loop are real and the LOOK finishes in your DCC. Honesty
+    rules the tests enforce: no baked-PBR/texture-map claims anywhere
+    (materials are parameters — mesh-builder.ts buildMaterial); no
+    polycount-targeting or LOD-generation claims (no such controls
+    exist; any LOD/polycount mention must sit in a denial or DCC
+    hand-off, and the low-poly page must contain "no polycount
+    slider"); no style-lock/guaranteed-consistency claims (steering is
+    prompt-level; the stylized page states "No style-lock" outright);
+    voxel must disclose "no dedicated voxel remesher" (the look is box
+    primitives the spec stacks, no .vox format); format mentions must
+    match the real EXPORT_FORMATS set; OmniCraft cross-links only
+    target LIVE tools; primary CTAs go to the real studio; credit
+    numbers, where stated, match the real metering (1 standard / 10
+    agentic / first free / 1 at Confirm & Export). Copying the
+    reference's page copy would have imported claims this clone cannot
+    back ("set a target polygon count", "up to 10 million polygons",
+    "optional LODs", baked PBR maps, Sim Ready) — every one of those is
+    answered with the honest "not here, do it in your DCC" that the
+    FAQ states. Also shipped: studio footer STYLES column wired to real
+    links (the reference exposes Styles in its header mega-menu; this
+    clone's studio footer is the equivalent surface) and
+    public/sitemap.xml +22 routes (65 locs total). 246 tests / 24
+    suites green (+22); lint clean; build SSGs all 22 routes; local
+    smoke: footer STYLES links present in studio HTML, unknown slug →
+    themed 404.
