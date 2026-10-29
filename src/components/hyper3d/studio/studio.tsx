@@ -2658,6 +2658,8 @@ export function Studio({
                       ["Rodin", () => toast.info("Rodin", { description: "You are in it — the Rodin workspace." })],
                       /* t57: ChatAvatar now has a real (honest) feature page */
                       ["ChatAvatar", "/features/chatavatar"],
+                      /* t62: the pricing page is real — route, don't toast */
+                      ["Pricing", "/pricing"],
                     ],
                   },
                   {
