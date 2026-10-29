@@ -1,128 +1,158 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/</loc>
+    <loc>https://hyper3d-clone.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>/features</loc>
+    <loc>https://hyper3d-clone.vercel.app/features</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>/features/text-to-3d</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/text-to-3d</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/features/image-to-3d</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/image-to-3d</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/features/worldgen</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/worldgen</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/api</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/api</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/chatavatar</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/chatavatar</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/ai-image-generator</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/ai-image-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/ai-video-generator</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/ai-video-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/mcp</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>/features/mcp/mcp-claude</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/mcp</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/features/mcp/mcp-codex</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>/features/mcp/mcp-kimi</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>/features/omnicraft/3d-mesh-editor</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/mcp/mcp-claude</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/omnicraft/3d-model-search-engine</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/mcp/mcp-codex</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/omnicraft/ai-hdri-generator</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>/features/omnicraft/ai-image-enhancer</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/mcp/mcp-kimi</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/omnicraft/ai-image-remix</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/omnicraft/3d-mesh-editor</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/features/omnicraft/3d-model-search-engine</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/features/omnicraft/ai-hdri-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/omnicraft/ai-texture-generator</loc>
+    <loc>https://hyper3d-clone.vercel.app/features/omnicraft/ai-image-enhancer</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/features/omnicraft/ai-image-remix</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/features/omnicraft/ai-texture-generator</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/features/omnicraft/svg-to-3d-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/features/omnicraft/svg-to-3d-converter</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>/omnicraft</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>/omnicraft/hdri</loc>
+    <loc>https://hyper3d-clone.vercel.app/omnicraft</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/omnicraft/vector</loc>
+    <loc>https://hyper3d-clone.vercel.app/omnicraft/hdri</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/omnicraft/viewer</loc>
+    <loc>https://hyper3d-clone.vercel.app/omnicraft/vector</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/omnicraft/convertor</loc>
+    <loc>https://hyper3d-clone.vercel.app/omnicraft/viewer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/omnicraft/convertor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/legal</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/legal/copyright-license</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/legal/fulfillment</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/legal/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/legal/refund</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://hyper3d-clone.vercel.app/legal/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

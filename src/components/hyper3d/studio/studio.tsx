@@ -2686,8 +2686,9 @@ export function Studio({
                   {
                     heading: "LEGAL",
                     links: [
-                      ["Privacy", stubToast("Privacy")],
-                      ["Terms", stubToast("Terms")],
+                      /* t58: the Legal Center is real — route, don't toast */
+                      ["Privacy", "/legal/privacy"],
+                      ["Terms", "/legal/terms"],
                     ],
                   },
                 ] as { heading: string; links: [string, string | (() => void)][] }[]

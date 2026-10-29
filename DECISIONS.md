@@ -332,3 +332,38 @@ the same test suites plus a live golden-path run:
     lint clean; build SSGs all 18 pages; browser-verified: footer link click
     navigates, Avatar tab → /features/chatavatar, unknown feature → themed
     404; VLM-verified index + text-to-3d pages render the full anatomy.
+
+38. **Legal Center — the reference's 5 legal documents, rewritten honestly
+    for this clone** (2026-10-29, t58): recon of the reference's legal
+    sitemap (landing-sitemap-legal-en.xml) found an index + 5 documents
+    (privacy, terms, refund, copyright-license, fulfillment) — while this
+    clone's footer LEGAL column fired toasts. Now: src/lib/legal.ts (+
+    legal-types.ts + legal-content.ts) is the single registry (reference
+    sitemap order), rendered through one shared server component
+    (legal-page.tsx — breadcrumb top bar, sticky TOC sidebar with anchor
+    links, numbered sections, sibling cross-links, closing Legal Center
+    band) served by /legal/[slug] (generateStaticParams + per-page
+    metadata) + a "Legal Center" index with document cards. **The text is
+    this clone's own, tethered to the real code by test**: the terms state
+    the actual metering imported from credits.ts (50-credit signup grant,
+    1 credit standard / 10 agentic, first task free, pay-by-result
+    1-credit Confirm & Export charge — atomic and idempotent), the privacy
+    policy describes the real auth mechanics (scrypt per-hash salt,
+    HMAC-signed httpOnly SameSite=Lax cookie, 7-day Max-Age, one cookie
+    total, AI-backend processing disclosure, zero trackers), the refund
+    policy documents the two implemented automatic paths (cancel_refund in
+    full; pay-by-result never charged before export) AND states the real
+    limitation plainly — legacy creation-charged tasks that FAIL do not
+    auto-refund, because no such path exists — rather than copying the
+    reference's cash-refund process (this clone processes no payments;
+    the membership overlay is parity chrome). Copying Deemos' legal text
+    would have been both dishonest (describing money flows that don't
+    exist here) and copyright-infringing; this records the equivalent
+    coverage instead. Also shipped: public/sitemap.xml converted to
+    ABSOLUTE URLs (sitemap protocol requirement — the t57 relative locs
+    were a spec bug, caught while adding the 6 legal routes) and the
+    studio footer LEGAL column wired to real links. 207 tests / 22 suites
+    green (+14, including the ledger-tether assertions); lint clean; build
+    SSGs all 5 documents; browser-verified: footer Privacy click navigates
+    to /legal/privacy, unknown doc → themed 404; VLM-verified index (5
+    cards) + privacy page (TOC + 11 numbered sections, no layout defects).

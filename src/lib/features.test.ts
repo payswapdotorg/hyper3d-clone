@@ -11,6 +11,9 @@ import {
 } from "./features";
 import { OMNICRAFT_TOOLS } from "./omnicraft";
 
+/** This clone's production origin (sitemap locs must be absolute, t58). */
+const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
+
 /** The reference's features sitemap, captured 2026-10-29 from
  * hyper3d.ai/landing-sitemap-features-en.xml (minus the index route itself). */
 const REFERENCE_FEATURE_SLUGS = [
@@ -226,12 +229,23 @@ describe("features sitemap", () => {
   it("public/sitemap.xml lists every features route and live tool route", () => {
     const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
     for (const route of featureRoutes()) {
-      expect(xml.includes(`<loc>${route}</loc>`), route).toBe(true);
+      expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
     for (const tool of OMNICRAFT_TOOLS.filter((t) => t.status === "live")) {
-      expect(xml.includes(`<loc>/omnicraft/${tool.slug}</loc>`), tool.slug).toBe(true);
+      expect(xml.includes(`<loc>${SITE_ORIGIN}/omnicraft/${tool.slug}</loc>`), tool.slug).toBe(
+        true,
+      );
     }
-    expect(xml.includes("<loc>/</loc>")).toBe(true);
-    expect(xml.includes("<loc>/features</loc>")).toBe(true);
+    expect(xml.includes(`<loc>${SITE_ORIGIN}/</loc>`)).toBe(true);
+    expect(xml.includes(`<loc>${SITE_ORIGIN}/features</loc>`)).toBe(true);
+  });
+
+  it("uses absolute URLs for every loc (sitemap protocol requirement, t58)", () => {
+    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(locs.length).toBeGreaterThan(0);
+    for (const loc of locs) {
+      expect(loc.startsWith(`${SITE_ORIGIN}/`), loc).toBe(true);
+    }
   });
 });
