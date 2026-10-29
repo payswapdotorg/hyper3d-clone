@@ -459,3 +459,69 @@ the same test suites plus a live golden-path run:
     suites green (+22); lint clean; build SSGs all 22 routes; local
     smoke: footer STYLES links present in studio HTML, unknown slug →
     themed 404.
+
+## 41. t61 — Help Center: 33 honest articles, 6 topic hubs, real client-side search
+
+The reference's help center (recon 2026-10-30 of hyper3d.ai/help +
+landing-sitemap-static-en.xml) is an Astro page with a search box, a
+"Popular articles" band, "Browse by topic" (six categories: Getting
+Started / Account Settings / Billing / Credit / Features / Enterprise),
+a "Live Chat Support" block, and 33 articles at /help/articles/[slug]
+plus six category hubs at /help/[category]. The clone reproduces the
+structure exactly — 1 + 6 + 33 = 40 routes — with the registry pattern
+from t57-t60: `src/lib/help.ts` registry + three content modules +
+shared server renderers (`help-center-page.tsx`, `help-category-page.tsx`,
+`help-article-page.tsx`) + SSG routes with generateStaticParams +
+per-page metadata + themed 404.
+
+**The status contract is three-way, not binary.** Marketing pages
+(features/styles/use-cases) split into live/partial; a help center
+answers questions, and the honest answer to "can I buy credits" is a
+third state: the feature does not exist here. 13 articles are `live`
+(the answer describes something that fully works — grounded in real
+constants: 50/1/10 pricing, scrypt+httpOnly+7-day auth, six export
+formats, cancel_refund, 409 already_complete, 75s stall → Fast
+fallback), 7 are `partial` (support channels, credit-history UI, model
+settings, MCP sheet, import-into-tools, agentic tier, refunds — part
+real, part absent, article says which), and 13 are `not-in-clone`
+(languages, verification codes, password reset, plans, purchases,
+plan changes, topology/LODs, ChatAvatar, WorldGen, workspace editing,
+Mesh Editor, BANG/partial edit, enterprise). Every not-in-clone
+article opens with the verdict ("No." / "You can't" / "There are no")
+and names the nearest real path. The test suite asserts the exact
+13/7/13 split, the exact slug set and the exact per-category counts
+(6/2/4/6/14/1) against the reference's own category JSON.
+
+**The search is real, not decorative.** The reference's search box is
+reproduced as a client-side filter over the article registry
+(title + description + category, substring, case-insensitive) with the
+reference's own "No matching articles" empty state. The reference's
+"Live Chat Support" block became an honest "Support" section that
+states there is no live chat, no widget and no queue — a fake chat
+window would be a lie with a timeout.
+
+**Copy discipline:** all 33 titles/descriptions/answers/bodies are the
+clone's own text (the reference's article JSON descriptions were used
+only to understand topic coverage, never quoted). Honesty rules the
+tests enforce: credit numbers must match the imported constants
+(INITIAL_BALANCE/STANDARD_COST/AGENTIC_COST); billing articles must
+say "no plans and no prices" / "no payment processing" / purchase
+answer starts "You cannot"; auth articles must name email+password,
+scrypt, httpOnly and the 7-day cookie and state "no password-reset";
+topology must say "no polycount slider" and "no LOD"; the HDRI article
+must keep the procedural-not-AI wording; the MCP article must carry
+the same endpoint the real modal ships (api.hyper3d.com/api/mcp —
+asserted by reading mcp-connect-modal.tsx); export articles must name
+exactly the real EXPORT_FORMATS; related links must resolve against
+every registry (help/articles, help categories, features, styles,
+use-cases, legal — note the legal doc slug is fulfillment, not
+delivery — live OmniCraft tools only) or the studio root.
+
+Also shipped: studio footer HELP column (Help Center / Getting Started
+/ Credit & billing / Troubleshooting / Scam safety — all real routes,
+no toasts) between PLUG-INS and LEGAL, and public/sitemap.xml +40
+routes (105 locs total). 269 tests / 25 suites green (+23); lint
+clean; build SSGs all 40 routes; local smoke: index renders hero +
+search + popular + topics + no-live-chat block, article renders the
+short-answer box with the real numbers and status chip, footer HELP
+links present in studio HTML, unknown article/category → themed 404.

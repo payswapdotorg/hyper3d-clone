@@ -2706,6 +2706,17 @@ export function Studio({
                     ],
                   },
                   {
+                    heading: "HELP",
+                    links: [
+                      /* t61: the Help Center is real — route, don't toast */
+                      ["Help Center", "/help"],
+                      ["Getting Started", "/help/getting-started"],
+                      ["Credit & billing", "/help/credit"],
+                      ["Troubleshooting", "/help/articles/why-did-my-hyper3d-generation-fail"],
+                      ["Scam safety", "/help/articles/official-hyper3d-links-and-scam-safety"],
+                    ],
+                  },
+                  {
                     heading: "LEGAL",
                     links: [
                       /* t58: the Legal Center is real — route, don't toast */
