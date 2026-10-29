@@ -2672,6 +2672,17 @@ export function Studio({
                     ],
                   },
                   {
+                    heading: "USE CASES",
+                    links: [
+                      /* t59: the use-cases tree is real — route, don't toast */
+                      ["Game Development", "/use-cases/game-development"],
+                      ["E-commerce", "/use-cases/e-commerce"],
+                      ["3D Printing", "/use-cases/3d-printing"],
+                      ["VR/AR", "/use-cases/vr-ar"],
+                      ["All use cases", "/use-cases"],
+                    ],
+                  },
+                  {
                     heading: "PLUG-INS",
                     links: [
                       ["Blender", stubToast("Blender")],

@@ -367,3 +367,45 @@ the same test suites plus a live golden-path run:
     SSGs all 5 documents; browser-verified: footer Privacy click navigates
     to /legal/privacy, unknown doc → themed 404; VLM-verified index (5
     cards) + privacy page (TOC + 11 numbered sections, no layout defects).
+
+39. **Use-cases tree — the reference's 11 workflow pages, honestly
+    statused** (2026-10-29, t59): recon of the reference's use-cases
+    sitemap (landing-sitemap-use-cases-en.xml) enumerated index + 11 pages
+    (3d-printing, animation, automotive-design, character-design,
+    e-commerce, game-development, jewelry-design, mechanical-engineering,
+    metaverse, nft-creation, vr-ar). The clone previously had NO
+    /use-cases routes. Now: src/lib/use-cases.ts (+ use-case-types.ts +
+    content modules A/B) is the single registry (reference sitemap order)
+    rendered through one shared server component (use-case-page.tsx —
+    breadcrumb bar, hero + CTAs, honest status panel, "…in three steps",
+    benefits grid, discipline cards, native-<details> FAQ, cross-links,
+    closing CTA band) served by /use-cases/[slug] (generateStaticParams,
+    per-page metadata) + a grouped index page. Status contract, asserted
+    by test: 10 workflows are **live** end-to-end (generation from prompt/
+    image + the real six-format export row GLB/GLTF/OBJ/STL/USDZ/ASCII-FBX
+    — including FBX, which t39-era engine2 work made real again), and
+    **animation is partial** (meshes and exports real; rigging/skeleton/
+    pose-picking absent — stated in the page's limits, not implied).
+    Honesty rules the tests enforce: no page claims baked PBR texture-map
+    sets (materials here are per-part color/metalness/roughness parameters
+    — mesh-builder.ts buildMaterial); format mentions must match the real
+    EXPORT_FORMATS set (no invented 3MF/DAE/DWG buttons); OmniCraft
+    cross-links may only target LIVE tools (vr-ar deep-links the live HDRI
+    generator); primary CTAs go to the real studio; credit numbers, where
+    stated, must match the real metering (1 standard / 10 agentic / first
+    free / 1 at Confirm & Export). Copying the reference's page copy would
+    have imported claims this clone cannot back (rigging-ready, PBR maps,
+    polycount targeting, remesh-to-budget) — every one of those is instead
+    answered with the honest "not here, do it in your DCC" that the FAQ
+    states. Registry exports were renamed to avoid the react-hooks/
+    rules-of-hooks lint trap (useCaseBySlug → findUseCasePage; slug/route
+    lists as const arrays) — functions starting with "use" read as hooks
+    to ESLint in .tsx route files. Also shipped: studio footer USE CASES
+    column wired to real links (the reference exposes use-cases in its
+    header mega-menu; this clone's studio footer is the equivalent surface)
+    and public/sitemap.xml +12 routes (43 locs total). 224 tests / 23
+    suites green (+17); lint clean; build SSGs all 12 routes; browser-
+    verified: footer "Game Development" click navigates to the page,
+    unknown slug → themed 404; VLM-verified index (grouped cards, status
+    chips), game-development (green panel, steps, FAQ), animation (amber
+    PARTIAL chip) render without layout defects.
