@@ -18,6 +18,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import {
   Boxes,
   Bot,
@@ -457,6 +458,7 @@ export function Studio({
   onSessionRefresh: () => void;
   onSignOut: () => void;
 }) {
+  const router = useRouter();
   const [mode, setMode] = useState<GenMode>(initial.mode);
   const [agentic, setAgentic] = useState(false);
   const [effort, setEffort] = useState<EffortId>(initial.effort);
@@ -1486,9 +1488,13 @@ export function Studio({
                     t === "3D"
                       ? undefined
                       : () =>
-                          toast.info(`${t} workspace`, {
-                            description: "This clone implements the 3D workspace — Avatar and Video are reference-parity labels only.",
-                          })
+                          /* t57: the Avatar/Video product tabs now land on their
+                             honest feature pages instead of a bare toast */
+                          router.push(
+                            t === "Avatar"
+                              ? "/features/chatavatar"
+                              : "/features/ai-video-generator",
+                          )
                   }
                   className={cn(
                     "flex items-center gap-1 text-sm font-bold transition-colors",
@@ -2650,17 +2656,19 @@ export function Studio({
                     heading: "PRODUCT",
                     links: [
                       ["Rodin", () => toast.info("Rodin", { description: "You are in it — the Rodin workspace." })],
-                      ["ChatAvatar", () => toast.info("ChatAvatar", { description: "A separate reference product — not part of this clone." })],
+                      /* t57: ChatAvatar now has a real (honest) feature page */
+                      ["ChatAvatar", "/features/chatavatar"],
                     ],
                   },
                   {
                     heading: "FEATURES",
                     links: [
-                      ["Text to 3D", () => toast.info("Text to 3D", { description: "Available in the workspace — switch the input card to text mode." })],
-                      ["Image to 3D", () => toast.info("Image to 3D", { description: "The workspace's default mode — drop an image on the input card." })],
-                      ["AI Video Generator", () => toast.info("AI Video Generator", { description: "Reference-parity chrome — not part of this clone." })],
-                      ["AI Image Generator", () => toast.info("AI Image Generator", { description: "Reference-parity chrome — not part of this clone." })],
-                      ["OmniCraft", () => toast.info("OmniCraft", { description: "A separate reference product — not part of this clone." })],
+                      /* t57: the features tree is real — route, don't toast */
+                      ["Text to 3D", "/features/text-to-3d"],
+                      ["Image to 3D", "/features/image-to-3d"],
+                      ["AI Video Generator", "/features/ai-video-generator"],
+                      ["AI Image Generator", "/features/ai-image-generator"],
+                      ["OmniCraft", "/omnicraft"],
                     ],
                   },
                   {
@@ -2682,20 +2690,30 @@ export function Studio({
                       ["Terms", stubToast("Terms")],
                     ],
                   },
-                ] as { heading: string; links: [string, () => void][] }[]
+                ] as { heading: string; links: [string, string | (() => void)][] }[]
               ).map((col) => (
                 <nav key={col.heading} aria-label={col.heading}>
                   <h3 className="text-xs font-bold tracking-widest text-white/80">{col.heading}</h3>
                   <ul className="mt-4 space-y-2.5">
-                    {col.links.map(([label, onClick]) => (
+                    {col.links.map(([label, action]) => (
                       <li key={label}>
-                        <button
-                          type="button"
-                          onClick={onClick}
-                          className="text-sm text-white/45 transition-colors hover:text-white/85"
-                        >
-                          {label}
-                        </button>
+                        {typeof action === "string" ? (
+                          /* t57: a real route — render a link, not a toast */
+                          <a
+                            href={action}
+                            className="text-sm text-white/45 transition-colors hover:text-white/85"
+                          >
+                            {label}
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={action}
+                            className="text-sm text-white/45 transition-colors hover:text-white/85"
+                          >
+                            {label}
+                          </button>
+                        )}
                       </li>
                     ))}
                   </ul>

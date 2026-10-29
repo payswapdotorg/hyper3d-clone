@@ -299,3 +299,36 @@ the same test suites plus a live golden-path run:
     suites green (+30); lint clean; all four tools browser-verified. A fourth
     environment reset wiped the working tree mid-session; all t56 work was
     rebuilt from the conversation record and pushed as 5049384.
+
+37. **Features tree — the reference's 18 feature pages, honestly** (2026-10-29,
+    t57): recon of the reference's features sitemap
+    (landing-sitemap-features-en.xml) enumerated 18 pages + index: 5 core
+    (text-to-3d, image-to-3d, worldgen, api, chatavatar), 2 AI media
+    (image/video generators), MCP + 3 agent sub-pages (claude/codex/kimi),
+    and 7 OmniCraft feature pages. The clone previously had NO /features
+    routes — footer "Features" links and the Avatar/Video product tabs all
+    fired toasts. Now: src/lib/features.ts (+3 content modules) is the
+    single registry (18 pages, reference sitemap order) rendered through one
+    shared server component (feature-page.tsx — breadcrumb bar with status
+    chip, hero + CTAs, honest status panel, 3-step section, benefits grid,
+    use-case cards, native-<details> FAQ, cross-links, closing CTA band)
+    served by a catch-all /features/[...slug] route (generateStaticParams,
+    per-page metadata) + a "Features matrix" index page grouped like the
+    reference's. Status contract: 8 live (text-to-3d, image-to-3d, MCP×4,
+    HDRI, SVG-to-3D — each CTA-ing its real surface), 1 partial (api — the
+    app's own task/auth endpoints, honestly no key program), 9
+    reference-only (worldgen, chatavatar, image/video generators, texture,
+    enhancer, remix, search, mesh editor — full reference content + what the
+    clone ships instead; no fake CTAs, asserted by test). OmniCraft feature
+    statuses are pinned to the tool registry (live pages deep-link
+    /omnicraft/{slug}). Also shipped: the reference's themed 404
+    ("Reconstruction failed — this page slipped out of the mesh"),
+    public/sitemap.xml (+robots.txt Sitemap line), studio footer FEATURES/
+    PRODUCT columns now real links (OmniCraft toast was stale even before
+    t56), and the Avatar/Video workspace tabs route to their honest feature
+    pages instead of toasting. Note: site-header/site-footer components are
+    currently unmounted legacy (the studio IS the landing) — their nav maps
+    were updated anyway for consistency. 193 tests / 21 suites green (+16);
+    lint clean; build SSGs all 18 pages; browser-verified: footer link click
+    navigates, Avatar tab → /features/chatavatar, unknown feature → themed
+    404; VLM-verified index + text-to-3d pages render the full anatomy.

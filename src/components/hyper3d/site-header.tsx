@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Box,
@@ -52,6 +53,7 @@ import {
   NAV_STYLES,
   NAV_USE_CASES,
 } from "@/lib/hyper3d";
+import { featureNavHref } from "@/lib/features";
 import { cn } from "@/lib/utils";
 
 type MenuId = "products" | "features" | "usecases" | "styles" | null;
@@ -60,7 +62,6 @@ const linkToast = (label: string) =>
   toast.info(`${label}`, {
     description: "Clone demo — this page is not part of the single-route clone.",
   });
-
 function FeatureIcon({ name, className }: { name: string; className?: string }) {
   const map: Record<string, React.ComponentType<{ className?: string }>> = {
     image: ImageIcon,
@@ -102,6 +103,21 @@ export function SiteHeader({
   const [openMenu, setOpenMenu] = useState<MenuId>(null);
   const [locale, setLocale] = useState("English");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
+
+  /**
+   * Navigate to a real page when one exists (features tree, OmniCraft
+   * tools, studio) — otherwise the honest toast. The href map lives in
+   * src/lib/features.ts (FEATURE_NAV_HREFS), keyed by the reference's
+   * exact nav labels.
+   */
+  const go = (label: string) => {
+    const href = featureNavHref(label);
+    setOpenMenu(null);
+    setMobileOpen(false);
+    if (href) router.push(href);
+    else linkToast(label);
+  };
 
   const navButton = (id: Exclude<MenuId, null>, label: string) => (
     <button
@@ -300,7 +316,7 @@ export function SiteHeader({
                           onClick={() => {
                             setMobileOpen(false);
                             if (p.label === "Rodin") onStartCreating();
-                            else linkToast(p.label);
+                            else go(p.label);
                           }}
                         >
                           <FeatureIcon name={p.icon} className="mt-0.5 size-4.5 text-h3d-purple" />
@@ -322,10 +338,7 @@ export function SiteHeader({
                           key={f.label}
                           type="button"
                           className="flex w-full items-center gap-3 rounded-lg p-2.5 text-left text-sm text-white/85 hover:bg-white/6"
-                          onClick={() => {
-                            setMobileOpen(false);
-                            linkToast(f.label);
-                          }}
+                          onClick={() => go(f.label)}
                         >
                           <FeatureIcon name={"icon" in f ? f.icon : "box"} className="size-4 text-h3d-violet" />
                           {f.label}
@@ -446,7 +459,7 @@ export function SiteHeader({
                       onClick={() => {
                         setOpenMenu(null);
                         if (p.label === "Rodin") onStartCreating();
-                        else linkToast(p.label);
+                        else go(p.label);
                       }}
                     >
                       <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
@@ -484,10 +497,7 @@ export function SiteHeader({
                         type="button"
                         role="menuitem"
                         className="flex w-full items-start gap-2.5 rounded-lg p-2.5 text-left hover:bg-white/6"
-                        onClick={() => {
-                          setOpenMenu(null);
-                          linkToast(f.label);
-                        }}
+                        onClick={() => go(f.label)}
                       >
                         <FeatureIcon name={f.icon} className="mt-0.5 size-4.5 shrink-0 text-h3d-purple" />
                         <span>
@@ -508,10 +518,7 @@ export function SiteHeader({
                         type="button"
                         role="menuitem"
                         className="flex w-full items-center gap-2.5 rounded-lg p-2.5 text-left text-sm font-medium text-white/85 hover:bg-white/6"
-                        onClick={() => {
-                          setOpenMenu(null);
-                          linkToast(f.label);
-                        }}
+                        onClick={() => go(f.label)}
                       >
                         <FeatureIcon name={f.icon} className="size-4.5 text-h3d-blue" />
                         {f.label}
@@ -530,10 +537,7 @@ export function SiteHeader({
                           type="button"
                           role="menuitem"
                           className="flex w-full items-center gap-2.5 rounded-lg p-2.5 text-left text-sm font-medium text-white/85 hover:bg-white/6"
-                          onClick={() => {
-                            setOpenMenu(null);
-                            linkToast(f.label);
-                          }}
+                          onClick={() => go(f.label)}
                         >
                           <FeatureIcon name={f.icon} className="size-4 shrink-0 text-h3d-cyan" />
                           {f.label}
@@ -548,8 +552,7 @@ export function SiteHeader({
                     aria-label="WorldGen — turn images into editable 3D worlds"
                     className="group relative overflow-hidden rounded-xl border border-white/10"
                     onClick={() => {
-                      setOpenMenu(null);
-                      linkToast("WorldGen");
+                      go("WorldGen");
                     }}
                   >
                     <SmartImage

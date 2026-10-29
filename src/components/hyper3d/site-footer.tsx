@@ -11,10 +11,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LOCALES } from "@/lib/hyper3d";
 
-/** t56: footer entries that now have REAL pages in this clone route to them
- * instead of firing the parity toast — the toolbag is no longer a stub. */
+/** t56+t57: footer entries that now have REAL pages in this clone route to
+ * them instead of firing the parity toast — the toolbag (t56) and the
+ * features tree (t57) are no longer stubs. */
 const REAL_ROUTES: Record<string, string> = {
   OmniCraft: "/omnicraft",
+  ChatAvatar: "/features/chatavatar",
+  "Text to 3D": "/features/text-to-3d",
+  "Image to 3D": "/features/image-to-3d",
+  "AI Video Generator": "/features/ai-video-generator",
+  "AI Image Generator": "/features/ai-image-generator",
+  API: "/features/api",
   "HDRI Generator": "/omnicraft/hdri",
   "Vector to 3D": "/omnicraft/vector",
   "Model Viewer": "/omnicraft/viewer",
