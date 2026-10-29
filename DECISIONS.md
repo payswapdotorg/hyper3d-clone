@@ -525,3 +525,81 @@ clean; build SSGs all 40 routes; local smoke: index renders hero +
 search + popular + topics + no-live-chat block, article renders the
 short-answer box with the real numbers and status chip, footer HELP
 links present in studio HTML, unknown article/category → themed 404.
+
+## 42. t62 — the last five landing routes: pricing, prompts, switch, event — full sitemap parity
+
+Recon 2026-10-30 (landing-sitemap-static-en.xml + VLM screenshot
+analysis of the live pages): after t61 exactly five reference URLs
+remained uncovered — /pricing, /3d-prompts, /switch,
+/switch/makerworld, /event/chroma-awards. t62 covers all five, which
+brings this clone to 100% parity with the reference's English landing
+sitemap (110 locs). Same registry pattern as t57-t61 but singleton
+pages, not trees: `src/lib/landing.ts` registry + landing-types.ts
+contracts + three content modules + four shared server renderers
+(`landing-shared.tsx` shell + pricing/prompts/switch/event views) + SSG
+routes (the two dynamic ones, /switch/[slug] and /event/[slug], source
+params from the registry; /event deliberately has no index because the
+reference's sitemap has none — bare /event 404s).
+
+**The five honest inversions.** /pricing: the reference sells five
+tiers with a monthly/yearly toggle and a comparison table; the clone
+reproduces the anatomy (highlighted plan card, tier cards, comparison
+table, pricing FAQ, closing CTA) with ONE real card — "Every account,
+$0 forever" — the four paid tiers shown once each with a NOT HERE chip
+and a nearest-real link, the comparison table replaced by the real
+price list (signup 50, preview 0, confirm 1, agentic 10, cancel
+refunded, buy-more "you can't"), and FAQ answers that match the help
+center's billing articles word for word. /3d-prompts: the reference
+sorts prompts by the AI model that wrote them with community authors
+and YouTube embeds; the clone ships 15 real copyable prompts (the three
+featured are the studio's own placeholder prompts, asserted verbatim
+against studio.tsx in the tests) across four categories, a real
+clipboard-write copy island (the page's only client JS, the same
+one-island discipline as the help center's search), the reference's
+three-step how-to with the real costs, and a note stating plainly that
+no gallery, no model filter, and no videos exist here. /switch and
+/switch/makerworld: every offer mechanic (profile-link checker, bio
+codes, free months, model-count tiers) gets a NOT HERE row with the
+real reason; the makerworld table answers the reference's print claims
+honestly (watertight "Not promised", color separation "Not here",
+10M faces "No", STL "Yes — really" — anchored to EXPORT_FORMATS
+containing stl, and "no polycount slider" asserted like the styles
+tree); the reference's testimonials are dropped rather than faked and
+the table says why in one row. /event/chroma-awards: the reference
+gives Chroma Awards entrants a free month of a paid plan before a
+deadline; the clone inverts all four promises (no partnership, no
+codes, no deadline, backed by nothing but its own codebase) and
+re-points the workflow picker at the real feature pages.
+
+**Copy discipline (test-enforced, 27 new tests):** pricing numbers must
+match the imported constants (INITIAL_BALANCE/STANDARD_COST/
+AGENTIC_COST); "no pricing tiers"/"no purchase flow"/"no payment
+processing" must appear; the four tier names exactly
+Creator/Business/Enterprise/Education with why-text matching
+/^(no .*(plan|tier|program|verification|deployment))/i; at least three
+FAQ answers must open "No." or "You cannot."; featured prompts must
+appear verbatim in studio.tsx; every prompt is lowercase comma-prose;
+the note must say "no community gallery"/"no model-name filter"/"no
+video embed"; switch offer points must open "Not here." (one honest
+exception: the migration-not-transfer point); event promises must open
+"There is no/are no/This clone is backed"; the event affiliation FAQ
+must open "No."; every CTA/cross-link on all five pages resolves
+against the same isKnownRoute family as help.test.ts extended with the
+landing routes; sitemap asserts 110 <url> entries and the five new
+absolute locs; footer asserts ["Pricing", "/pricing"] with no
+stubToast; SSG routes must source params from registries, not literals.
+
+Also shipped: studio footer PRODUCT column gains the Pricing link
+(the reference exposes Pricing in its header nav; this clone's studio
+footer is the equivalent surface) and public/sitemap.xml +5 routes
+(110 locs total). 296 tests / 26 suites green (+27); lint clean; build
+SSGs all five new routes; local smoke: all five 200, unknown
+switch/event slugs → themed 404, pricing HTML contains "One plan. Zero
+dollars." + 50/1/10 + "you can't", prompts HTML contains the featured
+prompt text and Copy buttons, footer Pricing link present. Production
+(Vercel dpl_CVCRiQHbLoCnK5dmpQWZYL5s8faJ, READY): all five routes 200,
+unknown slug 404, sitemap.xml serves 110 locs, footer Pricing href
+present, VLM QA of /pricing + /3d-prompts + /switch/makerworld
+screenshots: layouts clean (plan card readable, prompt grid with mono
+boxes and Copy buttons aligned, NOT HERE rows and tables readable, no
+overflow or contrast defects).
