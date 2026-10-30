@@ -69,6 +69,34 @@ export const CONVERTER_INDEX = {
     "The reference's viewer opens DCC and CAD formats in the browser. This clone's Model Viewer parses GLB/GLTF only — locally, never uploaded — and the list below says which is which.",
 };
 
+/** The bare /tools index (t70) — the reference serves this page without
+ * ever sitemapping it (recon/locale-deep-trees.md). Clone-own copy: the
+ * reference's own link set (the 8 image-to routes + the viewer and
+ * converter hubs), the honest census, and where the four REAL tools
+ * actually live. */
+export const TOOLS_MATRIX_INDEX = {
+  title: "AI 3D Tools — the honest index",
+  description:
+    "Every /tools route in this clone, honestly statused: 178 converter pairs, 15 viewer formats, 8 image-to routes — plus the four real OmniCraft tools. Each page says what runs, what generates, and what does not exist here.",
+  hero: {
+    eyebrow: "TOOLS",
+    headline: "The tools matrix, honestly statused",
+    subline:
+      "The reference's /tools page links its image-to, viewer, and converter surfaces. This clone serves the same 203 tool routes — and every one of them opens a page that states, in its first breath, whether the tool actually runs in this codebase. Nothing on this index promises a tool the repo does not ship.",
+  },
+  bands: {
+    imageToTitle: "Image-to format tools",
+    imageToBody:
+      "Eight routes, one honest split: image-to-3D generation is a live studio feature, and a confirmed task exports as any of the six formats the exporters ship. The other two routes say plainly that their format is not an export target here.",
+    viewerConverterTitle: "Viewer and converter tools",
+    viewerConverterBody:
+      "The converter matrix covers all 178 pairs the reference ships — 24 run as real task re-exports, 46 have a real generative path, 108 do not exist here. The viewer list covers 15 formats — GLB and GLTF open in the local Model Viewer, the other 13 do not.",
+    realToolsTitle: "The four tools that really run here",
+    realToolsBody:
+      "Beyond the statused routes, four tools genuinely execute in this repo — the Format Convertor and Model Viewer from the OmniCraft toolbag, plus the studio's own generation modes.",
+  },
+};
+
 /** Shared links for the index pages' cross-link sections. */
 export const TOOLS_INDEX_LINKS: ToolLink[] = [
   { label: "Format Convertor (live tool)", href: "/omnicraft/convertor" },

@@ -22,12 +22,18 @@ import {
   LOCALE_STATIC_ROUTES,
   LOCALE_SUBCATEGORY_SLUGS,
 } from "./i18n-locale-data";
-import { localePaths, localeStaticParams, resolveLocalePage } from "./i18n-pages";
+import { localePaths, localeServingPaths, localeStaticParams, resolveLocalePage } from "./i18n-pages";
 import { TOOLS_ROUTES } from "./tools-registry";
 import { featureRoutes } from "./features";
 import { USE_CASE_ROUTES } from "./use-cases";
 import { STYLE_ROUTES } from "./styles";
 import { legalRoutes } from "./legal";
+import {
+  PROMPT_CATALOG,
+  PROMPT_CENSUS,
+  PROMPT_PAGE_COUNT,
+  PROMPT_HUBS,
+} from "./prompts-registry";
 
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
@@ -251,8 +257,12 @@ describe("i18n resolver — every localized route resolves honestly", () => {
     return out;
   }
 
-  it("generates exactly 5,975 static params", () => {
-    expect(localeStaticParams()).toHaveLength(5975);
+  it("generates exactly 5,975 + 4,943 = 10,918 serving static params", () => {
+    // t70: the SERVING set — the sitemap set plus the unsitemapped deep
+    // trees the live reference serves (recon/locale-deep-trees.md):
+    // 4,873 prompt routes + 11 tools indexes + 59 new sub-category
+    // routes (66 served, 7 already in the sitemap set)
+    expect(localeStaticParams()).toHaveLength(10918);
   });
 
   it("resolves every generated param — zero dead routes", () => {
@@ -269,6 +279,13 @@ describe("i18n resolver — every localized route resolves honestly", () => {
       const path = (slug ?? []).join("/");
       const def = resolveLocalePage(locale, path);
       if (!def || def.kind !== "article") continue;
+      // t70: the /3d-prompts deep tree is deliberately OUT of every
+      // sitemap (the reference's own choice) — its EN originals live in
+      // the registry, not the sitemap children, so they are checked apart
+      if (def.enHref.startsWith("/3d-prompts/")) {
+        expect(PROMPT_CATALOG.some((e) => `/3d-prompts/${e.slug}` === def.enHref)).toBe(true);
+        continue;
+      }
       expect(
         englishRoutes.has(def.enHref),
         `/${locale}/${path} → ${def.enHref}`,
@@ -316,10 +333,18 @@ describe("i18n resolver — every localized route resolves honestly", () => {
       ["zh", "blog/page/2"],
       ["zh", "blog/category/news"],
       ["zh", "blog/rss.xml"],
-      ["zh", "tools"],
-      ["zh", "sub-categories/roblox"],
+      // t70 boundaries — the localized prompt tree keeps the EN math:
+      // /1 and /18 are outside the 2..17 pagination, unknown models,
+      // unknown slugs, and the bare /models all 404.
+      ["zh", "3d-prompts/1"],
+      ["zh", "3d-prompts/18"],
+      ["zh", "3d-prompts/models"],
+      ["zh", "3d-prompts/models/not-a-model"],
+      ["zh", "3d-prompts/models/gpt-6-astra/12"],
+      ["zh", "3d-prompts/models/claude-fable-5.1/5"],
+      ["zh", "3d-prompts/not-a-real-slug"],
       ["pt", "help/articles/use-bang-and-partial-edit-pt"],
-      ["ar", "sub-categories/insects-bugs"],
+      ["zh", "sub-categories/not-a-real-subcategory"],
       ["zh", "features/not-a-feature"],
       ["zz", "pricing"],
       ["zh", "nonsense"],
@@ -376,5 +401,179 @@ describe("i18n sitemap + studio wiring", () => {
     expect(studio).toContain("LOCALE_CODES.map");
     // the decorative toast is gone — the menu navigates for real
     expect(studio).not.toContain("12-locale selector is decorative");
+  });
+});
+
+describe("i18n deep trees (t70) — served-but-not-sitemapped parity", () => {
+  /** The per-locale SERVING additions: the localized 3D prompt library
+   * (16 pagination + 403 details + 11 hubs + 13 hub pages = 443), the
+   * bare tools index (1), and the sub-category matrix widened from the
+   * sitemap subset to all six slugs (6 - the sitemap-listed count). */
+  const SERVING_ADDITIONS: Record<string, number> = {
+    zh: 443 + 1 + 6,
+    de: 443 + 1 + 6,
+    ja: 443 + 1 + 5, // sitemap already lists nsfw-content
+    ko: 443 + 1 + 4, // sitemap already lists insects-bugs + nsfw-content
+    ru: 443 + 1 + 6,
+    pt: 443 + 1 + 5, // sitemap already lists nsfw-content
+    fr: 443 + 1 + 6,
+    es: 443 + 1 + 4, // sitemap already lists firearms + nsfw-content
+    ar: 443 + 1 + 6,
+    tr: 443 + 1 + 5, // sitemap already lists rocks-minerals
+    it: 443 + 1 + 6,
+  };
+
+  it("serves the deep trees in every locale: 5,975 + 4,943 = 10,918", () => {
+    let total = 0;
+    for (const locale of LOCALE_CODES) {
+      const serving = localeServingPaths(locale);
+      expect(serving, `${locale} serving paths`).toHaveLength(
+        PINNED_COUNTS[locale] + SERVING_ADDITIONS[locale],
+      );
+      total += serving.length;
+    }
+    expect(total).toBe(10918);
+  });
+
+  it("every locale carries the full localized prompt library", () => {
+    for (const locale of LOCALE_CODES) {
+      const serving = new Set(localeServingPaths(locale));
+      expect(serving.has("3d-prompts"), `${locale} index`).toBe(true);
+      for (let page = 2; page <= PROMPT_PAGE_COUNT; page += 1) {
+        expect(serving.has(`3d-prompts/${page}`), `${locale} page ${page}`).toBe(true);
+      }
+      for (const entry of PROMPT_CATALOG) {
+        expect(serving.has(`3d-prompts/${entry.slug}`), `${locale} ${entry.slug}`).toBe(true);
+      }
+      for (const hub of PROMPT_HUBS) {
+        expect(serving.has(`3d-prompts/models/${hub.slug}`), `${locale} hub ${hub.slug}`).toBe(
+          true,
+        );
+        for (let page = 2; page <= hub.pages; page += 1) {
+          expect(
+            serving.has(`3d-prompts/models/${hub.slug}/${page}`),
+            `${locale} hub ${hub.slug}/${page}`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("serves the bare tools index and the six-slug sub-category matrix in every locale", () => {
+    for (const locale of LOCALE_CODES) {
+      const serving = new Set(localeServingPaths(locale));
+      expect(serving.has("tools"), `${locale} tools index`).toBe(true);
+      for (const slug of [
+        "dark-fantasy",
+        "nsfw-content",
+        "roblox",
+        "insects-bugs",
+        "firearms",
+        "rocks-minerals",
+      ]) {
+        expect(serving.has(`sub-categories/${slug}`), `${locale} subcat ${slug}`).toBe(true);
+      }
+    }
+  });
+
+  it("keeps the SITEMAP set untouched — zero sitemap change, pinned", () => {
+    for (const locale of LOCALE_CODES) {
+      const sitemapSet = localePaths(locale);
+      // the counts stay pinned to the reference's own sitemaps
+      expect(sitemapSet).toHaveLength(PINNED_COUNTS[locale]);
+      // none of the t70 surfaces leak into the sitemap set
+      for (const path of sitemapSet) {
+        expect(path.startsWith("3d-prompts/"), `${locale} ${path}`).toBe(false);
+        expect(path === "tools", `${locale} bare tools`).toBe(false);
+      }
+      // the sitemap sub-category subset stays the generated one, not the matrix
+      const sitemapSubcats = sitemapSet
+        .filter((p) => p.startsWith("sub-categories/"))
+        .map((p) => p.slice("sub-categories/".length));
+      expect(sitemapSubcats).toEqual([...LOCALE_SUBCATEGORY_SLUGS[locale]]);
+    }
+  });
+
+  it("the split children on disk carry none of the t70 surfaces", () => {
+    for (const locale of LOCALE_CODES) {
+      for (const family of SITEMAP_FAMILIES) {
+        const file = `landing-sitemap-${family}-${locale}.xml`;
+        let xml: string;
+        try {
+          xml = readFileSync(join(process.cwd(), "public", file), "utf8");
+        } catch {
+          continue; // sub-categories exist only for the five reference locales
+        }
+        expect(xml.includes(`/${locale}/3d-prompts/`), `${file} prompts child`).toBe(false);
+        expect(xml.includes(`/${locale}/tools</loc>`), `${file} bare tools`).toBe(false);
+        for (const slug of ["dark-fantasy", "roblox"]) {
+          if (LOCALE_SUBCATEGORY_SLUGS[locale].includes(slug)) continue;
+          expect(
+            xml.includes(`/${locale}/sub-categories/${slug}</loc>`),
+            `${file} extra subcat ${slug}`,
+          ).toBe(false);
+        }
+      }
+      // the EN children stay free of the EN /tools index too
+      const enTools = readFileSync(join(process.cwd(), "public", "landing-sitemap-tools-en.xml"), "utf8");
+      expect(enTools.includes("https://hyper3d-clone.vercel.app/tools</loc>")).toBe(false);
+    }
+  });
+
+  it("resolves the deep-tree shapes honestly", () => {
+    // the index upgrades from the t66 wrapper to the real grid
+    expect(resolveLocalePage("zh", "3d-prompts")).toEqual({ kind: "prompts-index", page: 1 });
+    expect(resolveLocalePage("zh", "3d-prompts/2")).toEqual({ kind: "prompts-index", page: 2 });
+    expect(resolveLocalePage("zh", "3d-prompts/17")).toEqual({
+      kind: "prompts-index",
+      page: PROMPT_PAGE_COUNT,
+    });
+    // written routes are plain articles pointing at their EN originals
+    const written = resolveLocalePage("ja", "3d-prompts/kana-pixel-rabbit-archer");
+    expect(written && written.kind === "article" ? written.enHref : null).toBe(
+      "/3d-prompts/kana-pixel-rabbit-archer",
+    );
+    // community routes carry the not-reproduced banner shape
+    const community = resolveLocalePage("de", "3d-prompts/kaiju-city-battle-2096251574918013135");
+    expect(community && community.kind === "prompt-community" ? community.entry.family : null).toBe(
+      "community",
+    );
+    // hubs resolve with the reference's own pagination math
+    const hub = resolveLocalePage("zh", "3d-prompts/models/gpt-6-astra");
+    expect(hub && hub.kind === "prompt-hub" ? hub.hub.slug : null).toBe("gpt-6-astra");
+    const hubPage = resolveLocalePage("pt", "3d-prompts/models/gpt-6-astra/11");
+    expect(hubPage && hubPage.kind === "prompt-hub" ? hubPage.page : null).toBe(11);
+    // the sub-category matrix: EN three as articles, oddballs as locale-only
+    expect(resolveLocalePage("de", "sub-categories/roblox")).toMatchObject({
+      kind: "article",
+      enHref: "/sub-categories/roblox",
+    });
+    expect(resolveLocalePage("ar", "sub-categories/insects-bugs")).toMatchObject({
+      kind: "locale-only",
+      slug: "insects-bugs",
+    });
+    // the tools index hub mirrors the reference's own ten links
+    const tools = resolveLocalePage("zh", "tools");
+    expect(tools && tools.kind === "hub" ? tools.links.length : -1).toBe(10);
+    expect(tools && tools.kind === "hub" ? tools.enHref : null).toBe("/tools");
+  });
+
+  it("every pack carries the prompt chrome, slots intact", () => {
+    for (const locale of LOCALE_CODES) {
+      const messages = LOCALE_MESSAGES[locale];
+      const prompts = messages.prompts;
+      for (const [key, value] of Object.entries(prompts)) {
+        expect(typeof value, `${locale}.${key}`).toBe("string");
+        expect((value as string).length, `${locale}.${key}`).toBeGreaterThan(0);
+      }
+      expect(prompts.indexIntro).toContain("{count}");
+      expect(prompts.pageOf).toContain("{page}");
+      expect(prompts.pageOf).toContain("{total}");
+      expect(prompts.hubBody).toContain("{model}");
+      expect(prompts.hubBody).toContain("{count}");
+      // prev/next differ (a pack that ships the same word twice is a
+      // translation accident, not chrome)
+      expect(prompts.prev === prompts.next).toBe(false);
+    }
   });
 });

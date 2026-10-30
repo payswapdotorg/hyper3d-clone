@@ -22,10 +22,11 @@ import { blogBaseSlug, isLocale, type LocaleCode } from "./i18n";
 import {
   LOCALE_BLOG_SLUGS,
   LOCALE_FAMILY_SLUGS,
+  LOCALE_ONLY_SUBCATEGORIES,
   LOCALE_STATIC_ROUTES,
   LOCALE_SUBCATEGORY_SLUGS,
 } from "./i18n-locale-data";
-import { LANDING_PRICING_PAGE, LANDING_PROMPTS_PAGE, SWITCH_PAGES } from "./landing";
+import { LANDING_PRICING_PAGE, SWITCH_PAGES } from "./landing";
 import { HELP_ARTICLES, HELP_CATEGORIES, findHelpArticle, helpArticlesByCategory } from "./help";
 import type { HelpStatus } from "./help-types";
 import { featureBySlug } from "./features";
@@ -41,6 +42,15 @@ import {
   REFERENCE_VIEWER_FORMATS,
 } from "./tools-registry";
 import { buildConverterPairPage, buildImageToPage, buildViewerPage } from "./tools-content";
+import {
+  PROMPT_CATALOG,
+  PROMPT_HUBS,
+  PROMPT_PAGE_COUNT,
+  findPromptEntry,
+  findPromptHub,
+  isPromptIndexPage,
+} from "./prompts-registry";
+import type { PromptEntry, PromptHubInfo } from "./prompts-types";
 
 export type LocaleFamilyKey =
   | "pricing"
@@ -85,6 +95,28 @@ export type LocalePageDef =
       family: "subCategories";
       slug: string;
       title: string;
+    }
+  | {
+      /** The localized prompt-library index — /{loc}/3d-prompts plus its
+       * pagination pages 2..17 (t70). Renders the real card grid with EN
+       * route data; canonical points at the EN index page. */
+      kind: "prompts-index";
+      /** 1-based page number (1 = the bare index route). */
+      page: number;
+    }
+  | {
+      /** A localized community prompt route — the honest not-reproduced
+       * banner in the locale's language (t70). Written routes use the
+       * plain article kind instead. */
+      kind: "prompt-community";
+      entry: PromptEntry;
+    }
+  | {
+      /** A localized model hub — /{loc}/3d-prompts/models/{m}[/{page}] (t70). */
+      kind: "prompt-hub";
+      hub: PromptHubInfo;
+      /** 1-based hub page number (1 = the bare hub route). */
+      page: number;
     };
 
 export type LocaleStatus =
@@ -98,7 +130,9 @@ export const LOCALE_LINK_CAP = 60;
 /* ------------------------------------------------------------------ paths */
 
 /** Every localized path (post-locale, '' = home) that exists for a locale,
- * exactly the reference's own set — the static-param source of truth. */
+ * exactly the reference's own SITEMAP set — the source of truth for the
+ * sitemap generator and its count pins. Unchanged by t70: the deep trees
+ * the reference serves but never lists live in localeServingPaths(). */
 export function localePaths(locale: LocaleCode): string[] {
   const paths = new Set<string>();
   for (const p of LOCALE_STATIC_ROUTES[locale]) paths.add(p);
@@ -115,11 +149,49 @@ export function localePaths(locale: LocaleCode): string[] {
   return [...paths];
 }
 
-/** Static params for the catch-all route: one entry per localized route. */
+/** The sub-category slugs the reference SERVES under every locale prefix
+ * (recon/locale-deep-trees.md, probed 66/66 → 200): the three EN pages
+ * plus the three locale-only oddballs, six for all eleven locales. Only a
+ * small per-locale subset of these is sitemapped — serving ≠ listing. */
+export const SUBCATEGORY_SERVING_SLUGS: readonly string[] = [
+  ...SUBCATEGORY_PAGES.map((p) => p.slug),
+  ...LOCALE_ONLY_SUBCATEGORIES.map((entry) => entry.split("/")[1]),
+];
+
+/** Every localized path the reference actually SERVES for a locale
+ * (t70): the sitemap set above PLUS the deep trees the live site serves
+ * under locale prefixes but never lists — the full localized 3D prompt
+ * library (16 pagination + 403 details + 11 hubs + 13 hub pages), the
+ * bare tools index, and the six-slug sub-category matrix. The static-param
+ * source of truth; the sitemap generator keeps using localePaths(). */
+export function localeServingPaths(locale: LocaleCode): string[] {
+  const paths = new Set(localePaths(locale));
+  for (let page = 2; page <= PROMPT_PAGE_COUNT; page += 1) {
+    paths.add(`3d-prompts/${page}`);
+  }
+  for (const entry of PROMPT_CATALOG) {
+    paths.add(`3d-prompts/${entry.slug}`);
+  }
+  for (const hub of PROMPT_HUBS) {
+    paths.add(`3d-prompts/models/${hub.slug}`);
+    for (let page = 2; page <= hub.pages; page += 1) {
+      paths.add(`3d-prompts/models/${hub.slug}/${page}`);
+    }
+  }
+  paths.add("tools");
+  for (const slug of SUBCATEGORY_SERVING_SLUGS) {
+    paths.add(`sub-categories/${slug}`);
+  }
+  return [...paths];
+}
+
+/** Static params for the catch-all route: one entry per SERVED localized
+ * route (the t70 serving set — the sitemap set plus the unsitemapped deep
+ * trees). */
 export function localeStaticParams(): { locale: string; slug?: string[] }[] {
   const params: { locale: string; slug?: string[] }[] = [];
   for (const locale of Object.keys(LOCALE_STATIC_ROUTES) as LocaleCode[]) {
-    for (const path of localePaths(locale)) {
+    for (const path of localeServingPaths(locale)) {
       params.push({ locale, slug: path === "" ? [] : path.split("/") });
     }
   }
@@ -156,13 +228,22 @@ function familyPath(family: LocaleFamilyKey): string {
 /* ---------------------------------------------------------------- resolve */
 
 /** Resolve a localized path ('' = the locale home) to its page def, or null
- * when the reference ships no such route (→ themed 404). */
+ * when the reference serves no such route (→ themed 404). The known set
+ * is the t70 SERVING set — the sitemap set plus the unsitemapped deep
+ * trees the live reference serves (recon/locale-deep-trees.md). */
 export function resolveLocalePage(locale: LocaleCode, path: string): LocalePageDef | null {
   if (!isLocale(locale)) return null;
-  const known = new Set(localePaths(locale));
+  const known = new Set(localeServingPaths(locale));
   if (!known.has(path)) return null;
 
   if (path === "") return { kind: "home" };
+
+  /* ---- the localized 3D prompt library (t70) ------------------------- */
+  const promptDef = resolvePromptRoute(path);
+  if (promptDef) return promptDef;
+
+  /* ---- the bare tools index (t70) ------------------------------------ */
+  if (path === "tools") return toolsIndexHub(locale);
 
   /* ---- the static family (pricing / prompts / switch / help tree) ---- */
   if (LOCALE_STATIC_ROUTES[locale].includes(path)) {
@@ -260,10 +341,10 @@ export function resolveLocalePage(locale: LocaleCode, path: string): LocalePageD
     return { kind: "article", family: "legal", enHref: `/legal/${slug}`, title: def.title };
   }
 
-  /* ---- sub-categories: EN three + the locale-only oddballs ---------- */
+  /* ---- sub-categories: the 6-slug serving matrix (t70) --------------- */
   if (path.startsWith("sub-categories/")) {
     const slug = path.slice("sub-categories/".length);
-    if (!LOCALE_SUBCATEGORY_SLUGS[locale].includes(slug)) return null;
+    if (!SUBCATEGORY_SERVING_SLUGS.includes(slug)) return null;
     const def = SUBCATEGORY_PAGES.find((p) => p.slug === slug);
     if (def) {
       return {
@@ -306,14 +387,62 @@ export function resolveLocalePage(locale: LocaleCode, path: string): LocalePageD
   return null;
 }
 
+/* ------------------------------------------------- the prompt library */
+
+/** Resolve the localized /{loc}/3d-prompts deep tree (t70). The reference
+ * serves the whole 444-route library under every locale prefix with the
+ * EN tree's own math: page 1 is the bare index route, pagination is
+ * 2..PROMPT_PAGE_COUNT, details are the 403 catalog slugs, and the model
+ * hubs live under models/ with the per-hub pagination the registry pins.
+ * Written routes resolve as plain articles (EN original + tier-2 notice);
+ * community routes get the localized not-reproduced banner. */
+function resolvePromptRoute(path: string): LocalePageDef | null {
+  if (path === "3d-prompts") return { kind: "prompts-index", page: 1 };
+  if (!path.startsWith("3d-prompts/")) return null;
+  const rest = path.slice("3d-prompts/".length);
+
+  // /3d-prompts/models/{model}[/{page}] — "models" is reserved, never a slug
+  if (rest === "models") return null;
+  if (rest.startsWith("models/")) {
+    const segments = rest.slice("models/".length).split("/");
+    const hub = findPromptHub(segments[0]);
+    if (!hub) return null;
+    if (segments.length === 1) return { kind: "prompt-hub", hub, page: 1 };
+    if (segments.length === 2 && /^\d+$/.test(segments[1])) {
+      const page = Number(segments[1]);
+      if (page < 2 || page > hub.pages) return null;
+      return { kind: "prompt-hub", hub, page };
+    }
+    return null;
+  }
+
+  // /3d-prompts/{page} — index pagination 2..17 (page 1 is the bare route)
+  if (isPromptIndexPage(rest)) {
+    return { kind: "prompts-index", page: Number(rest) };
+  }
+
+  // /3d-prompts/{slug} — the 403-route catalog
+  const entry = findPromptEntry(rest);
+  if (!entry) return null;
+  if (entry.family === "written") {
+    return {
+      kind: "article",
+      family: "prompts",
+      enHref: `/3d-prompts/${entry.slug}`,
+      title: entry.article!.title,
+      status: { kind: "tool", status: "live" },
+    };
+  }
+  return { kind: "prompt-community", entry };
+}
+
 /* ------------------------------------------------------- static family */
 
 function resolveStaticRoute(locale: LocaleCode, path: string): LocalePageDef | null {
   switch (path) {
     case "pricing":
       return { kind: "article", family: "pricing", enHref: "/pricing", title: LANDING_PRICING_PAGE.title };
-    case "3d-prompts":
-      return { kind: "article", family: "prompts", enHref: "/3d-prompts", title: LANDING_PROMPTS_PAGE.title };
+    // "3d-prompts" (the bare index) is resolved by resolvePromptRoute (t70)
     case "switch": {
       const index = SWITCH_PAGES.find((p) => p.slug === "index");
       return {
@@ -408,6 +537,28 @@ function viewerHub(locale: LocaleCode): LocalePageDef {
     return { href: `/${locale}/tools/viewer/${format}`, label: page.title };
   });
   return hubDef(locale, "tools", "/tools/viewer", links);
+}
+
+/** The bare /{loc}/tools index (t70): the reference serves it in every
+ * locale (its own /tools page links exactly the 8 image-to pages plus the
+ * viewer and converter hubs) without ever sitemapping it. The localized
+ * hub mirrors that link set — ten cards, honest and small. */
+function toolsIndexHub(locale: LocaleCode): LocalePageDef {
+  const links: LocaleLink[] = [
+    {
+      href: `/${locale}/tools/converter`,
+      label: "3D File Converter Matrix",
+    },
+    {
+      href: `/${locale}/tools/viewer`,
+      label: "3D Viewer Formats",
+    },
+    ...REFERENCE_IMAGE_TO_FORMATS.map((format) => {
+      const page = buildImageToPage(format);
+      return { href: `/${locale}/tools/image-to-${format}`, label: page.title };
+    }),
+  ];
+  return hubDef(locale, "tools", "/tools", links, REFERENCE_CONVERTER_PAIRS.length + REFERENCE_VIEWER_FORMATS.length + REFERENCE_IMAGE_TO_FORMATS.length + 3);
 }
 
 function caseLinks(locale: LocaleCode): LocaleLink[] {

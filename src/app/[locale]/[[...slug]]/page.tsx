@@ -5,26 +5,28 @@ import { LocalePageView } from "@/components/hyper3d/i18n/locale-page";
 import { hreflangFor, isLocale } from "@/lib/i18n";
 import { LOCALE_MESSAGES, fillCount } from "@/lib/i18n-messages";
 import { localeStaticParams, resolveLocalePage } from "@/lib/i18n-pages";
+import { PROMPT_CENSUS, PROMPT_PAGE_COUNT } from "@/lib/prompts-registry";
 
 /**
- * /[locale]/[[...slug]] — the entire localized landing tree (t66) in one
- * optional catch-all: 5,975 routes across the reference's 11 non-English
- * locales, every param set coming from the generated locale route sets
- * (i18n-locale-data.ts) via generateStaticParams — no literals.
+ * /[locale]/[[...slug]] — the entire localized landing tree in one
+ * optional catch-all. t66 shipped the sitemap-listed set (5,975 routes);
+ * t70 extends it to everything the live reference SERVES under locale
+ * prefixes, sitemapped or not (recon/locale-deep-trees.md): the full
+ * localized 3D prompt library (index + 16 pagination + 403 details + 11
+ * model hubs + 13 hub pages per locale), the bare tools index, and the
+ * six-slug sub-category matrix — 10,918 serving routes, all from the
+ * generated/computed route sets via generateStaticParams, no literals.
  *
  *   /{loc}                       — the locale home
- *   /{loc}/pricing | 3d-prompts | switch[/makerworld]
- *   /{loc}/help[/{hub}|/articles/{slug}]   — the help tree
- *   /{loc}/features/{slug}       — 19 pages (nested slugs verbatim)
- *   /{loc}/tools/…               — converter matrix, viewer, image-to
- *   /{loc}/use-cases | styles | legal/{slug}
- *   /{loc}/sub-categories/{slug} — per-locale sets incl. locale-only oddballs
- *   /{loc}/blog[/{slug-loc}]     — index + the locale-suffixed article set
+ *   /{loc}/pricing | 3d-prompts[/2../17|/{slug}|/models/{m}[/{p}]]
+ *   /{loc}/switch[/makerworld] | help tree | features | tools[/…] 
+ *   /{loc}/use-cases | styles | legal | sub-categories/{6 slugs} | blog
  *
- * Anything the reference does not ship — /{loc}/event, /{loc}/omnicraft,
- * unknown slugs, unknown locales — 404s into the themed page. Each page
- * canonicalizes to its English original and carries the 13-link hreflang
- * alternate set (12 languages + x-default), the part search engines read.
+ * Anything the reference does not serve — /{loc}/event, /{loc}/omnicraft,
+ * /{loc}/3d-prompts/1, /18, unknown slugs, unknown locales — 404s into
+ * the themed page. Localized pages canonicalize to their English
+ * originals and carry the 13-link hreflang alternate set (locale-only
+ * routes keep an in-locale canonical — the t66 contract, unchanged).
  */
 
 export function generateStaticParams() {
@@ -40,6 +42,15 @@ function englishPath(locale: string, slug: string[] | undefined): string | null 
   if (def.kind === "home") return "/";
   if (def.kind === "hub") return def.enHref;
   if (def.kind === "article") return def.enHref;
+  if (def.kind === "prompts-index") {
+    return def.page === 1 ? "/3d-prompts" : `/3d-prompts/${def.page}`;
+  }
+  if (def.kind === "prompt-community") return `/3d-prompts/${def.entry.slug}`;
+  if (def.kind === "prompt-hub") {
+    return def.page === 1
+      ? `/3d-prompts/models/${def.hub.slug}`
+      : `/3d-prompts/models/${def.hub.slug}/${def.page}`;
+  }
   return `/${locale}`; // locale-only routes: canonical stays in-locale
 }
 
@@ -49,6 +60,15 @@ function localizedDescription(locale: string, path: string): string | undefined 
   const def = resolveLocalePage(locale, path);
   if (!def) return undefined;
   if (def.kind === "home") return messages.home.subhead;
+  if (def.kind === "prompts-index") {
+    return fillCount(messages.prompts.indexIntro, PROMPT_CENSUS.total);
+  }
+  if (def.kind === "prompt-community") return messages.prompts.communityBody;
+  if (def.kind === "prompt-hub") {
+    return messages.prompts.hubBody
+      .replace("{model}", def.hub.name)
+      .replace("{count}", String(def.hub.claimed));
+  }
   if (def.kind === "hub") return fillCount(messages.hub.intro, def.count);
   if (def.kind === "article") return messages.notice.body;
   return messages.localeOnly.body;
@@ -60,6 +80,20 @@ function localizedTitle(locale: string, path: string): string | undefined {
   const def = resolveLocalePage(locale, path);
   if (!def) return undefined;
   if (def.kind === "home") return messages.meta.homeTitle;
+  if (def.kind === "prompts-index") {
+    const base = messages.families.prompts;
+    return def.page === 1
+      ? `${base} — Hyper3D`
+      : `${base} · ${messages.prompts.pageOf
+          .replace("{page}", String(def.page))
+          .replace("{total}", String(PROMPT_PAGE_COUNT))} — Hyper3D`;
+  }
+  if (def.kind === "prompt-community") {
+    return `${def.entry.title} — ${messages.families.prompts} — Hyper3D`;
+  }
+  if (def.kind === "prompt-hub") {
+    return `${def.hub.name} · ${messages.families.prompts} — Hyper3D`;
+  }
   const familyLabel = messages.families[def.family];
   if (def.kind === "hub") return `${familyLabel} — Hyper3D`;
   return `${def.title} — ${familyLabel} — Hyper3D`;

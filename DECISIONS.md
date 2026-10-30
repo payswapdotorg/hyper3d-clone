@@ -1191,3 +1191,93 @@ blocks, the copy islands, 48 status chips on page 1, the 17-page
 pagination, six external video cards and the 11-hub rail; VLM review
 of all four page bands reports clean renders; mobile 375 px has no
 horizontal scroll on index, hub, and detail. Lint clean.
+
+## 50. t70 — the localized deep trees: served-but-not-sitemapped parity
+
+Recon 2026-10-31 (recon/locale-deep-trees.md) found the last parity gap:
+three surfaces the live reference SERVES under locale prefixes but never
+lists in any sitemap — exactly the class of surface the t66 recon could
+not see, because it derived the localized route sets from the sitemaps
+alone. Probed live: (a) the ENTIRE 444-route 3D prompt library under
+every locale prefix — the real localized index (ja title 無料の3Dプ
+ロンプトと制作事例, full card grid with machine-translated community
+titles), the 16 pagination pages, all 403 details, and the 11 model hubs
+with the EN tree's own pagination math (astra /11 → 200, /12 → 404;
+fable-5.1 /5 → 404; /1 and /18 → 404 everywhere); (b) the sub-category
+matrix — all six slugs (the EN three plus the locale-only oddballs)
+under ALL 11 locales, 66/66 probed 200, where the sitemaps list only a
+seven-route subset for five locales; (c) the bare tools index in all 11
+locales — and the EN bare /tools too (title "Free AI 3D Tools for Image
+to 3D, Viewing and Conversion", H1 "Tools Matrix", exactly ten /tools
+links), which the t64 recon had pinned as 404 from the sitemap's silence.
+The reference's own canonical/hreflang behavior on these pages is
+inconsistent (EN /tools self-canonical + 13 hreflang; EN prompt details
+self-canonical + none; ja pagination canonical → the ja index) — the
+clone keeps its t66 contract instead: localized pages canonicalize to
+their EN originals and carry the 13-link hreflang set; the EN /tools
+index mirrors the reference's own shape (self-canonical + hreflang, now
+accurate since all 12 tools indexes exist).
+
+**The serving/sitemap split is the design.** localePaths() (the
+generated sitemap set, 5,975 routes) is untouched — gen-sitemap-split.ts
+still reads it, its count pins still hold, and public/ is byte-identical
+(ZERO sitemap change, mirroring the reference's own choice). The new
+localeServingPaths() adds the computed deep trees — the 443 prompt
+routes from the t69 registries (16 pagination + 403 catalog slugs + 11
+hubs + 13 hub pages), the bare tools index, and the six-slug sub-category
+matrix (SUBCATEGORY_SERVING_SLUGS, computed from SUBCATEGORY_PAGES +
+LOCALE_ONLY_SUBCATEGORIES) — and localeStaticParams() now builds the
+SSG params from it: 10,918 serving static params across the 11 locales
+(5,975 + 4,943 new: 4,873 prompt routes + 11 tools indexes + 59 new
+sub-category routes). The build SSGs 12,487 pages (7,543 + 4,944,
+counting the EN /tools index) in ~117 s.
+
+**The honesty contract is t66's, extended to prompt scale.** Tier 1 —
+genuinely translated chrome — grows by twelve hand-written keys per
+locale in i18n-messages.ts (index intro, pageOf/prev/next pagination,
+written/community chips, row-tail labels, the community not-reproduced
+banner, the model-hub parity banner with {model}/{count} slots); the
+reference machine-translates its community card titles per locale
+(炭酸飲料ボトルのロケット打ち上げ), and no machine-translated prose is
+faked — the localized grids show the EN registry display names as route
+data with lang="en" spans. Three new renderer views in locale-page.tsx:
+the index (hero + 24-card grid + 1..17 pagination + notice card), the
+community detail (localized banner + EN title + the reference-index
+model association as an EN factual line), and the model hub (localized
+parity banner + status rows + the reference's own hub pagination).
+Written prompt routes resolve as plain t66 articles (EN title, works-here
+chip, notice linking the EN original); the eleven generic t66 wrappers
+at /{loc}/3d-prompts are upgraded to the real index render — same
+routes, better pages.
+
+**The EN /tools index is the clone's own honest page.** The reference's
+link set (8 image-to routes + viewer + converter hubs) with the computed
+census on every band (24/46/108 converter, 2/13 viewer, 6/8 image-to)
+and pointers to the four tools that genuinely execute — computed from
+the same registries the leaf pages read, so it cannot drift.
+
+Copy discipline (7 new tests → 467 / 33 suites): the serving census
+pinned per locale and in total (10,918); every locale carries the full
+prompt library (all 403 slugs, 16 pagination pages, all hubs and hub
+pages); the bare tools index and six-slug matrix pinned everywhere; the
+SITEMAP set pinned untouched (per-locale counts, no 3d-prompts/ path, no
+bare tools, the sub-category subset equal to the generated lists); the
+split children on disk pinned free of every t70 surface (including the
+EN /tools loc); boundary pins (/1, /18, bare /models, unknown
+model/slug, astra /12, fable /5, unknown sub-category all 404 — the
+reference's own math); the deep-tree def shapes pinned (index pages,
+written→article with EN href, community entry, hub pages, locale-only
+oddballs, the ten-link tools hub); every pack carries the twelve new
+keys with {count}/{page}/{total}/{model} slots intact and prev ≠ next.
+Two stale t66 pins were corrected with the recon as the reason: /{loc}/
+tools and /{loc}/sub-categories/{en-slug} were pinned 404 from the
+sitemap's silence — the live reference serves both. Local smoke: every
+route type 200 (EN /tools; ja index + page 2 + zh page 17; written and
+community details; ja hub + pt hub page 11; tools hub; the matrix
+including ar/insects-bugs RTL); all boundaries 404; /ja/3d-prompts/2
+canonicals to /3d-prompts/2 with the full 13-link hreflang set; EN
+/tools self-canonicals with hreflang; ja index page 1 renders 24 cards
++ 16 pagination links. VLM review of six screenshots (EN tools index,
+ja index, de community banner, ja hub, ar RTL sub-category, zh tools
+hub) reports clean renders; mobile 375 px has no horizontal scroll on
+all four new page types. Lint clean.

@@ -21,7 +21,11 @@
  *  - footer: the honest-clone closing band
  *  - status / blogFamily: the honest status vocabulary (help statuses,
  *    blog family banners)
- *  - meta.homeTitle: the /{locale} <title>
+ *  - prompts: the localized prompt-library chrome (t70): index intro
+    ({count}), pagination labels, card chips, the community
+    not-reproduced banner, and the model-hub parity banner
+    ({model}/{count})
+  - meta.homeTitle: the /{locale} <title>
  */
 
 import type { LocaleCode } from "./i18n";
@@ -78,6 +82,27 @@ export interface LocaleMessages {
     core: string;
     game: string;
     off: string;
+  };
+  prompts: {
+    /** Index intro under the localized prompts H1 ({count} routes). */
+    indexIntro: string;
+    /** Pagination eyebrow: "Page {page} of {total}". */
+    pageOf: string;
+    /** Prev/next pagination link labels. */
+    prev: string;
+    next: string;
+    /** Card chips — the written/community vocabulary. */
+    writtenChip: string;
+    communityChip: string;
+    /** Hub member row tail labels. */
+    writtenLabel: string;
+    communityLabel: string;
+    /** The localized not-reproduced banner on community routes. */
+    communityTitle: string;
+    communityBody: string;
+    /** The localized parity banner on model hubs ({model}/{count}). */
+    hubTitle: string;
+    hubBody: string;
   };
   meta: {
     homeTitle: string;
@@ -149,6 +174,23 @@ const zh: LocaleMessages = {
     game: "游戏攻略 SEO",
     off: "并非 3D 主题",
   },
+  prompts: {
+    indexIntro:
+      "该提示词库共 {count} 条路由——本克隆真实撰写的提示词排在前面，其后是参考站点的社区目录，均如实标注；卡片标题为英文路由数据。",
+    pageOf: "第 {page} 页，共 {total} 页",
+    prev: "上一页",
+    next: "下一页",
+    writtenChip: "此处可运行",
+    communityChip: "未转载",
+    writtenLabel: "本站撰写",
+    communityLabel: "社区路由",
+    communityTitle: "社区提示词——此处未转载",
+    communityBody:
+      "该路由是参考站点的社区提交条目。本克隆没有社区画廊，也不转载社区内容；此路由仅为对等而保留，完整说明见英文原文。",
+    hubTitle: "仅参考站使用的分类——路由对等",
+    hubBody:
+      "{model} 是参考站点社区提示词所面向的第三方聊天模型之一。本克隆的生成器是自有管线，此页仅作路由对等；下方 {count} 条成员路由均指向同样如实的页面。",
+  },
   meta: {
     homeTitle: "Hyper3D — 中文版",
   },
@@ -209,6 +251,23 @@ const de: LocaleMessages = {
     core: "ECHTES 3D-THEMA",
     game: "GAME-GUIDE-SEO",
     off: "KEIN 3D-THEMA",
+  },
+  prompts: {
+    indexIntro:
+      "{count} Routen in dieser Prompt-Bibliothek — zuerst die Prompts, die dieser Clone selbst geschrieben hat, danach der Community-Katalog der Referenz, ehrlich markiert. Kartentitel sind englische Routendaten.",
+    pageOf: "Seite {page} von {total}",
+    prev: "Zurück",
+    next: "Weiter",
+    writtenChip: "LÄUFT HIER",
+    communityChip: "NICHT REPRODUZIERT",
+    writtenLabel: "Hier geschrieben",
+    communityLabel: "Community-Route",
+    communityTitle: "COMMUNITY-PROMPT — HIER NICHT REPRODUZIERT",
+    communityBody:
+      "Diese Route ist ein Community-Eintrag der Referenzsite. Dieser Clone hat keine Community-Galerie und reproduziert keine Community-Inhalte; die Route existiert aus Paritätsgründen, die vollständige Erklärung steht im englischen Original.",
+    hubTitle: "NUR-REFERENZ-TAXONOMIE — ROUTENPARITÄT",
+    hubBody:
+      "{model} ist eines der Third-Party-Chat-Modelle, für die die Community-Prompts der Referenz geschrieben wurden. Der Generator dieses Clones ist eine eigene Pipeline — dieser Hub ist eine Paritätsroute, und die {count} Mitgliederrouten unten führen auf dieselben ehrlichen Seiten.",
   },
   meta: {
     homeTitle: "Hyper3D — Deutsche Ausgabe",
@@ -271,6 +330,23 @@ const ja: LocaleMessages = {
     game: "ゲーム攻略 SEO",
     off: "3D トピックですらない",
   },
+  prompts: {
+    indexIntro:
+      "このプロンプトライブラリは {count} ルートで構成されます。先頭に本クローンが実際に執筆したプロンプト、続いて参照サイトのコミュニティカタログを正直なラベル付きで掲載します。カードのタイトルは英語のルートデータです。",
+    pageOf: "全 {total} ページ中 {page} ページ目",
+    prev: "前へ",
+    next: "次へ",
+    writtenChip: "ここで実行可能",
+    communityChip: "未転載",
+    writtenLabel: "本クローン執筆",
+    communityLabel: "コミュニティルート",
+    communityTitle: "コミュニティプロンプト——ここには転載しません",
+    communityBody:
+      "このルートは参照サイトのコミュニティ投稿です。本クローンにはコミュニティギャラリーがなく、コミュニティコンテンツも転載しません。ルートは整合性のためにのみ存在し、完全な説明は英語原文にあります。",
+    hubTitle: "参照サイト専用の分類——ルート整合",
+    hubBody:
+      "{model} は、参照サイトのコミュニティプロンプトが対象としたサードパーティ製チャットモデルのひとつです。本クローンのジェネレーターは独自パイプラインであり、このハブは整合用ルートです。下の {count} 件のメンバールートは同じ正直なページへつながります。",
+  },
   meta: {
     homeTitle: "Hyper3D — 日本語版",
   },
@@ -331,6 +407,23 @@ const ko: LocaleMessages = {
     core: "실제 3D 주제",
     game: "게임 가이드 SEO",
     off: "3D 주제도 아님",
+  },
+  prompts: {
+    indexIntro:
+      "이 프롬프트 라이브러리는 {count}개 라우트로 구성됩니다. 이 클론이 직접 작성한 프롬프트가 먼저, 이어 참조 사이트의 커뮤니티 카탈로그를 정직한 표시와 함께 게시합니다. 카드 제목은 영어 라우트 데이터입니다.",
+    pageOf: "전체 {total} 페이지 중 {page} 페이지",
+    prev: "이전",
+    next: "다음",
+    writtenChip: "여기서 실행 가능",
+    communityChip: "재게시하지 않음",
+    writtenLabel: "이 클론 작성",
+    communityLabel: "커뮤니티 라우트",
+    communityTitle: "커뮤니티 프롬프트 — 여기에 재게시하지 않음",
+    communityBody:
+      "이 라우트는 참조 사이트의 커뮤니티 제출 항목입니다. 이 클론에는 커뮤니티 갤러리가 없으며 커뮤니티 콘텐츠를 재게시하지도 않습니다. 라우트는 동등성을 위해서만 존재하며, 전체 설명은 영어 원문에 있습니다.",
+    hubTitle: "참조 사이트 전용 분류 — 라우트 동등성",
+    hubBody:
+      "{model}은(는) 참조 사이트의 커뮤니티 프롬프트가 작성 대상으로 삼은 서드파티 채팅 모델 중 하나입니다. 이 클론의 생성기는 자체 파이프라인이며 이 허브는 동등성용 라우트입니다. 아래 {count}개 멤버 라우트는 같은 정직한 페이지로 이어집니다.",
   },
   meta: {
     homeTitle: "Hyper3D — 한국어판",
@@ -393,6 +486,23 @@ const ru: LocaleMessages = {
     game: "SEO ПО ИГРОВЫМ ГАЙДАМ",
     off: "ДАЖЕ НЕ 3D-ТЕМА",
   },
+  prompts: {
+    indexIntro:
+      "В этой библиотеке промптов {count} маршрутов: сначала промпты, написанные самим этим клоном, затем комьюнити-каталог референса с честной маркировкой. Заголовки карточек — англоязычные данные маршрутов.",
+    pageOf: "Страница {page} из {total}",
+    prev: "Назад",
+    next: "Далее",
+    writtenChip: "РАБОТАЕТ ЗДЕСЬ",
+    communityChip: "НЕ ВОСПРОИЗВЕДЕНО",
+    writtenLabel: "Написано здесь",
+    communityLabel: "Маршрут комьюнити",
+    communityTitle: "ПРОМПТ СООБЩЕСТВА — НЕ ВОСПРОИЗВЕДЁН",
+    communityBody:
+      "Этот маршрут — запись из сообщества референс-сайта. У клона нет галереи сообщества, и он не воспроизводит чужой контент; маршрут существует только ради паритета, полное объяснение — в англоязычном оригинале.",
+    hubTitle: "ТАКСОНОМИЯ ТОЛЬКО РЕФЕРЕНСА — ПАРИТЕТ МАРШРУТА",
+    hubBody:
+      "{model} — одна из сторонних чат-моделей, для которых писались промпты сообщества референса. Генератор этого клона — собственный пайплайн, поэтому этот хаб — маршрут паритета. {count} маршрутов-участников ниже ведут на те же честные страницы.",
+  },
   meta: {
     homeTitle: "Hyper3D — Русская версия",
   },
@@ -453,6 +563,23 @@ const pt: LocaleMessages = {
     core: "TEMA REAL DE 3D",
     game: "SEO DE GUIAS DE JOGOS",
     off: "NEM É UM TEMA DE 3D",
+  },
+  prompts: {
+    indexIntro:
+      "Esta biblioteca de prompts tem {count} rotas — primeiro os prompts que este clone escreveu de verdade, depois o catálogo da comunidade da referência, marcados com honestidade. Os títulos dos cartões são dados de rota em inglês.",
+    pageOf: "Página {page} de {total}",
+    prev: "Anterior",
+    next: "Próxima",
+    writtenChip: "RODA AQUI",
+    communityChip: "NÃO REPRODUZIDO",
+    writtenLabel: "Escrito aqui",
+    communityLabel: "Rota da comunidade",
+    communityTitle: "PROMPT DA COMUNIDADE — NÃO REPRODUZIDO AQUI",
+    communityBody:
+      "Esta rota é uma entrada da comunidade do site de referência. Este clone não tem galeria da comunidade e não reproduz conteúdo dela; a rota existe apenas por paridade, e a explicação completa está no original em inglês.",
+    hubTitle: "TAXONOMIA SÓ DA REFERÊNCIA — PARIDADE DE ROTA",
+    hubBody:
+      "{model} é um dos modelos de chat de terceiros para os quais os prompts da comunidade da referência foram escritos. O gerador deste clone é um pipeline próprio — este hub é uma rota de paridade, e as {count} rotas membros abaixo levam às mesmas páginas honestas.",
   },
   meta: {
     homeTitle: "Hyper3D — Edição em português",
@@ -515,6 +642,23 @@ const fr: LocaleMessages = {
     game: "SEO DE GUIDES DE JEUX",
     off: "PAS MÊME UN SUJET 3D",
   },
+  prompts: {
+    indexIntro:
+      "Cette bibliothèque de prompts compte {count} routes — d'abord les prompts rédigés par ce clone, puis le catalogue communautaire de la référence, honnêtement signalés. Les titres des cartes sont des données de route en anglais.",
+    pageOf: "Page {page} sur {total}",
+    prev: "Précédent",
+    next: "Suivant",
+    writtenChip: "FONCTIONNE ICI",
+    communityChip: "NON REPRODUIT",
+    writtenLabel: "Écrit ici",
+    communityLabel: "Route communautaire",
+    communityTitle: "PROMPT COMMUNAUTAIRE — NON REPRODUIT ICI",
+    communityBody:
+      "Cette route est une soumission communautaire du site de référence. Ce clone n'a pas de galerie communautaire et ne reproduit aucun contenu communautaire ; la route n'existe que par parité, et l'explication complète se trouve dans l'original anglais.",
+    hubTitle: "TAXONOMIE DE RÉFÉRENCE UNIQUEMENT — PARITÉ DE ROUTE",
+    hubBody:
+      "{model} est l'un des modèles de chat tiers pour lesquels les prompts communautaires de la référence ont été écrits. Le générateur de ce clone est son propre pipeline — ce hub est une route de parité, et les {count} routes membres ci-dessous mènent aux mêmes pages honnêtes.",
+  },
   meta: {
     homeTitle: "Hyper3D — Édition française",
   },
@@ -575,6 +719,23 @@ const es: LocaleMessages = {
     core: "TEMA REAL DE 3D",
     game: "SEO DE GUÍAS DE JUEGOS",
     off: "NI SIQUIERA UN TEMA DE 3D",
+  },
+  prompts: {
+    indexIntro:
+      "Esta biblioteca de prompts tiene {count} rutas: primero los prompts que este clon escribió de verdad, luego el catálogo comunitario de la referencia, marcados con honestidad. Los títulos de las tarjetas son datos de ruta en inglés.",
+    pageOf: "Página {page} de {total}",
+    prev: "Anterior",
+    next: "Siguiente",
+    writtenChip: "FUNCIONA AQUÍ",
+    communityChip: "NO REPRODUCIDO",
+    writtenLabel: "Escrito aquí",
+    communityLabel: "Ruta comunitaria",
+    communityTitle: "PROMPT COMUNITARIO — NO REPRODUCIDO AQUÍ",
+    communityBody:
+      "Esta ruta es una entrada comunitaria del sitio de referencia. Este clon no tiene galería comunitaria ni reproduce contenido comunitario; la ruta existe solo por paridad, y la explicación completa está en el original en inglés.",
+    hubTitle: "TAXONOMÍA SOLO DE LA REFERENCIA — PARIDAD DE RUTA",
+    hubBody:
+      "{model} es uno de los modelos de chat de terceros para los que se escribieron los prompts comunitarios de la referencia. El generador de este clon es un pipeline propio — este hub es una ruta de paridad, y las {count} rutas miembro de abajo llevan a las mismas páginas honestas.",
   },
   meta: {
     homeTitle: "Hyper3D — Edición en español",
@@ -637,6 +798,23 @@ const ar: LocaleMessages = {
     game: "SEO لأدلة الألعاب",
     off: "ليس حتى موضوعًا ثلاثي الأبعاد",
   },
+  prompts: {
+    indexIntro:
+      "تحتوي هذه المكتبة على {count} مسارًا — أولًا الأوامر التي كتبتها هذه النسخة المطابقة فعلًا، ثم فهرس مجتمع المرجع بوسم صادق. عناوين البطاقات بيانات مسارات بالإنجليزية.",
+    pageOf: "صفحة {page} من {total}",
+    prev: "السابق",
+    next: "التالي",
+    writtenChip: "يعمل هنا",
+    communityChip: "غير معاد نشره",
+    writtenLabel: "مكتوب هنا",
+    communityLabel: "مسار مجتمعي",
+    communityTitle: "أمر مجتمعي — غير معاد نشره هنا",
+    communityBody:
+      "هذا المسار إدخال من مجتمع الموقع المرجع. لا تملك هذه النسخة المطابقة معرضًا للمجتمع ولا تعيد نشر محتواه؛ المسار موجود للمطابقة فقط، والشرح الكامل في النص الأصلي بالإنجليزية.",
+    hubTitle: "تصنيف للمرجع فقط — مطابقة مسار",
+    hubBody:
+      "{model} أحد نماذج الدردشة الخارجية التي كُتبت لها أوامر مجتمع المرجع. مولّد هذه النسخة المطابقة خط إنتاج خاص بها، لذا هذا المركز مسار مطابقة، ومسارات الأعضاء البالغة {count} أدناه تؤدي إلى الصفحات الصادقة نفسها.",
+  },
   meta: {
     homeTitle: "Hyper3D — النسخة العربية",
   },
@@ -698,6 +876,23 @@ const tr: LocaleMessages = {
     game: "OYUN REHBERİ SEO'SU",
     off: "3D KONUSU BİLE DEĞİL",
   },
+  prompts: {
+    indexIntro:
+      "Bu prompt kütüphanesinde {count} rota vardır — önce bu klonun gerçekten yazdığı promptlar, sonra referansın topluluk kataloğu, dürüstçe işaretlenmiş durumda. Kart başlıkları İngilizce rota verileridir.",
+    pageOf: "Sayfa {page} / {total}",
+    prev: "Önceki",
+    next: "Sonraki",
+    writtenChip: "BURADA ÇALIŞIR",
+    communityChip: "YENİDEN YAYIMLANMADI",
+    writtenLabel: "Burada yazıldı",
+    communityLabel: "Topluluk rotası",
+    communityTitle: "TOPLULUK PROMPT'U — BURADA YENİDEN YAYIMLANMADI",
+    communityBody:
+      "Bu rota, referans sitesinin bir topluluk gönderisidir. Bu klonun topluluk galerisi yoktur ve topluluk içeriğini yeniden yayımlamaz; rota yalnızca eşlik için var, tam açıklama İngilizce orijinaldedir.",
+    hubTitle: "YALNIZCA REFERANS TAKSONOMİSİ — ROTA EŞLİĞİ",
+    hubBody:
+      "{model}, referansın topluluk promptlarının yazıldığı üçüncü taraf sohbet modellerinden biridir. Bu klonun üreticisi kendi hattıdır — bu merkez bir eşlik rotasıdır ve aşağıdaki {count} üye rota aynı dürüst sayfalara götürür.",
+  },
   meta: {
     homeTitle: "Hyper3D — Türkçe sürüm",
   },
@@ -758,6 +953,23 @@ const it: LocaleMessages = {
     core: "VERO ARGOMENTO 3D",
     game: "SEO DI GUIDE DI GIOCHI",
     off: "NON È NEMMENO UN ARGOMENTO 3D",
+  },
+  prompts: {
+    indexIntro:
+      "Questa libreria di prompt conta {count} rotte — prima i prompt scritti davvero da questo clone, poi il catalogo community della referenza, contrassegnati con onestà. I titoli delle card sono dati di rotta in inglese.",
+    pageOf: "Pagina {page} di {total}",
+    prev: "Precedente",
+    next: "Successiva",
+    writtenChip: "FUNZIONA QUI",
+    communityChip: "NON RIPRODOTTO",
+    writtenLabel: "Scritto qui",
+    communityLabel: "Rotta community",
+    communityTitle: "PROMPT DELLA COMMUNITY — NON RIPRODOTTO QUI",
+    communityBody:
+      "Questa rotta è una voce community del sito di riferimento. Questo clone non ha una galleria community e non ne riproduce i contenuti; la rotta esiste solo per parità, e la spiegazione completa è nell'originale inglese.",
+    hubTitle: "TASSONOMIA SOLO DELLA REFERENZA — PARITÀ DI ROTTA",
+    hubBody:
+      "{model} è uno dei modelli di chat di terze parti per cui sono stati scritti i prompt community della referenza. Il generatore di questo clone è una pipeline propria — questo hub è una rotta di parità, e le {count} rotte membro qui sotto portano alle stesse pagine oneste.",
   },
   meta: {
     homeTitle: "Hyper3D — Edizione italiana",

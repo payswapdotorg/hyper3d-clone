@@ -1,11 +1,19 @@
 import Link from "next/link";
-import { ArrowLeft, Globe } from "lucide-react";
+import { ArrowLeft, Globe, MinusCircle } from "lucide-react";
 
 import { LOCALE_CODES, LOCALE_NAMES, localeDir, type LocaleCode } from "@/lib/i18n";
 import { LOCALE_MESSAGES, fillCount, localeHeadline } from "@/lib/i18n-messages";
 import { STUDIO_PATH } from "@/lib/studio-path";
 import { LOCALE_SUBCATEGORY_SLUGS } from "@/lib/i18n-locale-data";
 import type { LocaleFamilyKey, LocaleLink, LocalePageDef, LocaleStatus } from "@/lib/i18n-pages";
+import {
+  PROMPT_CENSUS,
+  PROMPT_PAGE_COUNT,
+  promptPage,
+  promptHubPage,
+  promptHubMembers,
+} from "@/lib/prompts-registry";
+import type { PromptEntry, PromptHubInfo } from "@/lib/prompts-types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -130,6 +138,45 @@ export function LocalePageView({
       </div>
     );
   }
+  if (def.kind === "prompts-index") {
+    return (
+      <div
+        lang={locale}
+        dir={dir}
+        className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white"
+      >
+        <LocaleTopBar locale={locale} familyLabel={familyLabelFor(locale, "prompts")} familyHref={`/${locale}/3d-prompts`} path={path} />
+        <PromptsIndexView locale={locale} page={def.page} />
+        <LocaleFooter locale={locale} />
+      </div>
+    );
+  }
+  if (def.kind === "prompt-community") {
+    return (
+      <div
+        lang={locale}
+        dir={dir}
+        className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white"
+      >
+        <LocaleTopBar locale={locale} familyLabel={familyLabelFor(locale, "prompts")} familyHref={`/${locale}/3d-prompts`} path={path} />
+        <PromptCommunityView locale={locale} entry={def.entry} />
+        <LocaleFooter locale={locale} />
+      </div>
+    );
+  }
+  if (def.kind === "prompt-hub") {
+    return (
+      <div
+        lang={locale}
+        dir={dir}
+        className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white"
+      >
+        <LocaleTopBar locale={locale} familyLabel={familyLabelFor(locale, "prompts")} familyHref={`/${locale}/3d-prompts`} path={path} />
+        <PromptHubLocaleView locale={locale} hub={def.hub} page={def.page} />
+        <LocaleFooter locale={locale} />
+      </div>
+    );
+  }
   const familyLabel = familyLabelFor(locale, def.family);
   const familyHref = familyHrefFor(locale, def.family, def);
   return (
@@ -174,7 +221,8 @@ function familyHrefFor(
     case "features":
       return `/${locale}/features`;
     case "tools":
-      return `/${locale}/tools/converter`;
+      // t70: the bare tools index exists in every locale now
+      return `/${locale}/tools`;
     case "styles":
       return `/${locale}/styles`;
     case "useCases":
@@ -199,7 +247,7 @@ function hubSelfHref(locale: LocaleCode, family: LocaleFamilyKey): string | unde
     case "features":
       return `/${locale}/features`;
     case "tools":
-      return `/${locale}/tools/converter`;
+      return `/${locale}/tools`;
     case "styles":
       return `/${locale}/styles`;
     case "useCases":
@@ -223,7 +271,7 @@ function HomeView({ locale }: { locale: LocaleCode }) {
     { href: `/${locale}/switch`, label: messages.families.switch },
     { href: `/${locale}/help`, label: messages.families.help },
     { href: `/${locale}/features`, label: messages.families.features },
-    { href: `/${locale}/tools/converter`, label: messages.families.tools },
+    { href: `/${locale}/tools`, label: messages.families.tools },
     { href: `/${locale}/styles`, label: messages.families.styles },
     { href: `/${locale}/use-cases`, label: messages.families.useCases },
     { href: `/${locale}/legal`, label: messages.families.legal },
@@ -416,6 +464,323 @@ function NoticeCard({ locale, enHref }: { locale: LocaleCode; enHref: string }) 
         </Link>
       </div>
     </div>
+  );
+}
+
+/* ------------------------------------------------------- prompt library */
+
+/** One catalog card: the EN route title + the localized status chip.
+ * Card bodies stay EN (tier-2: no machine-translated prose). */
+function PromptCatalogCard({ locale, entry }: { locale: LocaleCode; entry: PromptEntry }) {
+  const messages = LOCALE_MESSAGES[locale];
+  const written = entry.family === "written";
+  return (
+    <li className="flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-violet-400/40 hover:bg-violet-400/[0.04]">
+      <div className="flex items-start justify-between gap-3">
+        <Link
+          href={`/${locale}/3d-prompts/${entry.slug}`}
+          className="text-sm font-black leading-snug tracking-tight text-white/85 transition-colors hover:text-violet-200"
+          lang="en"
+        >
+          {entry.title}
+        </Link>
+        {written ? (
+          <span className="flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-bold text-emerald-300">
+            {messages.prompts.writtenChip}
+          </span>
+        ) : (
+          <span className="flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-white/[0.05] px-2 py-0.5 text-[9px] font-bold text-white/60">
+            <MinusCircle className="size-3" aria-hidden="true" />
+            {messages.prompts.communityChip}
+          </span>
+        )}
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-white/50" lang="en">
+        {written
+          ? entry.article!.blurb
+          : "A community prompt entry on the reference site — kept as an honestly marked route; no prompt, author, or screenshot is reproduced here."}
+      </p>
+    </li>
+  );
+}
+
+/** The shared 1..17 pagination nav with localized prev/next labels. */
+function PromptPaginationNav({ locale, page }: { locale: LocaleCode; page: number }) {
+  const messages = LOCALE_MESSAGES[locale];
+  const href = (n: number) => (n === 1 ? `/${locale}/3d-prompts` : `/${locale}/3d-prompts/${n}`);
+  return (
+    <nav aria-label="Prompt library pages" className="mt-8 flex flex-wrap items-center gap-2">
+      {page > 1 ? (
+        <Link
+          href={href(page - 1)}
+          className="inline-flex min-h-9 items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-white/60 transition-colors hover:border-white/30 hover:text-white"
+        >
+          {messages.prompts.prev}
+        </Link>
+      ) : null}
+      {Array.from({ length: PROMPT_PAGE_COUNT }, (_, i) => i + 1).map((n) => (
+        <Link
+          key={n}
+          href={href(n)}
+          aria-current={n === page ? "page" : undefined}
+          className={
+            n === page
+              ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-violet-400/40 bg-violet-400/15 px-2 text-xs font-bold text-violet-100"
+              : "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] px-2 text-xs font-bold text-white/60 transition-colors hover:border-white/30 hover:text-white"
+          }
+        >
+          {n}
+        </Link>
+      ))}
+      {page < PROMPT_PAGE_COUNT ? (
+        <Link
+          href={href(page + 1)}
+          className="inline-flex min-h-9 items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-white/60 transition-colors hover:border-white/30 hover:text-white"
+        >
+          {messages.prompts.next}
+        </Link>
+      ) : null}
+    </nav>
+  );
+}
+
+/** The localized prompt-library index — page 1 and the 2..17 pagination
+ * pages. The card grid carries EN route data (titles are the registry's
+ * display names, never machine translations); the chrome — intro,
+ * chips, pagination, notice — is genuinely translated. */
+function PromptsIndexView({ locale, page }: { locale: LocaleCode; page: number }) {
+  const messages = LOCALE_MESSAGES[locale];
+  const entries = promptPage(page);
+  return (
+    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
+      <section className="border-b border-white/10 pb-8">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300/80">
+          {messages.home.eyebrow}
+        </p>
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-4xl">
+          {messages.families.prompts}
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+          {fillCount(messages.prompts.indexIntro, PROMPT_CENSUS.total)}
+        </p>
+        {page > 1 ? (
+          <p className="mt-3 text-xs font-bold uppercase tracking-wider text-white/30">
+            {messages.prompts.pageOf
+              .replace("{page}", String(page))
+              .replace("{total}", String(PROMPT_PAGE_COUNT))}
+          </p>
+        ) : null}
+      </section>
+
+      <section className="mt-8">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {entries.map((entry) => (
+            <PromptCatalogCard key={entry.slug} locale={locale} entry={entry} />
+          ))}
+        </ul>
+        <PromptPaginationNav locale={locale} page={page} />
+      </section>
+
+      <section className="mt-10">
+        <NoticeCard locale={locale} enHref={page === 1 ? "/3d-prompts" : `/3d-prompts/${page}`} />
+        <p className="mt-4 text-center text-[11px] leading-relaxed text-white/30">
+          {messages.parity}
+        </p>
+      </section>
+    </main>
+  );
+}
+
+/** The localized community-route page: the not-reproduced banner in the
+ * locale's own language, the EN title as route data, the reference-index
+ * model association, and the links to what is real. */
+function PromptCommunityView({ locale, entry }: { locale: LocaleCode; entry: PromptEntry }) {
+  const messages = LOCALE_MESSAGES[locale];
+  return (
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6">
+      <section className="border-b border-white/10 pb-8">
+        <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl" lang="en">
+          {entry.title}
+        </h2>
+        <p className="mt-3 text-xs font-bold uppercase tracking-wider text-white/30">
+          /{locale}/3d-prompts/{entry.slug}
+        </p>
+      </section>
+
+      <section className="mt-8">
+        <div className="rounded-2xl border border-white/12 bg-white/[0.03] p-6 text-center sm:p-8">
+          <h3 className="text-lg font-black tracking-tight text-white">
+            {messages.prompts.communityTitle}
+          </h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-white/55">
+            {messages.prompts.communityBody}
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <Link
+              href="/3d-prompts"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-violet-400/40 bg-violet-400/15 px-5 text-sm font-bold text-violet-100 transition-colors hover:bg-violet-400/25"
+            >
+              {messages.notice.cta}
+            </Link>
+            <Link
+              href={`/${locale}/3d-prompts`}
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-white/15 bg-white/[0.04] px-5 text-sm font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
+            >
+              {messages.families.prompts} — {LOCALE_NAMES[locale].native}
+            </Link>
+          </div>
+        </div>
+        {entry.models.length > 0 ? (
+          <p className="mt-4 text-center text-[11px] leading-relaxed text-white/30" lang="en">
+            Reference route · indexed under {entry.models.join(" + ")} ·{" "}
+            {PROMPT_CENSUS.community} not-reproduced routes vs {PROMPT_CENSUS.written} written here
+          </p>
+        ) : null}
+        <p className="mt-4 text-center text-[11px] leading-relaxed text-white/30">
+          {messages.parity}
+        </p>
+      </section>
+    </main>
+  );
+}
+
+/** The localized model hub — honest inversion in the locale's language,
+ * member rows with EN titles and localized status chips, the reference's
+ * own per-hub pagination math. */
+function PromptHubLocaleView({
+  locale,
+  hub,
+  page,
+}: {
+  locale: LocaleCode;
+  hub: PromptHubInfo;
+  page: number;
+}) {
+  const messages = LOCALE_MESSAGES[locale];
+  const members = promptHubPage(hub, page);
+  const allMembers = promptHubMembers(hub);
+  return (
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6">
+      <section className="border-b border-white/10 pb-8">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300/80">
+          {messages.home.eyebrow}
+        </p>
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-3xl">
+          <span lang="en">{hub.name}</span> · {messages.families.prompts}
+        </h2>
+        {page > 1 ? (
+          <p className="mt-2 text-xs font-bold uppercase tracking-wider text-white/30">
+            {messages.prompts.pageOf
+              .replace("{page}", String(page))
+              .replace("{total}", String(hub.pages))}
+          </p>
+        ) : null}
+      </section>
+
+      <section className="mt-8">
+        <div className="rounded-2xl border border-white/12 bg-white/[0.03] p-6 sm:p-8">
+          <h3 className="text-sm font-black tracking-tight text-white/85">
+            {messages.prompts.hubTitle}
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-white/55">
+            {messages.prompts.hubBody
+              .replace("{model}", hub.name)
+              .replace("{count}", String(hub.claimed))}
+          </p>
+        </div>
+      </section>
+
+      <section className="mt-8" aria-label={`${hub.name} prompt routes`}>
+        <ul className="space-y-2">
+          {members.map((entry) => {
+            const written = entry.family === "written";
+            return (
+              <li
+                key={entry.slug}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+              >
+                <Link
+                  href={`/${locale}/3d-prompts/${entry.slug}`}
+                  className="text-sm font-bold text-white/80 transition-colors hover:text-violet-200"
+                  lang="en"
+                >
+                  {entry.title}
+                </Link>
+                {written ? (
+                  <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-bold text-emerald-300">
+                    {messages.prompts.writtenChip}
+                  </span>
+                ) : (
+                  <span className="rounded-full border border-white/20 bg-white/[0.05] px-2 py-0.5 text-[9px] font-bold text-white/55">
+                    {messages.prompts.communityChip}
+                  </span>
+                )}
+                <span className="ms-auto text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  {written ? messages.prompts.writtenLabel : messages.prompts.communityLabel}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+
+        {hub.pages > 1 ? (
+          <nav
+            aria-label={`${hub.name} hub pages`}
+            className="mt-8 flex flex-wrap items-center gap-2"
+          >
+            {page > 1 ? (
+              <Link
+                href={
+                  page - 1 === 1
+                    ? `/${locale}/3d-prompts/models/${hub.slug}`
+                    : `/${locale}/3d-prompts/models/${hub.slug}/${page - 1}`
+                }
+                className="inline-flex min-h-9 items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-white/60 transition-colors hover:border-white/30 hover:text-white"
+              >
+                {messages.prompts.prev}
+              </Link>
+            ) : null}
+            {Array.from({ length: hub.pages }, (_, i) => i + 1).map((n) => (
+              <Link
+                key={n}
+                href={
+                  n === 1
+                    ? `/${locale}/3d-prompts/models/${hub.slug}`
+                    : `/${locale}/3d-prompts/models/${hub.slug}/${n}`
+                }
+                aria-current={n === page ? "page" : undefined}
+                className={
+                  n === page
+                    ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-violet-400/40 bg-violet-400/15 px-2 text-xs font-bold text-violet-100"
+                    : "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] px-2 text-xs font-bold text-white/60 transition-colors hover:border-white/30 hover:text-white"
+                }
+              >
+                {n}
+              </Link>
+            ))}
+            {page < hub.pages ? (
+              <Link
+                href={`/${locale}/3d-prompts/models/${hub.slug}/${page + 1}`}
+                className="inline-flex min-h-9 items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-white/60 transition-colors hover:border-white/30 hover:text-white"
+              >
+                {messages.prompts.next}
+              </Link>
+            ) : null}
+          </nav>
+        ) : null}
+        <p className="mt-4 text-[11px] leading-relaxed text-white/30" lang="en">
+          {allMembers.length} member routes · {hub.pages} page{hub.pages > 1 ? "s" : ""} · 24 per
+          page (the reference&apos;s own pagination math)
+        </p>
+      </section>
+
+      <section className="mt-10">
+        <NoticeCard locale={locale} enHref={`/3d-prompts/models/${hub.slug}`} />
+        <p className="mt-4 text-center text-[11px] leading-relaxed text-white/30">
+          {messages.parity}
+        </p>
+      </section>
+    </main>
   );
 }
 
