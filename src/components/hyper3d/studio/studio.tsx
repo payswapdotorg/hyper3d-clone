@@ -2716,6 +2716,9 @@ export function Studio({
                       ["Credit & billing", "/help/credit"],
                       ["Troubleshooting", "/help/articles/why-did-my-hyper3d-generation-fail"],
                       ["Scam safety", "/help/articles/official-hyper3d-links-and-scam-safety"],
+                      /* t65: the blog tree is real — route, don't toast */
+                      ["Blog", "/blog"],
+                      ["What is Hyper3D", "/blog/what-is-hyper3d"],
                     ],
                   },
                   {

@@ -745,3 +745,87 @@ STATUS_META entry — statuses are now a four-key union);
 local smoke: every route type 200 with expected markers, bare /tools
 and invented pairs 404, sitemap 316 locs, converter index shows the
 24/108 census.
+
+## 45. t65 — the blog tree: 778 routes, 55 written, 723 honestly marked
+
+Recon 2026-10-30 (landing-sitemap-blog-en.xml + live-page anatomy of
+/blog, /blog/category/game-development, /blog/page/2, /blog/rss.xml, and
+four articles): the reference ships 778 article routes plus the index in
+its blog sitemap, 12 category hubs and 20 pagination pages live but
+UNSITEMAPPED, and an RSS 2.0 feed. The articles themselves are an AI
+content farm — the tells are visible in their own HTML: the phrase
+"which is relevant when working with what is glb file" repeated
+mid-sentence through every section, boilerplate "Ethical Considerations"
+chapters in game-guide posts, and invented mod lists for games with no
+mod support. The catalog splits ~258 core-3D topics from ~506 game-guide
+posts targeting third-party Steam titles, plus 7 reference-company news
+posts and 6 non-3D SEO strays (CDR/DWG→PDF, soundboards, overclocking,
+upscalers).
+
+t65 reproduces all 778 routes with a two-tier honesty contract. New
+modules: blog-types.ts (the contract), blog-registry-data.ts (GENERATED
+by scripts/gen-blog-registry.py from the fetched sitemap — 778 slugs
+plus four curated sets; regenerate, never hand-edit),
+blog-registry.ts (families, computed categories, derived titles, the
+catalog order, pagination math — census computed at module load, never
+hand-set), blog.ts (categories with honest blurbs, helpers, the RSS
+builder), blog-content-a..e.ts (the 55 written articles:
+overview/credits 12, account/support 9, tutorials 11, formats 13,
+workflows 10), blog-page.tsx + blog-index-pages.tsx (the shared
+renderers), and five routes: /blog, /blog/page/[page] (2..20),
+/blog/category/[slug] (the 12 hubs), /blog/[slug] (all 778),
+/blog/rss.xml (force-dynamic, origin-derived).
+
+**The census, computed and test-pinned: 55 written / 7 reference-news /
+204 core-filler / 6 off-scope / 506 game-filler.** Written pages get the
+full anatomy (breadcrumb, lede, "On this page" TOC, sections, FAQ
+details, related chips, three-way status chip like the help tree).
+Not-written routes get the honest page: a family banner (GAME-GUIDE SEO
+/ REAL 3D TOPIC / REFERENCE NEWS / NOT EVEN A 3D TOPIC), the computed
+reason (game-filler pages name the content-farm practice and its tells;
+core-filler pages say "not yet written, here is the written set";
+reference-news pages say a clone has no company news; off-scope pages
+name adjacent-search bait), the parity note, and nearest-real links —
+never a TOC, never an FAQ, never fake prose. Game-guides are
+deliberately uncategorized, mirroring the reference's live pages
+(verified: game articles carry no category badge; category hubs list
+core articles only).
+
+**The 55 written articles anchor to code, not vibes.** Credits articles
+quote INITIAL_BALANCE 50 / STANDARD_COST 1 / AGENTIC_COST 10 /
+CONFIRM_COST 1 and the cancel-route refund semantics (pay-by-result
+never charged; legacy charged → refunded in full). Auth articles quote
+the scrypt+session-cookie contract and the absence of any mailer.
+Tutorials map the reference's Rodin/ChatAvatar/WorldGen/BANG/MCP flows
+to what runs here (two live modes, HDRI fully local procedural, MCP
+modal real, WorldGen/BANG/avatars reference-only). Format explainers
+(what-is-glb/obj/stl/fbx/3mf/dxf/ply/usdz + five comparisons) are real
+technical writing anchored to the six exporters — DXF/3MF/PLY articles
+state "real format, no writer here". During writing, one real bug was
+found and fixed: the sign-up route granted a literal 40 credits against
+every other surface's 50 — it now imports INITIAL_BALANCE (the t65
+anchor fix).
+
+**Copy discipline (test-enforced, 30 new tests):** route parity is
+pinned (778 exact-set, no dups, no reserved segments — /blog/page,
+/blog/category, /blog/rss.xml must 404 as article slugs); the census
+sums to 778; written articles must have unique slugs/titles, 2-4
+sections of ≥120-char paragraphs, 2-4 FAQs, 2-5 related links resolving
+against the composed route set (all OmniCraft routes count — honest
+status pages are real pages); no article may contain the reference's
+AI-spam tells ("which is relevant when working with", "ethical
+considerations", "first-hand experience"); billing articles must carry
+50 credits / 1 credit / 10 credits together; pagination math is pinned
+(40/page, 20 pages, 19×40+18, written-first ordering); RSS carries
+exactly the 55 written items with RFC-822 dates and never a filler
+route; the sitemap asserts 779 blog locs and 1095 <url> total with
+category/pagination/rss deliberately absent (reference parity); route
+files must source params from the registries; the studio footer's HELP
+column routes to the blog.
+
+Shipped alongside: the studio footer gains Blog + What is Hyper3D
+links. Build SSGs 1124 pages (314 + 810 blog) in ~11s; local smoke:
+every route type 200 (written, filler, news, off-scope, category, page,
+rss), /blog/page/1 and /21, bare /blog/page and /blog/category,
+unknown slugs/categories 404; rss.xml serves 55 items; filler pages
+contain zero <details>. 365 tests / 29 suites green (+30); lint clean.

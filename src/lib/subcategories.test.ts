@@ -303,12 +303,12 @@ describe("sub-categories content — the honesty contract", () => {
 });
 
 describe("sub-categories wiring — sitemap, routes", () => {
-  it("public/sitemap.xml lists the three routes with absolute URLs (316 total)", () => {
+  it("public/sitemap.xml lists the three routes with absolute URLs (1095 total)", () => {
     const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
     for (const route of SUBCATEGORY_ROUTES) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    expect(xml.match(/<url>/g)?.length).toBe(316);
+    expect(xml.match(/<url>/g)?.length).toBe(1095);
   });
 
   it("the route's generateStaticParams sources from the registry, not literals", () => {

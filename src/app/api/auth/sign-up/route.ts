@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { hashPassword, createSessionToken, sessionCookieHeader } from "@/lib/auth";
+import { INITIAL_BALANCE } from "@/lib/credits";
 import { db } from "@/lib/db";
 import { ensureSeeded } from "@/lib/seed";
 
@@ -9,10 +10,15 @@ export const dynamic = "force-dynamic";
 
 /**
  * Sign-up (Task 48 backend audit): the sign-in panel's "Sign Up to create a
- * new account!" link is now real. Creates the account (reference free tier:
- * 40 starting credits), hashes the password (scrypt, same as sign-in), and
- * establishes the session immediately — the user lands signed in, exactly
- * like the reference's e-mail flow.
+ * new account!" link is now real. Creates the account, hashes the password
+ * (scrypt, same as sign-in), and establishes the session immediately — the
+ * user lands signed in, exactly like the reference's e-mail flow.
+ *
+ * t65 anchor fix: the starting grant is INITIAL_BALANCE (50) from
+ * credits.ts — the same constant the ledger, the seeded demo account, the
+ * tests, and every credit-related page use. A literal 40 lived here before
+ * ("reference free tier"), which contradicted the metering contract; the
+ * grant is now imported, not hand-set.
  */
 const SignUpSchema = z.object({
   email: z.string().email().max(200),
@@ -77,7 +83,7 @@ export async function POST(req: NextRequest) {
       email,
       username,
       passwordHash: hashPassword(parsed.data.password),
-      balance: 40, // reference free tier starts at 40 credits
+      balance: INITIAL_BALANCE, // the ledger's own signup constant (50)
       preferences: { rodin_generation_mode: "standard" },
       referralCode: randomReferralCode(),
       referredByCode: parsed.data.referralCode || null,

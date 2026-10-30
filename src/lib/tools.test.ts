@@ -299,12 +299,12 @@ describe("tools content — the honesty contract (all 201 leaf pages)", () => {
 });
 
 describe("tools wiring — sitemap, routes", () => {
-  it("public/sitemap.xml lists all 203 tools routes with absolute URLs (316 total)", () => {
+  it("public/sitemap.xml lists all 203 tools routes with absolute URLs (1095 total)", () => {
     const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
     for (const route of TOOLS_ROUTES) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    expect(xml.match(/<url>/g)?.length).toBe(316);
+    expect(xml.match(/<url>/g)?.length).toBe(1095);
   });
 
   it("the catch-all route sources every param from the registries, not literals", () => {
