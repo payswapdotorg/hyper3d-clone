@@ -23,12 +23,12 @@ import { STUDIO_PATH } from "./studio-path";
 
 export const PROMPTS_PAGE: PromptsPageDef = {
   route: "/3d-prompts",
-  title: "3D Prompts",
+  title: "Free 3D Prompts & Examples",
   description:
     "Free example prompts that work with this clone's text-to-3D studio: characters, props, environments, and stylized looks — copy one, paste it in, generate.",
   hero: {
     eyebrow: "3D PROMPTS",
-    headline: "Prompts that work here",
+    headline: "Free 3D Prompts & Examples",
     subhead:
       "Real example prompts for the text-to-3D studio at the root of this site. Copy one, paste it into the prompt box, and generate — previews render before any credit moves, and Confirm & Export costs 1 credit. Edit any prompt to make it yours; the studio's polish button rewrites a rough idea into a tighter one.",
     primaryCta: { label: "Open the studio", href: STUDIO_PATH },
@@ -152,11 +152,12 @@ export const PROMPTS_PAGE: PromptsPageDef = {
       body: "Generate and study the free preview from every angle. When it is right, Confirm & Export debits 1 credit and hands you GLB, GLTF, FBX, OBJ, STL, or USDZ — the exact geometry the viewer previewed. Cancel a running task and the credit comes back.",
     },
   ],
-  note: "What this page is not: the reference sorts its prompts by the AI model that wrote them, shows community authors and dates, and embeds YouTube videos of prompts becoming 3D. None of that exists here — there is no community gallery, no model-name filter, and no video embed. What is real instead: the prompt-polish endpoint behind the polish button, four generation modes (text-to-3D, image-to-3D, editing, WorldGen), and 21 style pages whose recipe notes tell you exactly how far each look can be pushed from the prompt alone.",
+  note: "What this page is not: the reference sorts its prompts by the AI model that wrote them, shows community authors and dates, and embeds YouTube videos of prompts becoming 3D. The t69 tree keeps the reference's routes — the 36 written prompts above, 367 honestly marked community routes, and the 11 model-name hubs — but no community content is reproduced: no authors, no dates, no screenshots. The model-name hubs are route parity, not a filter of this clone's prompts — its engine is not a third-party chat model. The creator reviews are external links to the reference's own curation — no video embeds on this page. What is real instead: the prompt-polish endpoint behind the polish button, four generation modes (text-to-3D, image-to-3D, editing, WorldGen), and 21 style pages whose recipe notes tell you exactly how far each look can be pushed from the prompt alone.",
   noteLinks: [
     { label: "Browse the styles", href: "/styles" },
     { label: "Image to 3D", href: "/features/image-to-3d" },
     { label: "WorldGen", href: "/features/worldgen" },
+    { label: "All prompt routes", href: "/3d-prompts/2" },
   ],
   closing: {
     headline: "The next prompt is yours",

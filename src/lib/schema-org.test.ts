@@ -377,7 +377,11 @@ describe("t67 JSON-LD wiring — every family renderer ships its blocks", () => 
       ["components/hyper3d/legal/legal-page.tsx", "legalJsonLd"],
       ["components/hyper3d/sub-categories/subcategory-page.tsx", "baselineJsonLd"],
       ["components/hyper3d/landing/pricing-page.tsx", "baselineJsonLd"],
-      ["components/hyper3d/landing/prompts-page.tsx", "baselineJsonLd"],
+      // t69: the prompts index moved from the generic baseline to its own
+      // family bundle (CollectionPage + HowTo + breadcrumb).
+      ["components/hyper3d/landing/prompts-page.tsx", "promptsIndexJsonLd"],
+      ["components/hyper3d/prompts/prompt-page.tsx", "promptArticleJsonLd"],
+      ["components/hyper3d/prompts/prompt-hub.tsx", "promptHubJsonLd"],
       ["components/hyper3d/landing/switch-page.tsx", "baselineJsonLd"],
       ["components/hyper3d/landing/event-page.tsx", "baselineJsonLd"],
       ["app/omnicraft/page.tsx", "baselineJsonLd"],
@@ -421,6 +425,9 @@ describe("t67 metadata wiring — every family route spreads familyMetadata", ()
     "switch/[slug]/page.tsx",
     "switch/page.tsx",
     "3d-prompts/page.tsx",
+    "3d-prompts/[slug]/page.tsx",
+    "3d-prompts/models/[model]/page.tsx",
+    "3d-prompts/models/[model]/[page]/page.tsx",
     "pricing/page.tsx",
     "omnicraft/page.tsx",
     "omnicraft/[tool]/page.tsx",

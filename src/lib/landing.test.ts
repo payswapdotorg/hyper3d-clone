@@ -11,6 +11,7 @@ import { OMNICRAFT_TOOLS } from "./omnicraft";
 import { findStylePage } from "./styles";
 import { findUseCasePage } from "./use-cases";
 import { findHelpArticle, findHelpCategory } from "./help";
+import { findPromptEntry, isPromptIndexPage } from "./prompts-registry";
 import { STUDIO_PATH } from "./studio-path";
 
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
@@ -37,6 +38,14 @@ function isKnownRoute(href: string): boolean {
     base === "/switch"
   )
     return true;
+  if (base.startsWith("/3d-prompts/")) {
+    // t69: the prompt library — index pagination pages (2..17) and the
+    // 403 detail routes from the registry.
+    if (/^\d+$/.test(base.slice("/3d-prompts/".length))) {
+      return isPromptIndexPage(base.slice("/3d-prompts/".length));
+    }
+    return findPromptEntry(base.slice("/3d-prompts/".length)) !== undefined;
+  }
   if (base.startsWith("/help/articles/")) {
     return findHelpArticle(base.slice("/help/articles/".length)) !== undefined;
   }
@@ -203,11 +212,11 @@ describe("3d-prompts page — real prompts for the real studio (t62)", () => {
     expect(steps).toContain("STL");
   });
 
-  it("the note states what is absent: no gallery, no model filter, no videos", () => {
+  it("the note states what is absent: no community content, hubs are parity, no embeds (t69)", () => {
     const note = LANDING_PROMPTS_PAGE.note;
-    expect(note).toContain("no community gallery");
-    expect(note).toContain("no model-name filter");
-    expect(note).toContain("no video embed");
+    expect(note).toContain("no community content is reproduced");
+    expect(note).toContain("not a filter");
+    expect(note).toContain("no video embeds");
   });
 
   it("the copy button is a real client island with a real clipboard write", () => {

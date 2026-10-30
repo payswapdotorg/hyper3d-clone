@@ -28,6 +28,7 @@ import type { HelpArticleDef, HelpCategoryId, HelpCategoryDef } from "./help-typ
 import type { BlogArticleDef, BlogCategory, BlogEntry } from "./blog-types";
 import type { LegalDocDef } from "./legal-types";
 import type { StylePageDef } from "./style-types";
+import type { PromptArticleDef } from "./prompts-types";
 import { HELP_CATEGORIES } from "./help";
 import { BLOG_CATEGORIES } from "./blog";
 
@@ -595,5 +596,79 @@ export function baselineJsonLd(
     websiteNode(),
     webPage(title, description, path),
     breadcrumbList(crumbs.length > 0 ? crumbs : [{ name: "Home", path: "/" }]),
+  ];
+}
+
+/* ------------------------------------------------------------------ */
+/* Prompt library (t69) — the /3d-prompts tree's block sets.          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A written prompt page — the reference's CreativeWork + BreadcrumbList
+ * (All prompts → name), carrying this clone's own prompt data. Community
+ * routes get NO CreativeWork: there is no prompt here to describe (the
+ * t65 rule, applied to prompts).
+ */
+export function promptArticleJsonLd(
+  def: PromptArticleDef,
+): JsonLdObject[] {
+  const path = `/3d-prompts/${def.slug}`;
+  return [
+    {
+      "@context": CONTEXT,
+      "@type": "CreativeWork",
+      name: `${def.title} — Studio 3D Prompt`,
+      description: def.description,
+      url: absolute(path),
+      keywords: def.keywords.join(", "),
+      author: { "@type": "Person", name: "Hyper3D" },
+      publisher: { "@type": "Organization", name: "Hyper3D", url: SITE_ORIGIN },
+      mainEntityOfPage: { "@type": "WebPage", "@id": absolute(path) },
+      image: OG_IMAGE_URL,
+    },
+    breadcrumbList([
+      { name: "All prompts", path: "/3d-prompts" },
+      { name: def.title, path },
+    ]),
+  ];
+}
+
+/** The index (page 1): CollectionPage + HowTo (the real three steps). */
+export function promptsIndexJsonLd(
+  description: string,
+  steps: readonly { title: string; body: string }[],
+): JsonLdObject[] {
+  return [
+    collectionPageNode("Free 3D Prompts & Examples", description, "/3d-prompts"),
+    howTo("How to use a 3D prompt", "Three real steps for running a prompt in this studio.", steps),
+    breadcrumbList([
+      { name: "Home", path: "/" },
+      { name: "Free 3D Prompts & Examples", path: "/3d-prompts" },
+    ]),
+  ];
+}
+
+/** Index pages 2+: the reference's "Page N" CollectionPage + breadcrumb. */
+export function promptsIndexPageJsonLd(n: number, description: string): JsonLdObject[] {
+  const path = `/3d-prompts/${n}`;
+  return [
+    collectionPageNode(`Free 3D Prompts & Examples / Page ${n}`, description, path),
+    breadcrumbList([{ name: "All prompts", path: "/3d-prompts" }]),
+  ];
+}
+
+/** Model hubs: CollectionPage + BreadcrumbList (All prompts → Model). */
+export function promptHubJsonLd(hub: { name: string; slug: string; claimed: number }): JsonLdObject[] {
+  const path = `/3d-prompts/models/${hub.slug}`;
+  return [
+    collectionPageNode(
+      `${hub.name} / Free 3D Prompts & Examples`,
+      `${hub.name} prompts on the reference site — ${hub.claimed} community entries indexed by the model they were written for. This clone keeps the route and serves it honestly.`,
+      path,
+    ),
+    breadcrumbList([
+      { name: "All prompts", path: "/3d-prompts" },
+      { name: hub.name, path },
+    ]),
   ];
 }
