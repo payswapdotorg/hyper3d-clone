@@ -829,3 +829,69 @@ every route type 200 (written, filler, news, off-scope, category, page,
 rss), /blog/page/1 and /21, bare /blog/page and /blog/category,
 unknown slugs/categories 404; rss.xml serves 55 items; filler pages
 contain zero <details>. 365 tests / 29 suites green (+30); lint clean.
+
+## 46. t66 — the localized landing tree: 5,975 routes, honestly router-shaped
+
+Recon 2026-10-30 (landing-sitemap-index.xml): the reference ships its
+whole landing tree in 12 languages — EN unprefixed plus zh, de, ja, ko,
+ru, pt, fr, es, ar, tr, it — with per-family per-locale sitemaps. The
+localized trees are NOT copies of the EN tree: 542-545 routes per locale
+(static 45 — no /event; features 19, tools 203, use-cases 12, styles 22,
+legal 6 — EN slugs verbatim; sub-categories only for ja/ko/pt/es/tr with
+locale-only slugs ko/insects-bugs, es/firearms, tr/rocks-minerals that
+have no EN route at all; blog ~234-235 articles, every slug suffixed
+"-{loc}"). Two reference quirks are mirrored verbatim: the help article
+use-bang-and-partial-edit is renamed use-bang-and-partial-edit-{loc} in
+zh/de/ja/ko/ru/fr/es (pt/ar/tr/it keep the plain slug), and the ar/tr
+blog sitemaps carry double-suffixed oddballs
+(ai-game-character-creator-zh-ar, what-is-ply-file-zh-tr). Everything
+above is GENERATED data: scripts/gen-locale-routes.py fetches the
+reference's sitemaps, validates the structure, and writes
+src/lib/i18n-locale-data.ts — regenerate, never hand-edit.
+
+**The honesty contract is two-tier.** Tier 1, genuinely translated: the
+page chrome — top bar, family labels, locale-home hero, hub intros,
+status chip labels, the honest-untranslated notice, language switcher,
+footer — hand-written per locale in i18n-messages.ts (11 packs against
+one typed contract; the reference machine-translates everything, and no
+machine-translated prose is faked here). Tier 2, honest router pages:
+long-form content stays English. Every localized deep page shows the EN
+title, the honest status where the EN registry has one, and a notice in
+the locale's own language stating that the complete text — sections,
+FAQs, every code-anchored claim — lives at the English original, with a
+link. Localized pages never render translated article bodies, TOCs, or
+FAQs. Locale-only routes (insects-bugs, firearms, rocks-minerals) get
+the amber variant: the reference ships them only in localized sitemaps,
+there is no English original, and the page says exactly that.
+
+**Canonicals point at the English originals.** The reference
+self-canonicalizes each localized URL — correct for translated content,
+wrong for honest router pages whose content lives elsewhere: localized
+pages canonicalize to their EN href while carrying the reference's full
+13-link hreflang alternate set (12 languages + x-default). One
+deviation is deliberate: <html lang> stays "en" (the root layout is
+shared with the EN tree and the studio app; restructuring into multiple
+root layouts would churn 40 route files for one attribute), so each
+locale page scopes its content with a lang/dir wrapper — Arabic runs
+RTL inside it.
+
+Hub card lists are capped at 60 links (features 19, styles 22, help 39,
+legal 5, viewer 15 list their routes; the 178-pair converter matrix and
+the 234-article blog hubs stay count + EN link, where the real indexes
+live). The studio's Globe icon, previously a decorative toast, is now a
+real 12-language menu routing to the locale homes.
+
+Copy discipline (test-enforced, 26 new tests → 391 / 30 suites): every
+generated param resolves (zero dead routes across all 5,975); every
+article links a real EN route (checked against the sitemap's EN
+section); blog slugs all -{loc} suffixed; oddballs pinned verbatim;
+per-locale totals pinned (zh 542 … ko/es 545, 5,975 total); no
+/{loc}/event or /{loc}/omnicraft; packs cover the identical key set
+with no empty strings; the sitemap carries exactly 7,070 <url> (1,095
+EN byte-preserved + 5,975 localized — the generator,
+scripts/gen-sitemap.ts, refuses to write on EN drift). One build fix
+during landing: optional catch-all generateStaticParams entries must
+carry the slug key consistently (slug: [] for locale homes) or Next
+prerenders nothing — mixed key shapes silently fell back to
+server-rendering; the consistent shape SSGs all 7,099 pages in ~56s.
+Lint clean.
