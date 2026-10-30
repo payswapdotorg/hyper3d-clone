@@ -671,3 +671,77 @@ routes (111 static pages); local smoke: all three 200 with expected
 markers (H1, status chips, "Not here." bands, "no polycount slider",
 Generate and Download CTAs, Also-in sections), bare /sub-categories and
 unknown slugs → themed 404, sitemap.xml serves 113 locs.
+
+## 44. t64 — the tools tree: 203 honest converter/viewer/image-to routes
+
+Recon 2026-10-30 (landing-sitemap-tools-en.xml + live-page anatomy of
+/tools/converter/3ds/to/dae, /tools/viewer/glb, /tools/image-to-glb):
+the reference ships exactly 203 tools routes — /tools/converter (index)
++ 178 from/to pair pages (25 source formats), 8 flat
+/tools/image-to-{format} pages, /tools/viewer (index) + 15 viewer format
+pages — and no bare /tools (it 404s, like /event and /sub-categories).
+
+t64 reproduces all 203 routes with computed honesty. New modules:
+tool-formats.ts (the format fact table: 6 real export formats, 10 image
+sources, CAD/DCC/print formats with per-format hereNotes; REAL_FORMAT_LIST
+derived from EXPORT_FORMATS so enumerations cannot drift),
+tools-registry.ts (the 178 reference pairs as data + the status
+functions — converterPairStatus/viewerFormatStatus/imageToStatus — all
+COMPUTED from the real facts, never hand-set), tools-content.ts (the
+builders: every leaf def is generated from registry + facts),
+tools-index-content.ts (the two index pages), tool-page.tsx + 
+tools-index-pages.tsx (one shared renderer family), and one catch-all
+route src/app/tools/[...slug]/page.tsx whose generateStaticParams emits
+exactly the registry's 203 param sets; unknown shapes and invented
+pairs (e.g. glb/to/ply) 404 into the themed page.
+
+**The honest census, computed and test-pinned.** 24 of the 178 pairs
+run for real ("task-export": both sides among the six export formats —
+the live Format Convertor re-exports YOUR generated tasks; the pages
+never claim arbitrary-file upload and state the auth gate and the
+nothing-extra re-export cost). 46 pairs carry a real generative path
+("generative": image source + real export target — always labeled
+"generation, not conversion" with the 50/1/10 credit numbers; the one
+genuine exception is svg→glb, which names the live Vector to 3D tool
+as a true local conversion, CTA to /omnicraft/vector). 108 pairs do
+not exist ("not-here": the computed reason — exporters ship exactly six
+formats, no CAD support anywhere, no arbitrary upload — plus the
+nearest-real works). Viewer: GLB and GLTF are live (the local Model
+Viewer's own contract: parsed in the browser, never uploaded, orbit +
+material modes + live triangle count); the other 13 say why not — the
+DCC four get the studio's own published path ("generate or import
+first, then use the Format Convertor"), the CAD five get "no CAD
+support anywhere". Image-to: the six real export formats are live
+generative pages (Rodin image mode + export); 3mf/dxf are not-here.
+
+**Copy discipline (test-enforced, 18 new tests):** route parity is
+pinned (203 unique routes = 1+178+8+1+15, zero missing, zero extra);
+the census is asserted (24/46/108); task-export pages must mention
+"generated tasks", "task-based", "No arbitrary … upload" and "nothing
+extra", and must never match drag-file/upload-your-file patterns;
+generative pages must match /generation, not conversion|not a
+conversion/ (svg→glb exempt with its own dedicated test) and carry
+50/1/10 together wherever credits appear; not-here pages must open
+with a computed-reason pattern and never describe a running
+conversion; the six-format enumeration is REAL_FORMAT_LIST, asserted
+equal to the EXPORT_FORMATS-derived join; no invented formats anywhere
+(RBXM/RBXL/ABC/MD2/WRL/X3D/AMF/3DXML absent; every "export(s) as/in/to
+X" target is a real format name); every href on every page resolves
+against the composed route set (tools routes, live OmniCraft tools,
+real feature pages, studio root); live viewer pages must state the
+local contract; the sitemap asserts all 203 absolute tools locs and
+316 <url> total (help.test.ts, landing.test.ts and subcategories.test.ts
+counts moved to 316); the catch-all must source params from the
+registries with no smuggled literals.
+
+Also shipped: /tools/converter renders the honest matrix — the census
+as three status cards (green runs / amber generates / grey does not
+exist) above all 178 pairs grouped by source format, each chip
+status-colored and linking its page; /tools/viewer lists the 15 formats
+with LIVE/not-here rows. 335 tests / 28 suites green (+18); lint
+clean; build SSGs all 314 pages (111 + 203) after extending
+ToolStatus with "task-export" (the build caught the renderer's missing
+STATUS_META entry — statuses are now a four-key union);
+local smoke: every route type 200 with expected markers, bare /tools
+and invented pairs 404, sitemap 316 locs, converter index shows the
+24/108 census.
