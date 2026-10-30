@@ -603,3 +603,71 @@ present, VLM QA of /pricing + /3d-prompts + /switch/makerworld
 screenshots: layouts clean (plan card readable, prompt grid with mono
 boxes and Copy buttons aligned, NOT HERE rows and tables readable, no
 overflow or contrast defects).
+
+## 43. t63 — sub-categories tree: the three collection pages, honestly inverted
+
+Recon 2026-10-30 (landing-sitemap-sub-categories-en.xml + live-page
+anatomy of /sub-categories/{dark-fantasy,nsfw-content,roblox}): the
+reference ships exactly three leaf pages and NO index (bare
+/sub-categories 404s — same shape as /event). Each page is a tagged
+marketplace collection: "Browse by Tag" chips under /tags/*, a
+"Featured Free … 3D Models" asset grid, a "Generate Custom …" CTA into
+Rodin, "Also in <Parent>" sibling collections with model counts
+("Wizards & Magic Users 88 models"), "You May Also Like" category
+links, and a short FAQ.
+
+t63 reproduces the anatomy and inverts the marketplace honestly. Same
+registry pattern as t57-t62 (`subcategory-types.ts` contract +
+`subcategory-content.ts` content + `subcategories.ts` registry +
+`subcategory-page.tsx` shared server renderer + `/sub-categories/[slug]`
+SSG route; generateStaticParams from the registry, per-page metadata,
+unknown slug → themed 404, and deliberately no index page).
+
+**The three honest inversions.** dark-fantasy ("generatable"): the
+collection is not here, but the theme steers the real generator —
+silhouette vocabulary over the shape grammar, per-part color/metalness/
+roughness as real MeshStandardMaterial parameters, six real exports;
+limits state no tagged marketplace, parameter materials (not baked
+dark-fantasy texture sets), no style-lock, no per-asset terms. The
+"Also in Fantasy & Mythology" parent re-points at real siblings
+(/styles/gothic, /styles/fantasy, /styles/medieval,
+/use-cases/character-design, /use-cases/game-development). roblox
+("generatable"): low-poly/voxel steering is real, FBX and OBJ are among
+the six real exports, and the page makes NO import-compatibility
+promise — "whether Roblox Studio accepts a mesh is Roblox Studio's own
+import tooling's call", plus the tree's established "no polycount
+slider" / "no LOD generation" claims; "Also in Gaming" re-points at
+/styles/low-poly, /styles/voxel, /styles/pixel-art and the
+game-development/animation use cases. nsfw-content ("absent", the
+tree's first rose status): the entire category does not exist here —
+no NSFW collection, no NSFW tags, no NSFW mode, no per-asset licenses;
+the page exists to say that flatly and route to what is real (the
+general-purpose generator, the legal center, the help center's
+scam-safety article). It is the only page with no alsoIn section,
+matching the reference's own shape.
+
+**Copy discipline (test-enforced, 21 new tests):** every "Featured
+Free …" body opens "Not here."; every "Browse by Tag" intro opens "Not
+here" and denies the tag system; the reference's model-count pattern
+("\d{2,4} models") appears nowhere; the nsfw FAQ's collection and mode
+answers open "No."; the roblox page contains "no polycount slider" and
+matches /no LOD generation/i, never promises Roblox compatibility, and
+must name Roblox Studio's own tooling as the decider; format claims
+resolve against EXPORT_FORMATS only (FBX/OBJ asserted on roblox; no
+3MF/DAE/DWG/DXF/PLY/RBXM inventions); credit numbers where stated must
+carry 50/1/10 together (INITIAL_BALANCE/STANDARD_COST/AGENTIC_COST);
+"No style-lock" is hyphenated (the styles-tree convention that keeps
+the negative style-lock regex clean); every href on every page resolves
+against a composed isKnownRoute that validates deep links against the
+real registries (styles, use-cases, features, help articles, legal,
+live OmniCraft tools, sibling sub-categories, /pricing, /3d-prompts);
+primary CTAs all open the real studio; OmniCraft links target live
+tools only; the three pages interlink (each links a sibling).
+
+Also shipped: public/sitemap.xml +3 routes (113 locs total — the
+count assertions in help.test.ts and landing.test.ts moved to 113).
+317 tests / 27 suites green (+21); lint clean; build SSGs all three
+routes (111 static pages); local smoke: all three 200 with expected
+markers (H1, status chips, "Not here." bands, "no polycount slider",
+Generate and Download CTAs, Also-in sections), bare /sub-categories and
+unknown slugs → themed 404, sitemap.xml serves 113 locs.
