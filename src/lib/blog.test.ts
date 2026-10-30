@@ -304,8 +304,8 @@ describe("blog RSS — a feed is a promise of items that exist", () => {
 describe("blog wiring — sitemap, routes, footer", () => {
   const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
 
-  it("lists /blog plus all 778 articles with absolute URLs (779 blog locs, 1095 total)", () => {
-    expect(xml.match(/<url>/g)?.length).toBe(1095);
+  it("lists /blog plus all 778 articles with absolute URLs (779 blog locs, 7070 total)", () => {
+    expect(xml.match(/<url>/g)?.length).toBe(7070); // 1095 EN + 5975 localized (t66)
     for (const loc of BLOG_SITEMAP_LOCS) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${loc}</loc>`), loc).toBe(true);
     }

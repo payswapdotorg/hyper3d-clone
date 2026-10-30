@@ -67,8 +67,10 @@ import {
   Box,
   Grip,
 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
+import { LOCALE_CODES, LOCALE_NAMES } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -1433,7 +1435,31 @@ export function Studio({
               Login
             </button>
           )}
-          <Globe className="size-[18px] cursor-pointer text-[#b0b0b0] transition-colors hover:text-white" aria-label="Language" />
+          {/* t66: the Globe icon is a real language menu now — the 12
+              localized landing homes exist at /{locale} (the studio itself
+              stays English; the reference's workspace is EN-only too). */}
+          <details className="group relative">
+            <summary className="flex min-h-9 w-9 cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden">
+              <Globe className="size-[18px] text-[#b0b0b0] transition-colors group-hover:text-white" aria-label="Language" />
+            </summary>
+            <div className="h3d-scroll absolute end-0 z-50 mt-1 max-h-96 w-44 overflow-y-auto rounded-xl border border-white/12 bg-[#1c1c22] p-1 shadow-xl">
+              <Link
+                href="/"
+                className="flex min-h-9 items-center rounded-lg px-3 text-xs text-white/75 transition-colors hover:bg-white/8 hover:text-white"
+              >
+                English
+              </Link>
+              {LOCALE_CODES.map((code) => (
+                <Link
+                  key={code}
+                  href={`/${code}`}
+                  className="flex min-h-9 items-center rounded-lg px-3 text-xs text-white/75 transition-colors hover:bg-white/8 hover:text-white"
+                >
+                  {LOCALE_NAMES[code].native}
+                </Link>
+              ))}
+            </div>
+          </details>
         </nav>
       </header>
 

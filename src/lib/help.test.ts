@@ -321,7 +321,7 @@ describe("help wiring — footer, sitemap, routes", () => {
     for (const route of HELP_ROUTES) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    expect(xml.match(/<url>/g)?.length).toBe(1095);
+    expect(xml.match(/<url>/g)?.length).toBe(7070); // 1095 EN + 5975 localized (t66)
   });
 
   it("the studio footer's HELP column routes to real pages (no toasts)", () => {
