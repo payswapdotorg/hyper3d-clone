@@ -315,6 +315,12 @@ export function homeGraph(): JsonLdObject {
         url: `${SITE_ORIGIN}/`,
         name: "Hyper3D",
         publisher: { "@id": `${SITE_ORIGIN}/#organization` },
+        // t68: the reference's WebSite node lists its 12 serving locales
+        // (en + 11); this clone's localized landing tree covers exactly the
+        // same set, so the claim is real here.
+        inLanguage: [
+          "en", "zh", "de", "ja", "ko", "ru", "pt-BR", "fr", "es", "ar", "tr", "it",
+        ],
       },
       {
         "@id": `${SITE_ORIGIN}/#webpage`,
@@ -334,6 +340,11 @@ export function homeGraph(): JsonLdObject {
         name: "Hyper3D",
         description:
           "Rodin generates high-quality 3D assets that are nearly production-ready for supported workflows.",
+        // t68: the reference's WebApplication node ships a featureList;
+        // this one lists what THIS clone's pipeline really does (its
+        // exporters write all six formats — EXPORT_FORMATS in hyper3d.ts).
+        featureList:
+          "Text to 3D, image to 3D, AI texture generation, controllable editing, model optimization, GLB, GLTF, FBX, OBJ, STL and USDZ export",
         applicationCategory: "MultimediaApplication",
         operatingSystem: "Web browser",
         browserRequirements: "Requires a modern browser with WebGL enabled.",

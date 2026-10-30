@@ -17,6 +17,7 @@
  */
 
 import type { HelpArticleDef } from "./help-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const HELP_ARTICLES_B: HelpArticleDef[] = [
   /* ------------------------------- Credit (6) ----------------------------- */
@@ -111,7 +112,7 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
     related: [
       { label: "Credit costs", href: "/help/articles/how-many-credits-does-each-hyper3d-generation-cost" },
       { label: "Cancel refunds", href: "/help/articles/are-credits-returned-after-canceling-a-generation" },
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
     ],
     updated: "2026-10-30",
   },

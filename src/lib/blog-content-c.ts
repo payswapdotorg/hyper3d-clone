@@ -10,6 +10,7 @@
  * and OmniCraft's four live tools (omnicraft.ts) with HDRI fully local.
  */
 import type { BlogArticleDef } from "./blog-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const BLOG_ARTICLES_C: BlogArticleDef[] = [
   {
@@ -52,7 +53,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       { label: "Text to 3D feature page", href: "/features/text-to-3d" },
       { label: "Prompt guide", href: "/blog/3d-text-prompt-guide" },
       { label: "Credit costs", href: "/blog/how-many-credits-does-each-hyper3d-generation-cost" },
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
     ],
   },
   {
@@ -93,7 +94,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
     related: [
       { label: "Image to 3D feature page", href: "/features/image-to-3d" },
       { label: "Convert an image (guide)", href: "/blog/how-to-convert-image-to-3d-model" },
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
     ],
   },
   {
@@ -339,7 +340,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
     related: [
       { label: "Workspace edit flow", href: "/blog/edit-3d-models-in-rodin-workspace" },
       { label: "Prompt engineering", href: "/blog/3d-prompt-engineering" },
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
     ],
   },
   {
@@ -380,7 +381,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
     related: [
       { label: "Agentic mode", href: "/blog/use-rodin-agentic-mode-for-image-to-3d" },
       { label: "Credit costs", href: "/blog/how-many-credits-does-each-hyper3d-generation-cost" },
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
     ],
   },
   {

@@ -978,3 +978,109 @@ censuses; robots rules pinned; renderer + route wiring asserted at
 source level. Build SSGs all 7,099 pages in ~63s; local smoke on the
 prerendered HTML confirms the JSON-LD script tags and OG/canonical
 tags land in the served HTML. Lint clean.
+
+## 48. t68 — the marketing homepage: landing at `/`, studio at /workspace/rodin
+
+Recon 2026-10-31 of the live reference found the clone's oldest
+architectural shortcut still un-reconciled: the reference serves a full
+SSR marketing page at `/` (title "Hyper3D Rodin - Best AI 3D Model
+Generator", ~400KB Astro HTML) and the studio at /workspace/rodin, while
+this clone mounted the studio at `/` and redirected /workspace/rodin → /
+(the t53 "single-page app" note). The reference also ships a
+returning-visitor fast path: an inline landing script that
+`location.replace('/workspace' + search + hash)`-es any browser carrying
+workspace-visit markers — the `hyper3d_workspace_visited` cookie (1yr,
+SameSite=Lax), sessionStorage `hyper3dWorkspaceVisited`, or localStorage
+`hyper3dWorkspaceVisitedAt` / `token`+`user_uuid` / `BASE_URL` /
+`CURRENT_ROLE` — with `?bypass=true` as the escape hatch; the workspace
+shell's own head script stamps those three markers on every visit. The
+orphaned site-header/site-footer components (built in the visual-clone
+era, never imported) were waiting for exactly this surface.
+
+**The URL shape now matches the reference.** `/` renders the marketing
+page (MarketingHome); /workspace/rodin is a real route rendering
+Hyper3DApp plus the marker script (src/lib/workspace-visit.ts reproduces
+both reference scripts in behavior — same keys, same five bounce
+conditions, same bypass param, same '/workspace' target — reformatted,
+not byte-copied); /workspace redirects to /workspace/rodin; /signup,
+/register, /workspace/signup, /workspace/register and the /r/:code,
+/a/:code referral links now carry their params into
+/workspace/rodin?auth=signup[&referral_code=…] and the studio consumes
+them exactly as before (verified: the sign-up panel opens). The old
+/workspace/rodin → / rule is gone. One honest note: the bounce's auth
+branch checks localStorage keys this clone never writes (its session is
+an httpOnly cookie, invisible to JS), so here the bounce fires on the
+visit markers — a signed-in user has, by definition, visited the studio
+and carries them.
+
+**The marketing page is the reference's section stack, honest copy.**
+Header (logo + Free 7-Day Trial/Subscribe pill + Products ▾ / Features ▾
+/ API / Pricing / Resources ▾ + Discord + Login + 12-language picker —
+every dropdown entry routing to a real clone page: the 18-feature tree
+incl. the 7 nested omnicraft pages, the 12 use-cases, the 21 styles,
+blog, 3d-prompts, pricing, help, and the 11 locale routes; plug-ins keep
+the reference's external docs.deemos.dev targets) → hero ("Create 3D
+Models / The Easy Way" + Start Creating + the 8-chip row; ControlNet
+chips are demo chrome per decision #15, the mode chips link to their
+feature pages) → the embedded demo card (mode pills, the + entry, the
+3D Editing card, Gen-2.5 + Select Effort popover wired to the real
+EFFORTS table — the same five tiers and ~s times the studio runs — and
+a GENERATE pill that routes into the real studio; nothing fakes a
+pipeline) → the 17-name trust row as grayscale wordmarks (Acer, Bambu,
+…, UCB — the reference's own partner row, names only, no affiliation
+implied) → "Every Creative Idea Takes 3D Shape" (6 cards deep-linking
+image-to-3d, text-to-3d, chatavatar, ai-texture-generator, /omnicraft,
+and the features index) → "Flexible 3D Controls" (BANG / Partial Edit /
+3D ControlNet — each linking its real article or the studio — plus the
+"+ =" ControlNet demo trio and the Free Retry / Smart Low-Poly cards
+with their credit and LOD facts) → "How It Works" (3 steps, export
+formats drawn from EXPORT_FORMATS) → "Built for Your 3D Pipeline" (API
+Platform, 3D Platform Add-On → the reference's own add-on docs, and the
+enterprise block rendered with reference-only honesty: the four SSO
+cards say "Reference-only — not in this clone", the three big cards
+describe what this codebase actually does, and the whole section links
+the honest enterprise article) → the "Imagine It. Shape It." CTA band →
+the five-column footer with the reference's real link map (PRODUCT →
+ChatAvatar/Rodin→studio/OmniCraft→hdri; FEATURES 5; TOOLS 9 incl.
+/tools/viewer and /tools/converter; PLUG-INS 8 external; LEGAL 3), the
+"Ask AI about us" row (the reference's five assistant links with their
+prefilled prompt), the socials as the reference's own external accounts,
+the © 2026 Hyper3D Clone line (Deemos's © line is theirs, not ours to
+claim), and the 12-language selector as real locale routes.
+
+**125 studio CTAs across 16 content libraries** that said
+`href: "/"` ("Open the studio", "Generate a … Model", "Start Creating",
+…) now resolve through the exported STUDIO_PATH constant — the studio
+address lives in exactly one place. The locale router pages' studio
+back-link and explore CTA and the convertor tool's empty-state link were
+repointed the same way. Breadcrumbs that mean "Home" still say `/` —
+that is now the landing page, which is what the reference's breadcrumbs
+mean too.
+
+**SEO follows the reference's split.** The landing page carries the
+reference homepage's card (title, description, og:image = their agentic
+banner, hotlinked per the t53 pattern) and the six-node @graph — which
+is where the reference serves it; the studio route keeps the long
+workspace title and stays robots-disallowed (robots.txt already mirrors
+the reference's `Disallow: /workspace`, so no sitemap or robots change).
+homeGraph gained the two fields the reference's graph carries and this
+clone's code honestly supports: WebSite.inLanguage (en + the 11 localized
+trees) and WebApplication.featureList naming the six formats the
+exporters really write.
+
+Copy discipline (18 new tests → 433 / 32 suites): the URL shape and
+redirect table pinned at source level; both scripts' marker keys, five
+conditions, bypass param and replace-target asserted; the @graph's six
+nodes, 12 locales and featureList; every header/footer/marketing href
+resolving against the real registries (features, use-cases, styles,
+help, tools, locales); the 17 trust names; the honest-enterprise
+wording; the demo card's EFFORTS reuse. Build SSGs 7,100 pages in ~63s
+(7,099 + the studio route). Local smoke: / serves the marketing HTML
+with the bounce script, graph and card; /workspace/rodin serves the
+studio with the marker script and the long title; /workspace, /signup
+and /r/:code land where the reference's equivalents land; the browser
+bounce round-trips exactly (visit studio → / forwards to
+/workspace/rodin; ?bypass=true stays), the sign-up deep-link opens the
+panel, mobile 375px has no horizontal scroll, and VLM review of all
+four page bands plus the mobile shot reports a clean render with the
+reference's full section stack. Lint clean.

@@ -18,6 +18,7 @@
  */
 
 import type { PricingPageDef } from "./landing-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const PRICING_PAGE: PricingPageDef = {
   route: "/pricing",
@@ -29,7 +30,7 @@ export const PRICING_PAGE: PricingPageDef = {
     headline: "One plan. Zero dollars.",
     subhead:
       "This clone has no pricing tiers because it has nothing to sell. Every account starts with 50 credits, previews are free, and Confirm & Export costs 1 credit. There is no checkout, no card form, and no subscription to cancel — the only billing surface in the codebase is the credit meter.",
-    primaryCta: { label: "Open the studio", href: "/" },
+    primaryCta: { label: "Open the studio", href: STUDIO_PATH },
     secondaryCta: { label: "How credits work", href: "/help/credit" },
   },
   onlyPlan: {
@@ -46,7 +47,7 @@ export const PRICING_PAGE: PricingPageDef = {
       "Six export formats: GLB, GLTF, FBX, OBJ, STL, USDZ",
       "No card, no checkout, no auto-renewal",
     ],
-    cta: { label: "Start generating", href: "/" },
+    cta: { label: "Start generating", href: STUDIO_PATH },
   },
   absentTiersHeading: "The tiers that are not here",
   absentTiers: [
@@ -146,6 +147,6 @@ export const PRICING_PAGE: PricingPageDef = {
   closing: {
     headline: "The free way to find out is to generate something",
     body: "Open the studio, describe an object, and watch the preview render before a single credit moves. That is the entire sales funnel.",
-    cta: { label: "Open the studio", href: "/" },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
   },
 };

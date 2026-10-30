@@ -23,6 +23,7 @@
  */
 
 import type { EventPageDef, SwitchPageDef } from "./landing-types";
+import { STUDIO_PATH } from "./studio-path";
 
 /* ------------------------------------------------------------------ */
 /* /switch — the Meshy/Tripo migration page, honestly                   */
@@ -39,7 +40,7 @@ export const SWITCH_INDEX_PAGE: SwitchPageDef = {
     headline: "Switching from Meshy or Tripo?",
     subhead:
       "There is no switch offer here. This clone runs no migration program — no profile-link checker, no bio verification codes, no free months, no half-price year. There is also nothing a discount could apply to: the studio has no subscriptions at all. What it does have is a generator you can try for free, with every claim on its pages true of the codebase that ships them.",
-    primaryCta: { label: "Open the studio", href: "/" },
+    primaryCta: { label: "Open the studio", href: STUDIO_PATH },
     secondaryCta: { label: "The one real price list", href: "/pricing" },
   },
   offerHeading: "What the offer would need — and why none of it is here",
@@ -128,7 +129,7 @@ export const SWITCH_INDEX_PAGE: SwitchPageDef = {
   closing: {
     headline: "Skip the offer — just generate",
     body: "The reference needs a switch program because it sells something. This clone does not sell anything, so the studio's front door is already the best deal it will ever offer.",
-    cta: { label: "Open the studio", href: "/" },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
   },
 };
 
@@ -147,7 +148,7 @@ export const SWITCH_MAKERWORLD_PAGE: SwitchPageDef = {
     headline: "MakerWorld creators: no offer, a free studio",
     subhead:
       "The reference's MakerWorld page grants free months by counting the models you publish. This clone has no such program — no model-count tiers, no bio verification, no $1 first month, and no plans to discount. What it has for print-minded creators is a generator that costs nothing to try and exports STL natively, with honest limits on everything the reference's print features claim.",
-    primaryCta: { label: "Open the studio", href: "/" },
+    primaryCta: { label: "Open the studio", href: STUDIO_PATH },
     secondaryCta: { label: "The 3D printing use case", href: "/use-cases/3d-printing" },
   },
   offerHeading: "The tiers that are not here",
@@ -236,7 +237,7 @@ export const SWITCH_MAKERWORLD_PAGE: SwitchPageDef = {
   closing: {
     headline: "No tiers, no codes — just a printable idea away",
     body: "Bring the object you want to publish, preview it for free, and export STL when it is right. That is the entire MakerWorld program this clone will ever run.",
-    cta: { label: "Open the studio", href: "/" },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
   },
 };
 
@@ -255,7 +256,7 @@ export const EVENT_CHROMA_AWARDS_PAGE: EventPageDef = {
     headline: "For Chroma Awards creators: nothing to redeem",
     subhead:
       "The reference offers Chroma Awards entrants a free month of a paid plan, redeemed through the event's official site before a deadline. This clone has no partnership with the Chroma Awards or its backers, no plans to give a month of, no redemption codes, and no deadline. What it has is the thing the offer is a coupon for: a studio that is already free, with 50 credits on signup and no card ever requested.",
-    primaryCta: { label: "Open the studio", href: "/" },
+    primaryCta: { label: "Open the studio", href: STUDIO_PATH },
     secondaryCta: { label: "The one real price list", href: "/pricing" },
   },
   promisesHeading: "What the reference's event page promises — and what is true here",
@@ -324,6 +325,6 @@ export const EVENT_CHROMA_AWARDS_PAGE: EventPageDef = {
   closing: {
     headline: "The offer is nothing; the studio is still here",
     body: "No code, no deadline, no coupon stack. Just the same free studio every account gets — bring the entry idea and see how far 50 credits take it.",
-    cta: { label: "Open the studio", href: "/" },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
   },
 };

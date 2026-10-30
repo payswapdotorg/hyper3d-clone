@@ -12,6 +12,7 @@
  */
 
 import type { SubCategoryPageDef } from "./subcategory-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const DARK_FANTASY_PAGE: SubCategoryPageDef = {
   slug: "dark-fantasy",
@@ -47,20 +48,20 @@ export const DARK_FANTASY_PAGE: SubCategoryPageDef = {
     { label: "Fantasy style", href: "/styles/fantasy" },
     { label: "Medieval style", href: "/styles/medieval" },
     { label: "All 21 styles", href: "/styles" },
-    { label: "Community gallery (studio)", href: "/" },
+    { label: "Community gallery (studio)", href: STUDIO_PATH },
   ],
   featuredTitle: "Featured Free Dark Fantasy 3D Models",
   featuredBody:
     "Not here. This clone has no tagged asset grid, no per-model pages and no free-download counts — the reference's \"Featured Free\" row is a marketplace feature, and a fake one here would be a lie. The real equivalents: generate the asset you need, or inspect any GLB you already have in the local Model Viewer.",
   featuredLinks: [
-    { label: "Generate one now", href: "/" },
+    { label: "Generate one now", href: STUDIO_PATH },
     { label: "Model Viewer (local GLB inspection)", href: "/omnicraft/viewer" },
     { label: "How text-to-3D works", href: "/features/text-to-3d" },
   ],
   generateTitle: "Generate Custom Dark Fantasy 3D Models",
   generateBody:
     "Need a specific dark-fantasy prop — a grave lantern, a ruin gate, a cursed chalice? Open the studio, describe it (e.g. \"a tall gothic gate, blackened iron, pointed arch, rusted bands\"), and generate. A standard generation costs 1 credit at Confirm and every account starts with 50; previews are free and a canceled Confirm is refunded.",
-  generateCta: { label: "Generate and Download", href: "/" },
+  generateCta: { label: "Generate and Download", href: STUDIO_PATH },
   generateSecondary: { label: "Image-to-3D instead", href: "/features/image-to-3d" },
   alsoIn: {
     title: "Also in Fantasy & Mythology",
@@ -106,8 +107,8 @@ export const DARK_FANTASY_PAGE: SubCategoryPageDef = {
   closingTitle: "Generate the dark-fantasy asset you actually need",
   closingBody:
     "Skip the marketplace browsing: describe the prop, confirm the preview, download the mesh. The studio is the real thing this page can offer.",
-  closingCta: { label: "Open the studio", href: "/" },
-  cta: { label: "Generate a Dark Fantasy Model", href: "/" },
+  closingCta: { label: "Open the studio", href: STUDIO_PATH },
+  cta: { label: "Generate a Dark Fantasy Model", href: STUDIO_PATH },
   ctaSecondary: { label: "See the Gothic style page", href: "/styles/gothic" },
 };
 
@@ -142,21 +143,21 @@ export const NSFW_CONTENT_PAGE: SubCategoryPageDef = {
     "Not here — and not only for NSFW: this clone has no tag system of any kind, under any route. The real browsing surfaces are the styles tree and the studio gallery.",
   browseLinks: [
     { label: "All 21 styles", href: "/styles" },
-    { label: "Community gallery (studio)", href: "/" },
+    { label: "Community gallery (studio)", href: STUDIO_PATH },
     { label: "Features overview", href: "/features" },
   ],
   featuredTitle: "Featured Free NSFW 3D Models",
   featuredBody:
     "Not here. There is no NSFW asset grid to feature — no cards, no counts, no previews. Faking a featured row on a page whose subject does not exist in this clone would be the least honest thing on the site. The real things on offer are the general-purpose generator and the gallery of general 3D work.",
   featuredLinks: [
-    { label: "Open the studio", href: "/" },
+    { label: "Open the studio", href: STUDIO_PATH },
     { label: "What the generator really does", href: "/features/text-to-3d" },
     { label: "Official links & scam safety", href: "/help/articles/official-hyper3d-links-and-scam-safety" },
   ],
   generateTitle: "Generate Custom 3D Models",
   generateBody:
     "The generate button on the reference's NSFW page routes to the same Rodin generator everything else uses — and so does this one, with the difference that this clone says it directly: the studio here is a general-purpose procedural generator (1 credit per standard Confirm, 50 credits to start, 10 for agentic runs), not an NSFW source.",
-  generateCta: { label: "Generate and Download", href: "/" },
+  generateCta: { label: "Generate and Download", href: STUDIO_PATH },
   generateSecondary: { label: "Read the Terms of Use", href: "/legal/terms" },
   relatedTitle: "You May Also Like",
   relatedIntro:
@@ -190,8 +191,8 @@ export const NSFW_CONTENT_PAGE: SubCategoryPageDef = {
   closingTitle: "The honest version of this page",
   closingBody:
     "No collection to browse, no mode to enable. If you need general 3D generation, the studio is real and waiting; if you needed NSFW content, this clone is simply not that.",
-  closingCta: { label: "Open the studio", href: "/" },
-  cta: { label: "Open the studio", href: "/" },
+  closingCta: { label: "Open the studio", href: STUDIO_PATH },
+  cta: { label: "Open the studio", href: STUDIO_PATH },
   ctaSecondary: { label: "Read the Terms of Use", href: "/legal/terms" },
 };
 
@@ -229,20 +230,20 @@ export const ROBLOX_PAGE: SubCategoryPageDef = {
     { label: "Voxel style", href: "/styles/voxel" },
     { label: "Game development use case", href: "/use-cases/game-development" },
     { label: "All 21 styles", href: "/styles" },
-    { label: "Community gallery (studio)", href: "/" },
+    { label: "Community gallery (studio)", href: STUDIO_PATH },
   ],
   featuredTitle: "Featured Free Roblox 3D Models",
   featuredBody:
     "Not here. There is no Roblox asset grid, no free-download row and no per-model pages — a Roblox tag over a marketplace this clone does not have would be a fake. The real equivalents: generate the prop yourself in low-poly style, or inspect what you already have in the local Model Viewer.",
   featuredLinks: [
-    { label: "Generate one now", href: "/" },
+    { label: "Generate one now", href: STUDIO_PATH },
     { label: "Low Poly style guide", href: "/styles/low-poly" },
     { label: "Model Viewer (local GLB inspection)", href: "/omnicraft/viewer" },
   ],
   generateTitle: "Generate Custom Roblox 3D Models",
   generateBody:
     "Need a specific prop for a Roblox project — a sword, a tree, a shop stall? Open the studio and describe it plainly (e.g. \"a small wooden market stall, striped canopy, low poly, flat colors\"). A standard generation costs 1 credit at Confirm, accounts start with 50, and the result exports as FBX or OBJ alongside four other real formats. Whether Roblox Studio accepts the mesh is its own import tooling's call — test before you build a scene around it.",
-  generateCta: { label: "Generate and Download", href: "/" },
+  generateCta: { label: "Generate and Download", href: STUDIO_PATH },
   generateSecondary: { label: "Game development use case", href: "/use-cases/game-development" },
   alsoIn: {
     title: "Also in Gaming",
@@ -288,7 +289,7 @@ export const ROBLOX_PAGE: SubCategoryPageDef = {
   closingTitle: "Generate the game prop you actually need",
   closingBody:
     "Describe it, confirm the preview, export FBX or OBJ, and let Roblox Studio's own import tooling make the final call. The studio is the real thing this page can offer.",
-  closingCta: { label: "Open the studio", href: "/" },
-  cta: { label: "Generate a Game Prop", href: "/" },
+  closingCta: { label: "Open the studio", href: STUDIO_PATH },
+  cta: { label: "Generate a Game Prop", href: STUDIO_PATH },
   ctaSecondary: { label: "See the Low Poly style page", href: "/styles/low-poly" },
 };

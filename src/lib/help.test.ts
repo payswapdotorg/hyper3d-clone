@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { STUDIO_PATH } from "./studio-path";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -34,7 +35,7 @@ const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
  * registries that actually render those routes. */
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
-  if (base === "/" || base === "") return true; // studio root
+  if (base === "/" || base === "" || base === STUDIO_PATH) return true; // studio root
   if (base === "/help" || base === "/features" || base === "/omnicraft" || base === "/legal")
     return true;
   if (base === "/use-cases" || base === "/styles") return true;

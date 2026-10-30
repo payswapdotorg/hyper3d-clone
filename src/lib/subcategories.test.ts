@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { STUDIO_PATH } from "./studio-path";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -47,6 +48,7 @@ const KNOWN_SINGLETON_ROUTES = new Set([
 
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
+  if (base === STUDIO_PATH) return true; // t68: the studio's real route
   if (KNOWN_SINGLETON_ROUTES.has(base)) return true;
   if (base.startsWith("/styles/")) {
     return REAL_STYLE_SLUGS.has(base.slice("/styles/".length));
@@ -161,9 +163,9 @@ describe("sub-categories registry — reference parity", () => {
       expect(page.generateBody.length).toBeGreaterThan(60);
       expect(page.relatedLinks.length).toBeGreaterThanOrEqual(4);
       expect(page.faq.length).toBeGreaterThanOrEqual(4);
-      expect(page.closingCta.href).toBe("/");
-      expect(page.cta.href).toBe("/");
-      expect(page.generateCta.href).toBe("/");
+      expect(page.closingCta.href).toBe(STUDIO_PATH);
+      expect(page.cta.href).toBe(STUDIO_PATH);
+      expect(page.generateCta.href).toBe(STUDIO_PATH);
     }
   });
 
@@ -273,9 +275,9 @@ describe("sub-categories content — the honesty contract", () => {
 
   it("no fake CTAs: primary CTAs open the real studio, every href resolves to a real route", () => {
     for (const page of SUBCATEGORY_PAGES) {
-      expect(page.cta.href).toBe("/");
-      expect(page.closingCta.href).toBe("/");
-      expect(page.generateCta.href).toBe("/");
+      expect(page.cta.href).toBe(STUDIO_PATH);
+      expect(page.closingCta.href).toBe(STUDIO_PATH);
+      expect(page.generateCta.href).toBe(STUDIO_PATH);
       for (const href of allHrefs(page)) {
         expect(isKnownRoute(href), `${page.slug} → ${href}`).toBe(true);
       }

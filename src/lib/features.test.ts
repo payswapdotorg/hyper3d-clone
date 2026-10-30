@@ -10,6 +10,7 @@ import {
   featureSlugs,
 } from "./features";
 import { OMNICRAFT_TOOLS } from "./omnicraft";
+import { STUDIO_PATH } from "./studio-path";
 
 /** This clone's production origin (sitemap locs must be absolute, t58). */
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
@@ -43,7 +44,7 @@ const KNOWN_ROUTE_PREFIXES = ["/features/", "/omnicraft/", "/api/healthz"];
 function isKnownRoute(href: string): boolean {
   // strip query/hash: "/?mcp=1" and "/#how-it-works" are the studio root
   const base = href.split(/[?#]/)[0];
-  if (base === "/" || base === "") return true;
+  if (base === "/" || base === "" || base === STUDIO_PATH) return true;
   if (base === "/omnicraft") return true;
   return KNOWN_ROUTE_PREFIXES.some((p) => base.startsWith(p));
 }

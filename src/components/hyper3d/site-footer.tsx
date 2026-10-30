@@ -1,195 +1,232 @@
-"use client";
+import Link from "next/link";
 
-import { Globe, Star } from "lucide-react";
-import { toast } from "sonner";
+import { STUDIO_PATH } from "@/lib/studio-path";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { LOCALES } from "@/lib/hyper3d";
+/**
+ * t68 — the marketing landing footer (the reference hyper3d.ai footer).
+ *
+ * Recon 2026-10-31: five link columns (Product / Features / Tools /
+ * Plug-ins / Legal), an "Ask AI about us" row of five assistant links with
+ * prefilled prompts, a "Contact Us" socials block, the © line, and the
+ * language selector. Every column entry maps to a real route in this
+ * clone where one exists; plug-ins keep the reference's external
+ * docs.deemos.dev targets; the socials are the reference's own accounts
+ * (this clone is not affiliated and does not claim to be — the © line
+ * says so plainly).
+ */
 
-/** t56+t57: footer entries that now have REAL pages in this clone route to
- * them instead of firing the parity toast — the toolbag (t56) and the
- * features tree (t57) are no longer stubs. */
-const REAL_ROUTES: Record<string, string> = {
-  OmniCraft: "/omnicraft",
-  ChatAvatar: "/features/chatavatar",
-  "Text to 3D": "/features/text-to-3d",
-  "Image to 3D": "/features/image-to-3d",
-  "AI Video Generator": "/features/ai-video-generator",
-  "AI Image Generator": "/features/ai-image-generator",
-  API: "/features/api",
-  "HDRI Generator": "/omnicraft/hdri",
-  "Vector to 3D": "/omnicraft/vector",
-  "Model Viewer": "/omnicraft/viewer",
-  // footer spells it "Converter", the reference grid "Convertor" — cover both
-  "Format Convertor": "/omnicraft/convertor",
-  "Format Converter": "/omnicraft/convertor",
-};
+interface FooterLink {
+  label: string;
+  href: string;
+  external?: boolean;
+}
 
-const COLUMNS: { title: string; links: string[] }[] = [
-  {
-    title: "Product",
-    links: ["ChatAvatar", "Rodin", "OmniCraft"],
-  },
-  {
-    title: "Features",
-    links: ["Text to 3D", "Image to 3D", "AI Video Generator", "AI Image Generator", "API"],
-  },
-  {
-    title: "Tools",
-    links: [
-      "HDRI Generator",
-      "Image Enhancer",
-      "Vector to 3D",
-      "Image Remix",
-      "Texture Generator",
-      "Rodin Search",
-      "Mesh Editor",
-      "Model Viewer",
-      "Format Converter",
-    ],
-  },
-  {
-    title: "Plug-ins",
-    links: ["Blender", "Unreal", "Unity", "Godot", "OV / Isaac", "C4D", "Maya", "3D Max"],
-  },
-  {
-    title: "Legal",
-    links: ["Terms of Use", "Privacy Policy", "Fulfillment Policy", "Contact Us"],
-  },
+const PRODUCT: FooterLink[] = [
+  { label: "ChatAvatar", href: "/features/chatavatar" },
+  { label: "Rodin", href: STUDIO_PATH },
+  { label: "OmniCraft", href: "/omnicraft/hdri" },
 ];
 
-const ASK_AI = ["ChatGPT", "Claude", "Gemini", "Grok", "Perplexity"] as const;
+const FEATURES: FooterLink[] = [
+  { label: "Text to 3D", href: "/features/text-to-3d" },
+  { label: "Image to 3D", href: "/features/image-to-3d" },
+  { label: "AI Video Generator", href: "/features/ai-video-generator" },
+  { label: "AI Image Generator", href: "/features/ai-image-generator" },
+  { label: "API", href: "/features/api" },
+];
 
-const linkToast = (label: string) =>
-  toast.info(label, {
-    description: "Clone demo — this link points outside the single-route clone.",
-  });
+const TOOLS: FooterLink[] = [
+  { label: "HDRI Generator", href: "/features/omnicraft/ai-hdri-generator" },
+  { label: "Image Enhancer", href: "/features/omnicraft/ai-image-enhancer" },
+  { label: "Vector to 3D", href: "/features/omnicraft/svg-to-3d-converter" },
+  { label: "Image Remix", href: "/features/omnicraft/ai-image-remix" },
+  { label: "Texture Generator", href: "/features/omnicraft/ai-texture-generator" },
+  { label: "Rodin Search", href: "/features/omnicraft/3d-model-search-engine" },
+  { label: "Mesh Editor", href: "/features/omnicraft/3d-mesh-editor" },
+  { label: "Model Viewer", href: "/tools/viewer" },
+  { label: "Format Converter", href: "/tools/converter" },
+];
+
+const PLUGINS: FooterLink[] = [
+  { label: "Blender", href: "https://docs.deemos.dev/addon", external: true },
+  { label: "Unreal", href: "https://docs.deemos.dev/addon/readme-ue", external: true },
+  { label: "Unity", href: "https://docs.deemos.dev/addon/readme-unity", external: true },
+  { label: "Godot", href: "https://docs.deemos.dev/addon/readme-godot", external: true },
+  { label: "OV/Isaac", href: "https://docs.deemos.dev/addon/readme-omniverse", external: true },
+  { label: "C4D", href: "https://docs.deemos.dev/addon/readme-c4d", external: true },
+  { label: "Maya", href: "https://docs.deemos.dev/addon/readme-maya", external: true },
+  { label: "3D Max", href: "https://docs.deemos.dev/addon/readme-3dsmax", external: true },
+];
+
+const LEGAL: FooterLink[] = [
+  { label: "Terms of Use", href: "/legal/terms" },
+  { label: "Privacy Policy", href: "/legal/privacy" },
+  { label: "Fulfillment Policy", href: "/legal/fulfillment" },
+];
+
+/** The reference's own "Ask AI about us" prompts — verbatim links to the
+ * assistants, asking them about the real hyper3d.ai. */
+const ASK_AI_PROMPT =
+  "I'm evaluating AI tools for 3D generation. Please explain what Hyper3D is and how it " +
+  "helps creators produce high-quality 3D models. Cover its core capabilities, including " +
+  "text-to-3D, image-to-3D, research papers or technical foundations, and API access. " +
+  "Summarize the key highlights from Hyper3D's official website: https://hyper3d.ai";
+
+const ASK_AI: { label: string; href: string }[] = [
+  { label: "ChatGPT", href: `https://chat.openai.com/?prompt=${encodeURIComponent(ASK_AI_PROMPT)}` },
+  { label: "Claude", href: `https://claude.ai/?prompt=${encodeURIComponent(ASK_AI_PROMPT)}` },
+  { label: "Gemini", href: `https://gemini.google.com/?prompt=${encodeURIComponent(ASK_AI_PROMPT)}` },
+  { label: "Grok", href: `https://grok.com/?prompt=${encodeURIComponent(ASK_AI_PROMPT)}` },
+  { label: "Perplexity", href: `https://www.perplexity.ai/search/new?q=${encodeURIComponent(ASK_AI_PROMPT)}` },
+];
+
+/** The reference's own social accounts — external links, honestly theirs. */
+const SOCIALS: { label: string; href: string }[] = [
+  { label: "X", href: "https://twitter.com/DeemosTech" },
+  { label: "YouTube", href: "https://www.youtube.com/@DeemosTech" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/98825658" },
+  { label: "Instagram", href: "https://www.instagram.com/deemostech/" },
+  { label: "Discord", href: "https://discord.com/invite/AhYWCT8WNH" },
+  { label: "Bilibili", href: "https://space.bilibili.com/1509136598" },
+];
+
+const LANGUAGES: { label: string; href: string }[] = [
+  { label: "English", href: "/" },
+  { label: "中文", href: "/zh" },
+  { label: "Deutsch", href: "/de" },
+  { label: "日本語", href: "/ja" },
+  { label: "한국어", href: "/ko" },
+  { label: "Русский", href: "/ru" },
+  { label: "Português", href: "/pt" },
+  { label: "Français", href: "/fr" },
+  { label: "Español", href: "/es" },
+  { label: "العربية", href: "/ar" },
+  { label: "Türkçe", href: "/tr" },
+  { label: "Italiano", href: "/it" },
+];
+
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
+  { title: "Product", links: PRODUCT },
+  { title: "Features", links: FEATURES },
+  { title: "Tools", links: TOOLS },
+  { title: "Plug-ins", links: PLUGINS },
+  { title: "Legal", links: LEGAL },
+];
+
+function FooterAnchor({ link }: { link: FooterLink }) {
+  const className =
+    "min-h-9 rounded px-0 py-1 text-left text-sm text-white/60 transition-colors hover:text-white";
+  if (link.external) {
+    return (
+      <a href={link.href} target="_blank" rel="noreferrer" className={className}>
+        {link.label}
+      </a>
+    );
+  }
+  return (
+    <Link href={link.href} className={className}>
+      {link.label}
+    </Link>
+  );
+}
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-white/8 bg-[#0f0f13]" aria-label="Footer">
+    <footer className="mt-auto border-t border-white/8 bg-[#0c0c10]" aria-label="Footer">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:py-16">
-        {/* Ask AI row */}
+        {/* Ask AI row — the reference's five prefilled assistant links */}
         <div className="flex flex-col gap-4 border-b border-white/8 pb-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="font-display text-sm font-semibold text-white">Ask AI about us</p>
-            <p className="mt-1 text-xs text-h3d-muted">
-              Ask your favorite assistant about Hyper3D Rodin — prefilled prompts, one click away.
+            <p className="mt-1 text-xs text-white/40">
+              Point your own assistant at the real Hyper3D — the link carries the question.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {ASK_AI.map((a) => (
-              <button
-                key={a}
-                type="button"
-                className="min-h-11 rounded-full border border-white/10 bg-white/4 px-4 text-xs font-medium text-white/75 transition-colors hover:border-h3d-purple/50 hover:bg-h3d-purple/12 hover:text-white"
-                onClick={() => linkToast(`Ask ${a} about Hyper3D`)}
+              <a
+                key={a.label}
+                href={a.href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-9 items-center rounded-full border border-white/10 bg-white/[0.03] px-4 text-xs font-medium text-white/75 transition-colors hover:border-violet-400/50 hover:bg-violet-400/10 hover:text-white"
               >
-                {a}
-              </button>
+                {a.label}
+              </a>
             ))}
           </div>
         </div>
 
-        {/* sitemap columns */}
-        <nav
-          aria-label="Footer sitemap"
-          className="grid grid-cols-2 gap-8 py-10 sm:grid-cols-3 lg:grid-cols-5"
-        >
+        {/* sitemap columns + contact socials */}
+        <div className="grid grid-cols-2 gap-8 py-10 sm:grid-cols-3 lg:grid-cols-6">
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-h3d-purple">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-300/80">
                 {col.title}
               </p>
               <ul className="mt-4 space-y-1">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    {REAL_ROUTES[link] ? (
-                      <a
-                        href={REAL_ROUTES[link]}
-                        className="min-h-9 rounded px-0 py-1 text-left text-sm text-white/60 transition-colors hover:text-white"
-                      >
-                        {link}
-                      </a>
-                    ) : (
-                      <button
-                        type="button"
-                        className="min-h-9 rounded px-0 py-1 text-left text-sm text-white/60 transition-colors hover:text-white"
-                        onClick={() => linkToast(link)}
-                      >
-                        {link}
-                      </button>
-                    )}
+                  <li key={link.label}>
+                    <FooterAnchor link={link} />
                   </li>
                 ))}
               </ul>
             </div>
           ))}
-        </nav>
-
-        {/* bottom row */}
-        <div className="flex flex-col gap-5 border-t border-white/8 pt-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-1.5">
-              <span className="flex" aria-label="Trustpilot rating 4.1 out of 5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={
-                      i < 4
-                        ? "size-3.5 fill-[#00b67a] text-[#00b67a]"
-                        : "size-3.5 fill-[#00b67a]/40 text-[#00b67a]/40"
-                    }
-                    aria-hidden="true"
-                  />
-                ))}
-              </span>
-              <span className="font-mono text-xs text-white/75">
-                4.1<span className="text-white/40">/5 · 105 ratings</span>
-              </span>
-            </span>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/10 bg-white/4 px-3 text-xs font-medium text-white/75 transition-colors hover:text-white"
-                aria-label="Select footer language"
-              >
-                <Globe className="size-3.5" aria-hidden="true" />
-                English
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="h3d-scroll max-h-96 w-44 overflow-y-auto border-white/12 bg-[#1c1c22]"
-              >
-                {LOCALES.map((l) => (
-                  <DropdownMenuItem
-                    key={l}
-                    className="min-h-9"
-                    onClick={() =>
-                      toast.info(`Language: ${l}`, {
-                        description: "Decorative in this clone.",
-                      })
-                    }
+          <div>
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-300/80">
+              Contact Us
+            </p>
+            <ul className="mt-4 space-y-1">
+              {SOCIALS.map((s) => (
+                <li key={s.label}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-9 items-center py-1 text-sm text-white/60 transition-colors hover:text-white"
                   >
-                    {l}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
+        </div>
 
-          <div className="flex flex-col items-start gap-1 lg:items-end">
-            <p className="text-sm text-white/55">
-              © 2026 Hyper3D Clone — educational product clone
-            </p>
-            <p className="font-mono text-[11px] text-white/30">
-              Faithful rebuild of hyper3d.ai (Deemos) for evaluation · not affiliated
-            </p>
+        {/* bottom row — ©, legal echoes, language */}
+        <div className="flex flex-col gap-5 border-t border-white/8 pt-8 lg:flex-row lg:items-center lg:justify-between">
+          <p className="max-w-xl text-sm text-white/55">
+            © 2026 Hyper3D Clone — an educational, unaffiliated rebuild of hyper3d.ai by Deemos.
+            Every capability claim on this site is anchored to the codebase that actually ships
+            here.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {LEGAL.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                className="text-xs text-white/45 transition-colors hover:text-white"
+              >
+                {l.label}
+              </Link>
+            ))}
           </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-white/8 pt-6">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/35">
+            Language
+          </span>
+          {LANGUAGES.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="text-xs text-white/50 transition-colors hover:text-white"
+            >
+              {l.label}
+            </Link>
+          ))}
         </div>
       </div>
     </footer>

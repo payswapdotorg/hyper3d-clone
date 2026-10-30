@@ -19,6 +19,7 @@
  */
 
 import type { PromptsPageDef } from "./landing-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const PROMPTS_PAGE: PromptsPageDef = {
   route: "/3d-prompts",
@@ -30,7 +31,7 @@ export const PROMPTS_PAGE: PromptsPageDef = {
     headline: "Prompts that work here",
     subhead:
       "Real example prompts for the text-to-3D studio at the root of this site. Copy one, paste it into the prompt box, and generate — previews render before any credit moves, and Confirm & Export costs 1 credit. Edit any prompt to make it yours; the studio's polish button rewrites a rough idea into a tighter one.",
-    primaryCta: { label: "Open the studio", href: "/" },
+    primaryCta: { label: "Open the studio", href: STUDIO_PATH },
     secondaryCta: { label: "How text-to-3D works", href: "/features/text-to-3d" },
   },
   featuredHeading: "Featured — the studio's own examples",
@@ -160,6 +161,6 @@ export const PROMPTS_PAGE: PromptsPageDef = {
   closing: {
     headline: "The next prompt is yours",
     body: "Steal a card above or write a fresh one — the preview is free, and the worst outcome is a refund away.",
-    cta: { label: "Open the studio", href: "/" },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
   },
 };

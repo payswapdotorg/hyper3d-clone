@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { STUDIO_PATH } from "./studio-path";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -32,7 +33,7 @@ const KNOWN_ROUTE_PREFIXES = [
 
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
-  if (base === "/" || base === "") return true; // studio root
+  if (base === "/" || base === "" || base === STUDIO_PATH) return true; // studio root
   if (
     base === "/features" ||
     base === "/omnicraft" ||
@@ -104,8 +105,8 @@ describe("styles registry — reference parity", () => {
       expect(page.recipes.length).toBeGreaterThanOrEqual(4);
       expect(page.faq.length).toBeGreaterThanOrEqual(4);
       expect(page.crossLinks.length).toBeGreaterThanOrEqual(4);
-      expect(page.closingCta.href).toBe("/");
-      expect(page.cta.href).toBe("/");
+      expect(page.closingCta.href).toBe(STUDIO_PATH);
+      expect(page.cta.href).toBe(STUDIO_PATH);
     }
   });
 
@@ -239,8 +240,8 @@ describe("styles content — the honesty contract", () => {
 
   it("no fake CTAs: primary CTAs open the real studio, none target dead surfaces", () => {
     for (const page of STYLE_PAGES) {
-      expect(page.cta.href).toBe("/");
-      expect(page.closingCta.href).toBe("/");
+      expect(page.cta.href).toBe(STUDIO_PATH);
+      expect(page.closingCta.href).toBe(STUDIO_PATH);
     }
   });
 

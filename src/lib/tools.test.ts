@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { STUDIO_PATH } from "./studio-path";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -38,6 +39,7 @@ const KNOWN_SINGLETONS = new Set(["/", "/features", "/omnicraft", "/tools/conver
 
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
+  if (base === STUDIO_PATH) return true; // t68: the studio's real route
   if (KNOWN_SINGLETONS.has(base)) return true;
   if (base.startsWith("/omnicraft/")) return LIVE_TOOL_ROUTES.includes(base);
   if (base.startsWith("/features/")) {

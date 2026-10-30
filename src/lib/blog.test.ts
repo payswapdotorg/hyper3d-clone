@@ -27,6 +27,7 @@ import { REFERENCE_BLOG_SLUGS } from "./blog-registry-data";
 import { OMNICRAFT_TOOLS } from "./omnicraft";
 import { USE_CASE_ROUTES } from "./use-cases";
 import { HELP_ARTICLE_SLUGS } from "./help";
+import { STUDIO_PATH } from "./studio-path";
 
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
@@ -39,7 +40,7 @@ const BLOG_CATEGORY_ROUTES = BLOG_CATEGORIES.map((c) => `/blog/category/${c.slug
 
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
-  if (base === "/" || base === "") return true;
+  if (base === "/" || base === "" || base === STUDIO_PATH) return true;
   if (BLOG_ARTICLE_ROUTES.has(base)) return true;
   if (BLOG_CATEGORY_ROUTES.includes(base) || base === "/blog") return true;
   if (

@@ -9,6 +9,7 @@
  * the reference's real feature with an honest status note where it is not.
  */
 import type { FeaturePageDef } from "./features-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
   {
@@ -21,7 +22,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     statusChip: "LIVE IN THIS CLONE",
     statusNote:
       "The studio at the root of this site is the real text-to-3D surface: your prompt is planned into a scene spec by the AI backend, previewed as a rotatable poster render, and exported to GLB, OBJ, FBX, STL, or USDZ. Every generation you run here is a real task in your history — with real credits and a pay-by-result confirm gate where it applies.",
-    cta: { label: "Start Creating", href: "/" },
+    cta: { label: "Start Creating", href: STUDIO_PATH },
     ctaSecondary: { label: "See How It Works", href: "/#how-it-works" },
     stepsTitle: "How to Generate a 3D Model from Text",
     stepsIntro:
@@ -129,7 +130,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     closingTitle: "Try the Text to 3D Generator Today",
     closingBody:
       "One sentence in, an exportable model out — with real ControlNet shape control when you need it.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "core",
     indexBlurb: "From text prompt to 3D object — instantly, with real exports.",
   },
@@ -143,7 +144,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     statusChip: "LIVE IN THIS CLONE",
     statusNote:
       "The studio's image path is real: your uploaded image is captioned by the vision model into a prompt (the same rodin_mesh_image_process flow the reference exposes), then planned into a scene spec and previewed in the 3D viewer. The neural path streams the browser's mesh to the engine with pay-by-result confirmation.",
-    cta: { label: "Start Creating", href: "/" },
+    cta: { label: "Start Creating", href: STUDIO_PATH },
     ctaSecondary: { label: "See How It Works", href: "/#how-it-works" },
     stepsTitle: "From Picture to Model in Three Steps",
     stepsIntro:
@@ -239,7 +240,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     ],
     closingTitle: "One Image Is Enough",
     closingBody: "Upload a reference, check the caption, generate — and export in all five formats.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "core",
     indexBlurb: "One image is enough — auto-captioned, then generated.",
   },
@@ -254,7 +255,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     statusNote:
       "WorldGen is a full scene-composition product of the reference: it decomposes an image into multiple independent, editable objects with physical placement. This clone's studio generates single-asset scene specs (one task, one coherent object) — multi-object world decomposition is not implemented, and no page here will pretend otherwise. The closest real capability is the studio's spec system, which can hold several primitives in one model.",
     cta: null,
-    ctaSecondary: { label: "See what the studio does ship", href: "/" },
+    ctaSecondary: { label: "See what the studio does ship", href: STUDIO_PATH },
     stepsTitle: "How WorldGen Works in the Reference",
     stepsIntro: "The reference's observed flow, for comparison with this clone's scope.",
     steps: [
@@ -345,7 +346,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     closingTitle: "Single Assets, Done Honestly",
     closingBody:
       "While WorldGen is not here, the studio's single-asset pipeline is real end to end — try it with a scene object.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "core",
     indexBlurb: "Reference-only: editable multi-object worlds — this clone generates single assets.",
   },
@@ -359,7 +360,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     statusChip: "PARTIAL — APP API ONLY",
     statusNote:
       "What is real here: the studio runs entirely on this clone's own HTTP API — session auth (sign-up/sign-in/sign-out), the task pipeline (create, progress, preview, confirm, export, redo, like, cancel, history, prompt polish, image analysis), user info, and a health check. What is not here: a public developer program — no API keys, no per-key billing, no engine/version selector. The endpoints below exist to serve the app, not to be a product.",
-    cta: { label: "Open the Studio that uses it", href: "/" },
+    cta: { label: "Open the Studio that uses it", href: STUDIO_PATH },
     ctaSecondary: { label: "Health endpoint", href: "/api/healthz" },
     stepsTitle: "The Reference's API in Three Steps",
     stepsIntro: "How the real product's developer flow works, for comparison.",
@@ -455,7 +456,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     closingTitle: "The API That Runs This Studio Is Real",
     closingBody:
       "Browse the network tab while you generate — every task, poll, and export on this site is this clone's own HTTP surface.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "core",
     indexBlurb: "Partial: the app's real task/auth endpoints; no public key program.",
   },
@@ -470,7 +471,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     statusNote:
       "ChatAvatar is a separate workspace product of the reference (/workspace/chatavatar) with avatar-specific generation, rigging, and commercial licensing terms. This clone implements one studio — the Rodin-style general generator. Avatar-specialized pipelines (auto-rigging, blendshapes, avatar licensing) are not implemented, and the general studio is not a substitute for them.",
     cta: null,
-    ctaSecondary: { label: "See what the studio does ship", href: "/" },
+    ctaSecondary: { label: "See what the studio does ship", href: STUDIO_PATH },
     stepsTitle: "How ChatAvatar Works in the Reference",
     stepsIntro: "The reference's observed avatar flow.",
     steps: [
@@ -557,7 +558,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     closingTitle: "Characters Yes, Avatar Product No",
     closingBody:
       "The general studio can still make a character asset from text or image — just without the avatar-specific pipeline.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "core",
     indexBlurb: "Reference-only: dedicated avatar pipeline with commercial licensing.",
   },
@@ -673,7 +674,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     statusNote:
       "The reference's video product lives at its video workspace and generates moving footage from prompts or images. Video generation requires dedicated motion models this clone does not wire — nothing on this site renders or serves generated video. The real 'moving picture' surface here is the studio's live 3D preview: draggable, auto-rotating, and fed by real generation progress.",
     cta: null,
-    ctaSecondary: { label: "See the live 3D preview instead", href: "/" },
+    ctaSecondary: { label: "See the live 3D preview instead", href: STUDIO_PATH },
     stepsTitle: "What the Reference's Video Generator Does",
     stepsIntro: "The product this page documents the absence of.",
     steps: [
@@ -759,7 +760,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     ],
     closingTitle: "No Video Here — But Your Model Moves Today",
     closingBody: "Drag, spin, and orbit the real preview, then export into a renderer that makes motion.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "ai-media",
     indexBlurb: "Reference-only: prompt-to-video suite; the live 3D preview is the honest substitute.",
   },

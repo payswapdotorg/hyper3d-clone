@@ -27,6 +27,7 @@ import {
   toolFormat,
 } from "./tool-formats";
 import type { ToolCta, ToolLink, ToolPageDef } from "./tool-types";
+import { STUDIO_PATH } from "./studio-path";
 
 const SIX = REAL_FORMAT_LIST;
 
@@ -230,10 +231,10 @@ export function buildConverterPairPage(from: string, to: string): ToolPageDef {
         : "The generative path is the only honest route from an image to a 3D file here — and it is a real one.",
       closingCta: isSvgGlb
         ? { label: "Open Vector to 3D", href: "/omnicraft/vector" }
-        : { label: "Open the studio", href: "/" },
+        : { label: "Open the studio", href: STUDIO_PATH },
       cta: isSvgGlb
         ? { label: "Open Vector to 3D", href: "/omnicraft/vector" }
-        : { label: "Open the studio's image mode", href: "/" },
+        : { label: "Open the studio's image mode", href: STUDIO_PATH },
       ctaSecondary: { label: "See all 178 pairs", href: "/tools/converter" },
     };
   }
@@ -258,8 +259,8 @@ export function buildConverterPairPage(from: string, to: string): ToolPageDef {
   const cta: ToolCta = isRealExportFormat(to)
     ? { label: "Open the Format Convertor", href: "/omnicraft/convertor" }
     : isRealExportFormat(from) || from === "svg"
-      ? { label: "Open the studio", href: "/" }
-      : { label: "Open the studio", href: "/" };
+      ? { label: "Open the studio", href: STUDIO_PATH }
+      : { label: "Open the studio", href: STUDIO_PATH };
 
   return {
     route,
@@ -532,8 +533,8 @@ export function buildImageToPage(format: string): ToolPageDef {
       ],
       closingTitle: `Generate from your image, export ${NAME}`,
       closingBody: "Upload the reference, preview for free, confirm for 1 credit, export — the honest generative path.",
-      closingCta: { label: "Open the studio's image mode", href: "/" },
-      cta: { label: "Open the studio's image mode", href: "/" },
+      closingCta: { label: "Open the studio's image mode", href: STUDIO_PATH },
+      cta: { label: "Open the studio's image mode", href: STUDIO_PATH },
       ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
     };
   }
@@ -594,7 +595,7 @@ export function buildImageToPage(format: string): ToolPageDef {
     ],
     closingTitle: "The honest version of this page",
     closingBody: `No image-to-${format} path runs here — the six real formats are what exist, and every one of their pages says the same.`,
-    closingCta: { label: "Open the studio's image mode", href: "/" },
+    closingCta: { label: "Open the studio's image mode", href: STUDIO_PATH },
     cta: { label: "Image to GLB instead (real)", href: "/tools/image-to-glb" },
     ctaSecondary: { label: "All converter pairs", href: "/tools/converter" },
   };

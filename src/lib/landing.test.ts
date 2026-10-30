@@ -11,6 +11,7 @@ import { OMNICRAFT_TOOLS } from "./omnicraft";
 import { findStylePage } from "./styles";
 import { findUseCasePage } from "./use-cases";
 import { findHelpArticle, findHelpCategory } from "./help";
+import { STUDIO_PATH } from "./studio-path";
 
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
@@ -23,7 +24,7 @@ const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
  * as help.test.ts, plus the five landing routes themselves (t62). */
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
-  if (base === "/" || base === "") return true; // studio root
+  if (base === "/" || base === "" || base === STUDIO_PATH) return true; // studio root
   if (
     base === "/help" ||
     base === "/features" ||

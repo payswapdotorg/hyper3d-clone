@@ -14,6 +14,7 @@
  *  - No polycount slider, no LODs, no rigging/skeleton, no pose picker.
  */
 import type { UseCasePageDef } from "./use-case-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const USE_CASE_PAGES_A: UseCasePageDef[] = [
   {
@@ -127,8 +128,8 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingTitle: "Your next print starts as one prompt",
     closingBody:
       "Describe it, generate it, export the STL, and slice it — the whole loop works right here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -238,8 +239,8 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingTitle: "Generate the mesh; bring the rig",
     closingBody:
       "Half of this workflow is real here — the geometry half. The rigging half stays in your DCC, and now you know exactly where the line sits.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text to 3D details", href: "/features/text-to-3d" },
   },
   {
@@ -349,8 +350,8 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingTitle: "Generate your first 3D car concept",
     closingBody:
       "Upload the sketch, watch the volume take shape, export it for the room — the concept loop works here, honestly scoped.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
   },
   {
@@ -464,8 +465,8 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingTitle: "Your next character starts as one image",
     closingBody:
       "Drop the sheet, generate the mesh, export it clean — the character loop works here, with the rigging line drawn honestly.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
   },
   {
@@ -575,8 +576,8 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingTitle: "Ship your first 3D product model",
     closingBody:
       "One photo in, GLB and USDZ out — the storefront loop works here, honestly scoped.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
   },
   {
@@ -691,8 +692,8 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingTitle: "Generate your first game asset",
     closingBody:
       "Prompt it, preview the true poster, export for the engine — the asset loop works here with the scope stated plainly.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text-to-3D details", href: "/features/text-to-3d" },
   },
 ];

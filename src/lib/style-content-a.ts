@@ -14,6 +14,7 @@
  *    no texture baking, no dedicated voxel remesher.
  */
 import type { StylePageDef } from "./style-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const STYLE_PAGES_A: StylePageDef[] = [
   {
@@ -135,8 +136,8 @@ export const STYLE_PAGES_A: StylePageDef[] = [
     closingTitle: "Your next abstract form starts as one prompt",
     closingBody:
       "Describe the balance, generate the composition, export the mesh — the whole loop works right here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate an Abstract Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate an Abstract Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -258,8 +259,8 @@ export const STYLE_PAGES_A: StylePageDef[] = [
     closingTitle: "Your next chibi starts as one prompt",
     closingBody:
       "Name the proportions, generate the figure, export the mesh — and give it a face in your DCC.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate an Anime Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate an Anime Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -381,8 +382,8 @@ export const STYLE_PAGES_A: StylePageDef[] = [
     closingTitle: "Your next cartoon chunk starts as one prompt",
     closingBody:
       "Push the proportions, pick two flats, generate the prop — the loop runs end-to-end right here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Cartoon Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Cartoon Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -504,8 +505,8 @@ export const STYLE_PAGES_A: StylePageDef[] = [
     closingTitle: "Generate the silhouette; shade it in your DCC",
     closingBody:
       "The geometry half of cel-shading is real here — the toon step is one honest export away in your tool of choice.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Cel-Ready Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Cel-Ready Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -627,8 +628,8 @@ export const STYLE_PAGES_A: StylePageDef[] = [
     closingTitle: "Your next artifact starts as one prompt",
     closingBody:
       "Raise the tower, cluster the shards, export the mesh — the fantasy loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Fantasy Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Fantasy Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -750,8 +751,8 @@ export const STYLE_PAGES_A: StylePageDef[] = [
     closingTitle: "Your next flat model starts as one prompt",
     closingBody:
       "Pick the solids, generate the forms, export with colors baked into the mesh — the flattest honest loop here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Flat Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Flat Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -873,8 +874,8 @@ export const STYLE_PAGES_A: StylePageDef[] = [
     closingTitle: "Your next spire starts as one prompt",
     closingBody:
       "Set the dark palette, raise the spire, export the mesh — the gothic loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Gothic Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Gothic Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
 ];

@@ -9,6 +9,7 @@
  * INITIAL_BALANCE the sign-up route imports (t65 anchor fix).
  */
 import type { BlogArticleDef } from "./blog-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const BLOG_ARTICLES_A: BlogArticleDef[] = [
   {
@@ -58,7 +59,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       },
     ],
     related: [
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
       { label: "Feature pages", href: "/features" },
       { label: "OmniCraft tools", href: "/omnicraft" },
       { label: "Credit cost article", href: "/blog/how-many-credits-does-each-hyper3d-generation-cost" },
@@ -205,7 +206,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       },
     ],
     related: [
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
       { label: "Prompt guide", href: "/blog/3d-text-prompt-guide" },
       { label: "Credit costs", href: "/blog/how-many-credits-does-each-hyper3d-generation-cost" },
       { label: "Help: getting started", href: "/help/getting-started" },
@@ -338,7 +339,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
     related: [
       { label: "Credit costs", href: "/blog/how-many-credits-does-each-hyper3d-generation-cost" },
       { label: "Help: credit topic", href: "/help/credit" },
-      { label: "Open the studio", href: "/" },
+      { label: "Open the studio", href: STUDIO_PATH },
     ],
   },
   {

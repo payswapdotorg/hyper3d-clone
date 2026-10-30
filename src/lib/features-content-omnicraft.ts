@@ -9,6 +9,7 @@
  * ships instead.
  */
 import type { FeaturePageDef } from "./features-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
   {
@@ -335,7 +336,7 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
     ],
     closingTitle: "Materials Yes, Painted Textures No",
     closingBody: "Generated models here carry real materials and palettes — texture painting stays reference-only.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "omnicraft",
     indexBlurb: "Reference-only: generative UV painting; studio material redo is the equivalent.",
   },
@@ -436,7 +437,7 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
     ],
     closingTitle: "Your Pixels, Unmangled",
     closingBody: "No upscaler here — but nothing quietly degrades your references either.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "omnicraft",
     indexBlurb: "Reference-only: generative upscaling; uploads pass through at full fidelity.",
   },
@@ -537,7 +538,7 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
     ],
     closingTitle: "Remix Stays Reference-Only",
     closingBody: "The levers that ARE real here: prompt polish, ControlNet constraints, and prompt-seeded skies.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "omnicraft",
     indexBlurb: "Reference-only: prompt-driven image-to-image; no local equivalent.",
   },
@@ -552,7 +553,7 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
     statusNote:
       "Rodin Search is a web-wide 3D model index — nothing in this clone honestly reproduces it. The search that DOES exist here is over your own work: the studio's history rail and task list let you find and reopen every task you have generated. This page keeps the reference's feature visible without pretending a global index runs here.",
     cta: null,
-    ctaSecondary: { label: "See your task history", href: "/" },
+    ctaSecondary: { label: "See your task history", href: STUDIO_PATH },
     stepsTitle: "What the Reference's Search Engine Does",
     stepsIntro: "The product this page documents the absence of.",
     steps: [
@@ -638,7 +639,7 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
     ],
     closingTitle: "Your Library, Fully Searchable",
     closingBody: "No web index here — but every task you generate stays findable, openable, and exportable.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "omnicraft",
     indexBlurb: "Reference-only: web-wide model index; your own task history is searchable here.",
   },
@@ -653,7 +654,7 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
     statusNote:
       "The reference's Mesh Editor is a hosted editing suite with mesh-level operations. This clone's studio covers the subset that generation actually needs: re-orient a finished task, redo its materials, and pin proportions via ControlNet on the next run. Vertex-level surgery, remeshing, and boolean ops are out of scope — this page is the boundary marker, in public.",
     cta: null,
-    ctaSecondary: { label: "See the studio subset", href: "/" },
+    ctaSecondary: { label: "See the studio subset", href: STUDIO_PATH },
     stepsTitle: "What the Reference's Mesh Editor Does",
     stepsIntro: "The product this page measures the clone against.",
     steps: [
@@ -739,7 +740,7 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
     ],
     closingTitle: "Edit What Generation Needs",
     closingBody: "Orient, repaint, constrain — the honest subset, done for real in the studio.",
-    closingCta: { label: "Open the Studio", href: "/" },
+    closingCta: { label: "Open the Studio", href: STUDIO_PATH },
     group: "omnicraft",
     indexBlurb: "Reference-only: hosted mesh surgery; studio covers orient/repaint/constrain.",
   },

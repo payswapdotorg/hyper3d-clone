@@ -13,6 +13,7 @@
  *  - Exports are real: GLB, GLTF, OBJ, STL, USDZ, ASCII FBX.
  */
 import type { StylePageDef } from "./style-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const STYLE_PAGES_B: StylePageDef[] = [
   {
@@ -134,8 +135,8 @@ export const STYLE_PAGES_B: StylePageDef[] = [
     closingTitle: "Generate the canvas; paint the style",
     closingBody:
       "The mesh half of hand-painted work is real here — the brushwork is one honest export away in your painting tool.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Paintable Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Paintable Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -257,8 +258,8 @@ export const STYLE_PAGES_B: StylePageDef[] = [
     closingTitle: "Your next machine blockout starts as one prompt",
     closingBody:
       "Specify the mechanism, generate the hardware, export the mesh — the industrial loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate an Industrial Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate an Industrial Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -380,8 +381,8 @@ export const STYLE_PAGES_B: StylePageDef[] = [
     closingTitle: "Your next tile asset starts as one prompt",
     closingBody:
       "Mind the footprint, keep it chunky, export the mesh — the isometric loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate an Isometric Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate an Isometric Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -503,8 +504,8 @@ export const STYLE_PAGES_B: StylePageDef[] = [
     closingTitle: "Your next chunky model starts as one prompt",
     closingBody:
       "Steer it low, pick the flats, export the mesh — the low-poly style loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Low Poly Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Low Poly Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -626,8 +627,8 @@ export const STYLE_PAGES_B: StylePageDef[] = [
     closingTitle: "Your next keep starts as one prompt",
     closingBody:
       "Stack the tower, repeat the crenellations, export the mesh — the medieval loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Medieval Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Medieval Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -749,8 +750,8 @@ export const STYLE_PAGES_B: StylePageDef[] = [
     closingTitle: "Your next quiet object starts as one prompt",
     closingBody:
       "Choose less, generate the form, export the object — minimalism is honest by construction here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Minimalist Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Minimalist Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -872,8 +873,8 @@ export const STYLE_PAGES_B: StylePageDef[] = [
     closingTitle: "Your next clean object starts as one prompt",
     closingBody:
       "Keep it quiet, name the materials, export the object — the modern loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Modern Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Modern Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
 ];

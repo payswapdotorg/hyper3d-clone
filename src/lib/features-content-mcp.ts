@@ -8,6 +8,7 @@
  * provides per-agent guides for.
  */
 import type { FeaturePageDef } from "./features-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const MCP_FEATURE_PAGES: FeaturePageDef[] = [
   {
@@ -21,7 +22,7 @@ export const MCP_FEATURE_PAGES: FeaturePageDef[] = [
     statusNote:
       "The MCP connect modal is real in this clone: it exposes the endpoint URL, the tool surface, and copy-ready connection config. An agent that speaks MCP can use it to drive the same task pipeline the studio UI drives. What the reference additionally ships — hosted MCP authentication, per-agent marketplace listings, and richer docs — is honestly out of scope here; the modal is the whole story, and it works.",
     cta: { label: "Open the Connect Modal", href: "/?mcp=1" },
-    ctaSecondary: { label: "See the studio", href: "/" },
+    ctaSecondary: { label: "See the studio", href: STUDIO_PATH },
     stepsTitle: "Connect an Agent in Three Steps",
     stepsIntro: "The real flow with this clone's modal.",
     steps: [

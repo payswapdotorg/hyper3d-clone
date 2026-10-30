@@ -15,6 +15,7 @@
  *  - Exports are real: GLB, GLTF, OBJ, STL, USDZ, ASCII FBX.
  */
 import type { StylePageDef } from "./style-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const STYLE_PAGES_C: StylePageDef[] = [
   {
@@ -136,8 +137,8 @@ export const STYLE_PAGES_C: StylePageDef[] = [
     closingTitle: "Your next smooth form starts as one prompt",
     closingBody:
       "Describe the flow, revolve the profile, export the mesh — the organic loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate an Organic Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate an Organic Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -259,8 +260,8 @@ export const STYLE_PAGES_C: StylePageDef[] = [
     closingTitle: "Generate the geometry; earn the photograph",
     closingBody:
       "Proportion-true meshes with honest parameters export for real — the photoreal pass is one honest step away in your renderer.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Photoreal-Ready Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Photoreal-Ready Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -382,8 +383,8 @@ export const STYLE_PAGES_C: StylePageDef[] = [
     closingTitle: "Generate the canvas; paint the pixels",
     closingBody:
       "Chunky meshes and retro palettes export for real — the pixel pass is one honest export away in your texture tool.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Pixel-Ready Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Pixel-Ready Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -505,8 +506,8 @@ export const STYLE_PAGES_C: StylePageDef[] = [
     closingTitle: "Your next believable object starts as one prompt",
     closingBody:
       "Ground it in the real, generate with honest materials, export the mesh — the realistic loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Realistic Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Realistic Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -628,8 +629,8 @@ export const STYLE_PAGES_C: StylePageDef[] = [
     closingTitle: "Your next chunk of nostalgia starts as one prompt",
     closingBody:
       "Dial the era, keep the palette small, export the mesh — the retro loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Retro Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Retro Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -751,8 +752,8 @@ export const STYLE_PAGES_C: StylePageDef[] = [
     closingTitle: "Your next exaggeration starts as one prompt",
     closingBody:
       "Choose the push, hold the palette, export the mesh — the stylized loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Stylized Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Stylized Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
   {
@@ -874,8 +875,8 @@ export const STYLE_PAGES_C: StylePageDef[] = [
     closingTitle: "Your next build starts as one prompt",
     closingBody:
       "Think in cubes, stack the blocks, export the mesh — the voxel loop runs end-to-end here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Generate a Voxel Model", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Generate a Voxel Model", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
   },
 ];

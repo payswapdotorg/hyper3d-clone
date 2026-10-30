@@ -3,6 +3,7 @@ import { ArrowLeft, Globe } from "lucide-react";
 
 import { LOCALE_CODES, LOCALE_NAMES, localeDir, type LocaleCode } from "@/lib/i18n";
 import { LOCALE_MESSAGES, fillCount, localeHeadline } from "@/lib/i18n-messages";
+import { STUDIO_PATH } from "@/lib/studio-path";
 import { LOCALE_SUBCATEGORY_SLUGS } from "@/lib/i18n-locale-data";
 import type { LocaleFamilyKey, LocaleLink, LocalePageDef, LocaleStatus } from "@/lib/i18n-pages";
 import { cn } from "@/lib/utils";
@@ -38,7 +39,7 @@ function LocaleTopBar({
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
       <Link
-        href="/"
+        href={STUDIO_PATH}
         className="flex items-center gap-1.5 text-xs font-bold text-white/60 transition-colors hover:text-white"
       >
         <ArrowLeft className="size-3.5" aria-hidden="true" />
@@ -242,7 +243,7 @@ function HomeView({ locale }: { locale: LocaleCode }) {
         </p>
         <div className="mt-6">
           <Link
-            href="/"
+            href={STUDIO_PATH}
             className="inline-flex min-h-10 items-center justify-center rounded-lg border border-violet-400/40 bg-violet-400/15 px-5 text-sm font-bold text-violet-100 transition-colors hover:bg-violet-400/25"
           >
             {messages.home.explore}

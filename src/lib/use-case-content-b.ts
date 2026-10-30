@@ -5,6 +5,7 @@
  * use-case-content-a.ts.
  */
 import type { UseCasePageDef } from "./use-case-types";
+import { STUDIO_PATH } from "./studio-path";
 
 export const USE_CASE_PAGES_B: UseCasePageDef[] = [
   {
@@ -114,8 +115,8 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingTitle: "Model the next commission",
     closingBody:
       "Sketch in, STL out, verify before the burnout — the jewelry loop works here, scoped for the bench.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
   },
   {
@@ -225,8 +226,8 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingTitle: "Bring your next concept to the review",
     closingBody:
       "Describe it, generate it, export it — the engineering-concept loop works here, accuracy limits stated.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text-to-3D details", href: "/features/text-to-3d" },
   },
   {
@@ -336,8 +337,8 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingTitle: "Stock your world",
     closingBody:
       "Prompt the props, export the GLB, import to the platform — the world-stocking loop works here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text-to-3D details", href: "/features/text-to-3d" },
   },
   {
@@ -451,8 +452,8 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingTitle: "Your first 3D collectible is one prompt away",
     closingBody:
       "Concept it, generate it, export the GLB — the asset half of the drop works here; the chain half stays yours.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Output license terms", href: "/legal/copyright-license" },
   },
   {
@@ -563,8 +564,8 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingTitle: "Put a model in the room",
     closingBody:
       "Generate the mesh, export GLB and USDZ, light it with a generated sky — the AR/VR loop works here.",
-    closingCta: { label: "Open the studio", href: "/" },
-    cta: { label: "Open the studio", href: "/" },
+    closingCta: { label: "Open the studio", href: STUDIO_PATH },
+    cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "HDRI Generator", href: "/omnicraft/hdri" },
   },
 ];

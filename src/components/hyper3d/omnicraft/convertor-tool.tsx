@@ -12,6 +12,7 @@ import { Boxes, Download, LogIn } from "lucide-react";
 import { ControlSection, ToolShell } from "./tool-shell";
 import { ModelViewer } from "@/components/hyper3d/studio/model-viewer";
 import { EXPORT_FORMATS, type ExportFormat } from "@/lib/exporters";
+import { STUDIO_PATH } from "@/lib/studio-path";
 import { useSession } from "@/lib/use-session";
 
 interface MineCard {
@@ -104,7 +105,7 @@ export function ConvertorTool() {
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-xs leading-relaxed text-white/60">
             <p className="font-bold text-white/80">No tasks yet</p>
             <p className="mt-1">Generate a model at the studio first — it will appear here for conversion.</p>
-            <a href="/" className="mt-2 inline-block text-[11px] font-bold text-violet-300 hover:text-violet-200">
+            <a href={STUDIO_PATH} className="mt-2 inline-block text-[11px] font-bold text-violet-300 hover:text-violet-200">
               Go to the studio →
             </a>
           </div>
