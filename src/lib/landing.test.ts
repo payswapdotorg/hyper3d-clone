@@ -316,12 +316,12 @@ describe("landing wiring — footer, sitemap, routes, cross-links", () => {
     }
   });
 
-  it("public/sitemap.xml lists all five landing routes with absolute URLs (113 total)", () => {
+  it("public/sitemap.xml lists all five landing routes with absolute URLs (316 total)", () => {
     const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
     for (const route of landingRoutes()) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    expect(xml.match(/<url>/g)?.length).toBe(113);
+    expect(xml.match(/<url>/g)?.length).toBe(316);
   });
 
   it("the studio footer's PRODUCT column links Pricing to the real page", () => {
