@@ -5,6 +5,8 @@ import { HelpSearch, type HelpSearchItem } from "@/components/hyper3d/help/help-
 import type { HelpArticleDef, HelpStatus } from "@/lib/help-types";
 import { HELP_CATEGORIES, HELP_ARTICLES, POPULAR_HELP_SLUGS, helpArticlesByCategory } from "@/lib/help";
 import { cn } from "@/lib/utils";
+import { helpIndexJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * /help — the Help Center index, mirroring the reference's anatomy (recon
@@ -90,8 +92,14 @@ export function HelpCenterPage() {
   const partialCount = HELP_ARTICLES.filter((a) => a.status === "partial").length;
   const absentCount = HELP_ARTICLES.filter((a) => a.status === "not-in-clone").length;
 
+  // t67: breadcrumb + CollectionPage on the help center index.
+  const jsonLd = helpIndexJsonLd();
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link
           href="/"

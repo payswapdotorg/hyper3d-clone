@@ -2,5 +2,23 @@ User-agent: *
 
 Allow: /
 Disallow: /api
+Disallow: /workspace
+Disallow: /vendor
+Disallow: /models
+Disallow: /assets
+Disallow: /draco
+Disallow: /environments
+Disallow: /res
+Disallow: /logo
+Disallow: /*?sort=
+Disallow: /*?*&sort=
+Disallow: /*?utm_
+Disallow: /*?*&utm_
+Disallow: /*?gad_
+Disallow: /*?*&gad_
+Disallow: /*?ut$
+Disallow: /*?*&ut$
+Disallow: /*?utm$
+Disallow: /*?*&utm$
 
-Sitemap: /sitemap.xml
+Sitemap: https://hyper3d-clone.vercel.app/landing-sitemap-index.xml

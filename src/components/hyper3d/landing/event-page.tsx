@@ -9,6 +9,8 @@ import {
   LandingSectionHeading,
   LandingTopBar,
 } from "./landing-shared";
+import { baselineJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * /event/[slug] renderer — mirrors the reference's event-page anatomy
@@ -19,8 +21,17 @@ import {
  * Server component throughout.
  */
 export function EventPageView({ page }: { page: EventPageDef }) {
+  // t67: baseline WebPage + breadcrumb — EN-only routes (the reference
+  // ships /event with no localized tree, mirroring that in the sitemap).
+  const jsonLd = baselineJsonLd(page.title, page.description, `/event/${page.slug}`, [
+    { name: "Home", path: "/" },
+    { name: "Event", path: `/event/${page.slug}` },
+  ]);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <LandingTopBar label={`Event / ${page.title}`} />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { HelpArticlePage } from "@/components/hyper3d/help/help-article-page";
 import { HELP_ARTICLE_SLUGS, findHelpArticle } from "@/lib/help";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /help/articles/[slug] — the 33 articles from the registry (single source
@@ -24,6 +25,7 @@ export async function generateMetadata({
   return {
     title: `${def.title} — Help Center`,
     description: def.description.slice(0, 180),
+    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/help/articles/${def.slug}`, type: "article" }),
   };
 }
 

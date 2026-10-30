@@ -206,11 +206,16 @@ describe("use-cases content — the honesty contract", () => {
 });
 
 describe("use-cases wiring — footer, sitemap, routes", () => {
-  it("public/sitemap.xml lists every use-cases route with absolute URLs", () => {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
+  it("public/landing-sitemap-use-cases-en.xml lists every use-cases route with absolute URLs", () => {
+    // t67: the monolith became a 90-child sitemap index; each family owns its child file.
+    const xml = readFileSync(
+      join(process.cwd(), "public", "landing-sitemap-use-cases-en.xml"),
+      "utf8",
+    );
     for (const route of USE_CASE_ROUTES) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
+    expect(xml.match(/<url>/g)?.length).toBe(12);
     expect(xml.count).toBeUndefined(); // guard: no stray fields
   });
 

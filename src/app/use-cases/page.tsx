@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, MinusCircle } from "lucide-react";
 
 import { USE_CASE_GROUPS, USE_CASE_PAGES, findUseCasePage } from "@/lib/use-cases";
 import { cn } from "@/lib/utils";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /use-cases — the index ("Explore AI 3D use cases" + "Start with the
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   title: "AI 3D Use Cases for Games, Commerce, AR and 3D Printing",
   description:
     "Explore AI 3D use cases for game assets, product models, AR experiences, 3D printing, engineering, animation, and more — each stating plainly what works in this clone.",
+  ...familyMetadata({ title: "AI 3D Use Cases for Games, Commerce, AR and 3D Printing", description: "Explore AI 3D use cases for game assets, product models, AR experiences, 3D printing, engineering, animation, and more — each stating plainly what works in this clone.", path: "/use-cases" }),
 };
 
 export default function UseCasesIndexPage() {

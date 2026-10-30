@@ -316,12 +316,17 @@ describe("landing wiring — footer, sitemap, routes, cross-links", () => {
     }
   });
 
-  it("public/sitemap.xml lists all five landing routes with absolute URLs (7070 total)", () => {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
+  it("public/landing-sitemap-static-en.xml lists all five landing routes with absolute URLs", () => {
+    // t67: the monolith became a 90-child sitemap index; the landing routes
+    // (pricing / prompts / switch / event) live in the static family child.
+    const xml = readFileSync(
+      join(process.cwd(), "public", "landing-sitemap-static-en.xml"),
+      "utf8",
+    );
     for (const route of landingRoutes()) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    expect(xml.match(/<url>/g)?.length).toBe(7070); // 1095 EN + 5975 localized (t66)
+    expect(xml.match(/<url>/g)?.length).toBe(51); // 46 reference + 5 omnicraft additions
   });
 
   it("the studio footer's PRODUCT column links Pricing to the real page", () => {

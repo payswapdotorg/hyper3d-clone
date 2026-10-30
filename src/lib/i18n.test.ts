@@ -31,6 +31,18 @@ import { legalRoutes } from "./legal";
 
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
+/** The eight sitemap families the t67 split ships children for. */
+const SITEMAP_FAMILIES = [
+  "static",
+  "features",
+  "tools",
+  "use-cases",
+  "styles",
+  "legal",
+  "sub-categories",
+  "blog",
+] as const;
+
 /** The exact per-locale route totals the reference's sitemaps ship. */
 const PINNED_COUNTS: Record<string, number> = {
   zh: 542,
@@ -220,19 +232,23 @@ describe("i18n route data — generated, pinned to the reference sitemaps", () =
 });
 
 describe("i18n resolver — every localized route resolves honestly", () => {
-  /** Every EN route that actually exists — read from the sitemap's EN
-   * section, which the t57–t65 tests already pin against the registries. */
+  /** Every EN route that actually exists — read from the t67 split
+   * children's EN files, which the t57–t65 tests pin against the registries. */
   function englishRouteSet(): Set<string> {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
     const locales = new Set<string>(LOCALE_CODES);
-    return new Set(
-      [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
-        .map((m) => m[1].slice(SITE_ORIGIN.length))
-        .filter((path) => {
-          const first = path.replace(/^\//, "").split("/")[0];
-          return !locales.has(first);
-        }),
-    );
+    const out = new Set<string>();
+    for (const family of SITEMAP_FAMILIES) {
+      const xml = readFileSync(
+        join(process.cwd(), "public", `landing-sitemap-${family}-en.xml`),
+        "utf8",
+      );
+      for (const m of xml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
+        const path = m[1].slice(SITE_ORIGIN.length);
+        const first = path.replace(/^\//, "").split("/")[0];
+        if (!locales.has(first)) out.add(path);
+      }
+    }
+    return out;
   }
 
   it("generates exactly 5,975 static params", () => {
@@ -330,19 +346,25 @@ describe("i18n resolver — every localized route resolves honestly", () => {
 });
 
 describe("i18n sitemap + studio wiring", () => {
-  it("appends exactly 5,975 localized locs (7,070 total, EN preserved)", () => {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
-    expect(xml.match(/<url>/g)?.length).toBe(7070);
+  it("ships exactly 5,975 localized locs across the per-locale children (7,070 total)", () => {
+    // t67: the monolith became a 90-child index; each locale's routes are
+    // spread across its 8 family children — sum them and pin the total.
+    let total = 0;
     for (const locale of LOCALE_CODES) {
-      const localeLocs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
-        .map((m) => m[1])
-        .filter(
-          (loc) =>
-            loc === `${SITE_ORIGIN}/${locale}` ||
-            loc.startsWith(`${SITE_ORIGIN}/${locale}/`),
-        );
-      expect(localeLocs, `${locale} sitemap locs`).toHaveLength(PINNED_COUNTS[locale]);
+      let localeCount = 0;
+      for (const family of SITEMAP_FAMILIES) {
+        const file = `landing-sitemap-${family}-${locale}.xml`;
+        try {
+          const xml = readFileSync(join(process.cwd(), "public", file), "utf8");
+          localeCount += xml.match(/<url>/g)?.length ?? 0;
+        } catch {
+          // sub-categories exist only for ja/ko/pt/es/tr — reference parity
+        }
+      }
+      expect(localeCount, `${locale} sitemap locs`).toBe(PINNED_COUNTS[locale]);
+      total += localeCount;
     }
+    expect(total).toBe(5975);
   });
 
   it("wires the studio Globe icon to the 12 real language homes", () => {

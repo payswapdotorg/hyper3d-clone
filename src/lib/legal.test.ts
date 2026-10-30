@@ -119,11 +119,16 @@ describe("legal content — tethered to the real ledger (honesty contract)", () 
 });
 
 describe("legal wiring — footer, sitemap, routes", () => {
-  it("public/sitemap.xml lists every legal route with absolute URLs", () => {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
+  it("public/landing-sitemap-legal-en.xml lists every legal route with absolute URLs", () => {
+    // t67: the monolith became a 90-child sitemap index; each family owns its child file.
+    const xml = readFileSync(
+      join(process.cwd(), "public", "landing-sitemap-legal-en.xml"),
+      "utf8",
+    );
     for (const route of legalRoutes()) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
+    expect(xml.match(/<url>/g)?.length).toBe(6);
   });
 
   it("the studio footer's LEGAL column routes to real pages (no toasts)", () => {

@@ -316,12 +316,18 @@ describe("help content — the honesty contract", () => {
 });
 
 describe("help wiring — footer, sitemap, routes", () => {
-  it("public/sitemap.xml lists all 40 help routes with absolute URLs", () => {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
+  it("public/landing-sitemap-static-en.xml lists all 40 help routes with absolute URLs", () => {
+    // t67: help routes live in the static family child (reference partitioning).
+    const xml = readFileSync(
+      join(process.cwd(), "public", "landing-sitemap-static-en.xml"),
+      "utf8",
+    );
     for (const route of HELP_ROUTES) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    expect(xml.match(/<url>/g)?.length).toBe(7070); // 1095 EN + 5975 localized (t66)
+    // 46 reference routes (home, prompts, event, help ×40, pricing, switch ×2)
+    // + /omnicraft and the four live tools this clone adds = 51
+    expect(xml.match(/<url>/g)?.length).toBe(51);
   });
 
   it("the studio footer's HELP column routes to real pages (no toasts)", () => {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { SwitchPageView } from "@/components/hyper3d/landing/switch-page";
 import { SWITCH_PAGES, switchPageBySlug } from "@/lib/landing";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /switch/[slug] — the switch tree's child pages (t62). Only makerworld
@@ -27,6 +28,7 @@ export async function generateMetadata({
   return {
     title: `${page.title} — Hyper3D`,
     description: page.description.slice(0, 180),
+    ...familyMetadata({ title: page.title, description: page.description.slice(0, 180), path: `/switch/${page.slug}` }),
   };
 }
 

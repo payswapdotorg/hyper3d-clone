@@ -5,6 +5,8 @@ import type { BlogArticleDef, BlogEntry, BlogFamily, BlogStatus } from "@/lib/bl
 import { BLOG_CENSUS } from "@/lib/blog-registry";
 import { findBlogCategory } from "@/lib/blog";
 import { cn } from "@/lib/utils";
+import { blogPostJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Shared renderer for every /blog/[slug] page — written articles get the
@@ -93,9 +95,22 @@ function BlogTopBar({ category }: { category?: string }) {
 }
 
 /** The written-article page. */
-export function BlogArticlePage({ def }: { def: BlogArticleDef }) {
+export function BlogArticlePage({
+  def,
+  entry,
+}: {
+  def: BlogArticleDef;
+  /** The registry row (slug + category) the structured data is built from. */
+  entry?: BlogEntry;
+}) {
+  // t67: BlogPosting + breadcrumb — only for written articles; the honest
+  // filler pages carry no BlogPosting because there is no article to describe.
+  const jsonLd = entry ? blogPostJsonLd(entry) : [];
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <BlogTopBar category={def.category} />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6">

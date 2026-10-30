@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { EventPageView } from "@/components/hyper3d/landing/event-page";
 import { EVENT_PAGES, eventPageBySlug } from "@/lib/landing";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /event/[slug] — the event pages (t62). Only chroma-awards exists,
@@ -26,6 +27,7 @@ export async function generateMetadata({
   return {
     title: `${page.title} — Hyper3D`,
     description: page.description.slice(0, 180),
+    ...familyMetadata({ title: page.title, description: page.description.slice(0, 180), path: `/event/${page.slug}` }),
   };
 }
 

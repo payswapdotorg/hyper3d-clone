@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, CircleDashed, MinusCircle } from "lucide-react";
 import type { FeaturePageDef, FeatureStatus } from "@/lib/features-types";
+import { featureJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 import { cn } from "@/lib/utils";
 
 /**
@@ -75,8 +77,13 @@ function CtaButton({
 }
 
 export function FeaturePage({ def }: { def: FeaturePageDef }) {
+  // t67: the reference's nine-block JSON-LD set, built from this same def.
+  const jsonLd = featureJsonLd(def);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       {/* top bar — same family as the OmniCraft pages */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link

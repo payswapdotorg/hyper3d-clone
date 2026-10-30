@@ -2,6 +2,8 @@ import Link from "next/link";
 import { X } from "lucide-react";
 
 import type { SwitchPageDef } from "@/lib/landing-types";
+import { baselineJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 import {
   LandingClosingBand,
   LandingFooter,
@@ -21,9 +23,18 @@ import {
  */
 export function SwitchPageView({ page }: { page: SwitchPageDef }) {
   const topBarLabel = page.slug === "makerworld" ? "Switch / MakerWorld" : "Switch";
+  // t67: baseline WebPage + breadcrumb for the switch routes.
+  const jsonLd = baselineJsonLd(page.hero.headline, page.hero.eyebrow, `/switch/${page.slug}`, [
+    { name: "Home", path: "/" },
+    { name: "Switch", path: "/switch" },
+    { name: page.title, path: `/switch/${page.slug}` },
+  ]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <LandingTopBar label={topBarLabel} />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">

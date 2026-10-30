@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { SubCategoryPageView } from "@/components/hyper3d/sub-categories/subcategory-page";
 import { SUBCATEGORY_SLUGS, findSubCategory } from "@/lib/subcategories";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /sub-categories/[slug] — the three collection pages from the registry
@@ -27,6 +28,7 @@ export async function generateMetadata({
   return {
     title: `${def.title} — Sub-Categories`,
     description: def.description.slice(0, 180),
+    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/sub-categories/${def.slug}` }),
   };
 }
 

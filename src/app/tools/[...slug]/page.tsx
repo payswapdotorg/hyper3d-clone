@@ -18,6 +18,7 @@ import {
 } from "@/lib/tools-content";
 import { CONVERTER_INDEX } from "@/lib/tools-index-content";
 import type { ToolPageDef } from "@/lib/tool-types";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /tools/[...slug] — the whole tools tree in one catch-all (t64),
@@ -91,12 +92,22 @@ export async function generateMetadata({
     return {
       title: `${CONVERTER_INDEX.title} — Tools`,
       description: CONVERTER_INDEX.description.slice(0, 180),
+      ...familyMetadata({
+        title: CONVERTER_INDEX.title,
+        description: CONVERTER_INDEX.description.slice(0, 180),
+        path: "/tools/converter",
+      }),
     };
   }
   if (slug.length === 1 && slug[0] === "viewer") {
     return {
       title: `${CONVERTER_INDEX.viewerTitle} — Tools`,
       description: CONVERTER_INDEX.viewerDescription.slice(0, 180),
+      ...familyMetadata({
+        title: CONVERTER_INDEX.viewerTitle,
+        description: CONVERTER_INDEX.viewerDescription.slice(0, 180),
+        path: "/tools/viewer",
+      }),
     };
   }
   const def = resolveToolPage(slug);
@@ -104,6 +115,7 @@ export async function generateMetadata({
   return {
     title: `${def.title} — Tools`,
     description: def.description.slice(0, 180),
+    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: def.route }),
   };
 }
 

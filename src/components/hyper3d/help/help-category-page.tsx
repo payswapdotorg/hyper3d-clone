@@ -4,6 +4,8 @@ import { ArrowLeft, CheckCircle2, MinusCircle, XCircle } from "lucide-react";
 import type { HelpArticleDef, HelpCategoryDef, HelpStatus } from "@/lib/help-types";
 import { HELP_CATEGORIES, HELP_STATUS_META } from "@/lib/help";
 import { cn } from "@/lib/utils";
+import { helpCategoryJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Shared renderer for every /help/[category] hub — the reference's topic
@@ -46,9 +48,14 @@ export function HelpCategoryPage({
   const liveCount = articles.filter((a) => a.status === "live").length;
   const partialCount = articles.filter((a) => a.status === "partial").length;
   const absentCount = articles.filter((a) => a.status === "not-in-clone").length;
+  // t67: breadcrumb + CollectionPage for the topic hubs.
+  const jsonLd = helpCategoryJsonLd(category);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link
           href="/help"

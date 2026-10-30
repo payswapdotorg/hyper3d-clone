@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { LegalPage } from "@/components/hyper3d/legal/legal-page";
 import { LEGAL_DOCUMENTS, legalBySlug, legalSlugs } from "@/lib/legal";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /legal/[slug] — the five legal documents from the registry (single source
@@ -24,6 +25,7 @@ export async function generateMetadata({
   return {
     title: `${doc.title} — Legal`,
     description: doc.description.slice(0, 180),
+    ...familyMetadata({ title: doc.title, description: doc.description.slice(0, 180), path: `/legal/${doc.slug}` }),
   };
 }
 

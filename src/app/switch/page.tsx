@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { SwitchPageView } from "@/components/hyper3d/landing/switch-page";
 import { SWITCH_INDEX_PAGE } from "@/lib/landing";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /switch — the Meshy/Tripo migration page, honestly (t62). The
@@ -13,6 +14,7 @@ import { SWITCH_INDEX_PAGE } from "@/lib/landing";
 export const metadata: Metadata = {
   title: `${SWITCH_INDEX_PAGE.title} — Hyper3D`,
   description: SWITCH_INDEX_PAGE.description,
+  ...familyMetadata({ title: `${SWITCH_INDEX_PAGE.title} — Hyper3D`, description: SWITCH_INDEX_PAGE.description, path: "/switch" }),
 };
 
 export default function SwitchRoute() {

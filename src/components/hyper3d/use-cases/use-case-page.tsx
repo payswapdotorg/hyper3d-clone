@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, MinusCircle } from "lucide-react";
 
 import type { UseCasePageDef, UseCaseStatus } from "@/lib/use-case-types";
+import { useCaseJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 import { cn } from "@/lib/utils";
 
 /**
@@ -72,8 +74,13 @@ function CtaButton({
 }
 
 export function UseCasePage({ def }: { def: UseCasePageDef }) {
+  // t67: the reference's seven-block JSON-LD set (Service + FAQPage incl.).
+  const jsonLd = useCaseJsonLd(def);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       {/* top bar — same family as the feature/legal pages */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link

@@ -10,6 +10,8 @@ import {
   LandingSectionHeading,
   LandingTopBar,
 } from "./landing-shared";
+import { baselineJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * /3d-prompts renderer — mirrors the reference's hub anatomy (recon
@@ -60,8 +62,16 @@ function PromptCopyBox({ prompt }: { prompt: string }) {
 }
 
 export function PromptsPageView({ page }: { page: PromptsPageDef }) {
+  // t67: baseline WebPage + breadcrumb for the prompts route.
+  const jsonLd = baselineJsonLd(page.hero.headline, page.hero.eyebrow, "/3d-prompts", [
+    { name: "Home", path: "/" },
+    { name: "3D Prompts", path: "/3d-prompts" },
+  ]);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <LandingTopBar label="3D Prompts" />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">

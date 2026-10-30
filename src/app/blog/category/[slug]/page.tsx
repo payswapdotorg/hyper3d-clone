@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BlogCategoryPage } from "@/components/hyper3d/blog/blog-index-pages";
 import { BLOG_CATEGORIES } from "@/lib/blog";
 import { blogArticlesByCategory, blogEntriesByCategory } from "@/lib/blog";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /blog/category/[slug] — the reference's twelve topic hubs (recon
@@ -27,6 +28,7 @@ export async function generateMetadata({
   return {
     title: `${cat.name} — Blog — Hyper3D`,
     description: cat.blurb.slice(0, 180),
+    ...familyMetadata({ title: cat.name, description: cat.blurb.slice(0, 180), path: `/blog/category/${cat.slug}` }),
   };
 }
 

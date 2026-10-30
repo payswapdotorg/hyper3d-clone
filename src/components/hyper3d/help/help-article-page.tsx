@@ -4,6 +4,8 @@ import { ArrowLeft, CheckCircle2, MinusCircle, XCircle } from "lucide-react";
 import type { HelpArticleDef, HelpStatus } from "@/lib/help-types";
 import { HELP_STATUS_META, findHelpCategory } from "@/lib/help";
 import { cn } from "@/lib/utils";
+import { helpArticleJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Shared renderer for every /help/articles/[slug] page — mirrors the
@@ -42,8 +44,13 @@ function StatusChip({ status }: { status: HelpStatus }) {
 
 export function HelpArticlePage({ def }: { def: HelpArticleDef }) {
   const category = findHelpCategory(def.category);
+  // t67: breadcrumb (Help Center → topic → article) + Article.
+  const jsonLd = helpArticleJsonLd(def);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       {/* top bar — same family as the feature/legal/use-case/style pages */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link

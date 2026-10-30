@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { UseCasePage } from "@/components/hyper3d/use-cases/use-case-page";
 import { findUseCasePage, USE_CASE_SLUGS } from "@/lib/use-cases";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /use-cases/[slug] — the 11 use-case pages from the registry (single
@@ -25,6 +26,7 @@ export async function generateMetadata({
   return {
     title: `${def.title} — Use Cases`,
     description: def.description.slice(0, 180),
+    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/use-cases/${def.slug}` }),
   };
 }
 

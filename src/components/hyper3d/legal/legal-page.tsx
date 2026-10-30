@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
 
 import type { LegalDocDef } from "@/lib/legal-types";
+import { legalJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Shared renderer for every /legal/[slug] document — follows the clone's
@@ -16,8 +18,13 @@ import type { LegalDocDef } from "@/lib/legal-types";
  */
 
 export function LegalPage({ doc, siblings }: { doc: LegalDocDef; siblings: LegalDocDef[] }) {
+  // t67: WebPage + breadcrumb for the legal tree.
+  const jsonLd = legalJsonLd(doc);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       {/* top bar — same family as the feature pages */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link

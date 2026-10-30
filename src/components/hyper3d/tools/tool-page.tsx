@@ -7,6 +7,8 @@ import type {
   ToolStatus,
 } from "@/lib/tool-types";
 import { cn } from "@/lib/utils";
+import { toolJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Shared renderer for every /tools leaf page (t64) — the same family as
@@ -108,8 +110,14 @@ const STATUS_BORDER: Record<ToolStatus, string> = {
 };
 
 export function ToolPageView({ def }: { def: ToolPageDef }) {
+  // t67: the reference tool-page set — WebApplication, breadcrumb, FAQ,
+  // HowTo, ItemList.
+  const jsonLd = toolJsonLd(def);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       {/* top bar — every leaf links back to the converter matrix (the
           tree's hub), the same real route the cross-links use */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">

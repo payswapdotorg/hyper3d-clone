@@ -895,3 +895,86 @@ carry the slug key consistently (slug: [] for locale homes) or Next
 prerenders nothing — mixed key shapes silently fell back to
 server-rendering; the consistent shape SSGs all 7,099 pages in ~56s.
 Lint clean.
+
+## 47. t67 — the crawler surface: 90-child sitemap index, JSON-LD, full OG cards, robots.txt
+
+Recon 2026-10-30 of the reference's served HTML found four surfaces the
+clone did not carry: (1) robots.txt with 13 disallow rules and an
+absolute Sitemap line (ours said only `Disallow: /api` plus a
+spec-invalid relative `Sitemap: /sitemap.xml`); (2) a split sitemap —
+/sitemap.xml and /landing-sitemap-index.xml are both sitemapindexes
+over 90 per-family-per-locale children (static×12, features×12,
+tools×12, use-cases×12, styles×12, legal×12, sub-categories×6, blog×12)
+while ours was one 7,070-URL monolith; (3) a rich JSON-LD layer — a
+six-node @graph on the homepage, nine blocks on feature pages, seven on
+use-case pages (Service among them), five on tool pages (WebApplication
+/ HowTo / FAQPage / ItemList), Article on help pages, CollectionPage /
+BlogPosting on the blog; (4) full link-preview cards on every page
+(og:title/description/url/image/image:alt + self-canonical) where our
+routes emitted only title + meta description.
+
+**The sitemap split keeps every hand-tuned value.** The t57–t66 EN
+priorities were lifted out of the retired monolith path-by-path into
+scripts/gen-sitemap-split.ts (explicit outlier map + per-family
+defaults; gen-sitemap.ts is deleted, superseded). Family partitioning
+mirrors the reference exactly — help rides in static (46 reference
+routes + this clone's /omnicraft + 4 live tools = 51), event lives in
+static as EN-only, sub-categories get 6 locale files. hreflang
+alternates inside each <url> are computed from resolveLocalePage()'s
+enHref — the same resolver the localized pages use for canonical links,
+so sitemap and page-level hreflang cannot disagree. The reference's
+alternate quirks reproduce verbatim, census-pinned: sub-categories
+carry zero alternates; blog articles carry 12+x-default while the blog
+hubs carry 12 without; only ~234 of 779 EN blog articles have localized
+mirrors at all (543 are EN-only: 2 links; use-bang-and-partial-edit
+exists in 7 locales: 9 links; free-stl-files-for-3d-printing misses zh:
+12) — the generated blog-en census {2:543, 9:1, 12:2, 13:233} matches
+the reference's byte-for-byte. One honest deviation: child entries
+carry no <lastmod> — this clone does not track per-URL modification
+dates and will not fabricate them (the reference's own coverage is
+partial: 7/46 static, 10/203 tools); the two index files carry the
+fixed regeneration stamp.
+
+**JSON-LD is generated from the same defs the pages render.**
+src/lib/schema-org.ts builds every node type the reference ships
+(Organization, WebSite, WebPage, WebApplication+free-Offer, Service,
+HowTo, FAQPage, ImageObject, ItemList, BreadcrumbList, Article,
+BlogPosting, CollectionPage) and <JsonLd> renders them server-side —
+crawlers do not execute JS. FAQ counts equal the registry's faq arrays,
+HowTo steps equal the workflow arrays, breadcrumbs resolve against the
+registries, WebApplication offers price 0 USD (true here: free credits,
+no payments), and not-written blog routes carry no BlogPosting because
+there is no article to describe. The og-banner ImageObject honestly
+credits Deemos — the hotlinked banner is their asset (the t53 pattern);
+license/acquireLicensePage point at this clone's real /legal/terms.
+Breadcrumb shapes follow the reference per family (features: Home →
+page; use-cases: Home → Use Cases → page; help: Help Center → topic →
+article; blog: Blog → category → post) with one deliberate fix: the
+reference's tool breadcrumb labels its first crumb "Tools" while
+linking to "/" — a reference bug not worth cloning.
+
+**Every family route now spreads familyMetadata()** (src/lib/seo.ts):
+og:type/site_name/title/description/url/image/image:alt, the twitter
+large-image card, and an absolute self-canonical; og:image is the
+reference's own og-banner URL everywhere (no per-page CDN mirroring);
+help/blog prose requests og:type article. The root layout gains
+metadataBase + the homepage card + self-canonical; the locale pages
+keep their EN-original canonicals (t66 contract, unchanged).
+
+robots.txt mirrors the reference's rule list verbatim (inert rules for
+paths this clone never shipped — /workspace, /vendor, /draco… — are
+kept for parity and harm nothing) and points at the absolute
+landing-sitemap-index.xml.
+
+Copy discipline (24 new tests → 415 / 31 suites): builder-shape
+assertions per family (the six-node homepage graph, the nine-block
+feature set with HowTo/FAQ counts equal to the def, the seven-block
+use-case Service set, the five-block tool set, Article dateModified =
+the registry's real updated stamp, BlogPosting only for written
+routes); breadcrumb resolution and absolute URLs; the 90-child index
+shape with both index files byte-identical and every child present with
+>0 absolute-loc URLs; the 7,070/1,095 totals; the pinned alternate
+censuses; robots rules pinned; renderer + route wiring asserted at
+source level. Build SSGs all 7,099 pages in ~63s; local smoke on the
+prerendered HTML confirms the JSON-LD script tags and OG/canonical
+tags land in the served HTML. Lint clean.

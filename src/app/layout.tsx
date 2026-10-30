@@ -43,11 +43,23 @@ export const metadata: Metadata = {
   // Link-preview card — matches the reference's served card exactly (t53 G1):
   // og:title "Hyper3D" (helmet-set on the reference), twitter large-image card
   // with @DeemosTech attribution and the reference's own og-banner URL.
+  // t67: og:url / og:image / og:image:alt / og:site_name added — the
+  // reference homepage ships the full card; metadataBase makes every
+  // per-page canonical/og:url resolve against the production origin.
+  metadataBase: new URL("https://hyper3d-clone.vercel.app"),
   openGraph: {
     title: "Hyper3D",
     description:
       "Meet Hyper3D, the world's highest-quality, most controllable AI 3D model generator.",
     type: "website",
+    siteName: "Hyper3D",
+    url: "https://hyper3d-clone.vercel.app",
+    images: [
+      {
+        url: "https://hyper3d.ai/assets/og-banner.png",
+        alt: "Hyper3D Rodin - Best AI 3D Model Generator",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -55,6 +67,11 @@ export const metadata: Metadata = {
     title: "Hyper3D - Rodin & ChatAvatar",
     description: "Closest to Production-ready 3D Assets Generator",
     images: ["https://hyper3d.ai/assets/og-banner.png"],
+  },
+  // t67: the homepage self-canonicalizes (the reference does too); every
+  // family route overrides this with its own per-page canonical.
+  alternates: {
+    canonical: "https://hyper3d-clone.vercel.app",
   },
   // Icon set — self-hosted copies of the reference's files (t53 G2).
   icons: {

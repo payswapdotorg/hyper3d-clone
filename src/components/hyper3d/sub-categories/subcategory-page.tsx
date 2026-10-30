@@ -7,6 +7,8 @@ import type {
   SubCategoryStatus,
 } from "@/lib/subcategory-types";
 import { cn } from "@/lib/utils";
+import { baselineJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Shared renderer for every /sub-categories/[slug] page — mirrors the
@@ -102,8 +104,18 @@ function LinkChips({ links }: { links: SubCategoryLink[] }) {
 }
 
 export function SubCategoryPageView({ def }: { def: SubCategoryPageDef }) {
+  // t67: baseline WebPage + breadcrumb (the reference gives
+  // sub-categories no richer schema either — zero alternates, plain page).
+  const jsonLd = baselineJsonLd(def.title, def.description, `/sub-categories/${def.slug}`, [
+    { name: "Home", path: "/" },
+    { name: "Sub-Categories", path: "/sub-categories" },
+    { name: def.name, path: `/sub-categories/${def.slug}` },
+  ]);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       {/* top bar — index-less tree convention: back to the studio root */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link

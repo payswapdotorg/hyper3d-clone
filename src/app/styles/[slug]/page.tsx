@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { StylePageView } from "@/components/hyper3d/styles/style-page";
 import { findStylePage, STYLE_SLUGS } from "@/lib/styles";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /styles/[slug] — the 21 style pages from the registry (single source
@@ -25,6 +26,7 @@ export async function generateMetadata({
   return {
     title: `${def.title} — Styles`,
     description: def.description.slice(0, 180),
+    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/styles/${def.slug}` }),
   };
 }
 

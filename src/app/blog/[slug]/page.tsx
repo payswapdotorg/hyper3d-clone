@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BlogArticlePage, BlogFillerPage } from "@/components/hyper3d/blog/blog-page";
 import { BLOG_CATALOG } from "@/lib/blog-registry";
 import { BLOG_RESERVED_SLUGS, findBlogEntry } from "@/lib/blog";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /blog/[slug] — all 778 article routes from the registry (single source
@@ -28,12 +29,19 @@ export async function generateMetadata({
     return {
       title: `${entry.article.title} — Blog — Hyper3D`,
       description: entry.article.description.slice(0, 180),
+      ...familyMetadata({ title: entry.article.title, description: entry.article.description.slice(0, 180), path: `/blog/${entry.slug}`, type: "article" }),
     };
   }
   return {
     title: `${entry.title} — not written here — Blog — Hyper3D`,
     description:
       "This blog route is kept for reference-sitemap parity and served as an honestly marked page — no article was written for it, and none is faked.",
+    ...familyMetadata({
+      title: `${entry.title} — not written here`,
+      description:
+        "A reference-parity blog route kept honestly marked — no article was written for it, and none is faked.",
+      path: `/blog/${entry.slug}`,
+    }),
   };
 }
 
@@ -47,7 +55,7 @@ export default async function BlogArticleRoute({
   const entry = findBlogEntry(slug);
   if (!entry) notFound();
   if (entry.family === "written" && entry.article) {
-    return <BlogArticlePage def={entry.article} />;
+    return <BlogArticlePage def={entry.article} entry={entry} />;
   }
   return <BlogFillerPage entry={entry} />;
 }

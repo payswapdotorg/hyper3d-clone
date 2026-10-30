@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BlogListPage } from "@/components/hyper3d/blog/blog-index-pages";
 import { BLOG_PAGE_COUNT } from "@/lib/blog-registry";
 import { blogPage } from "@/lib/blog";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /blog/page/[page] — the pagination surface (the reference pages its 778
@@ -28,6 +29,11 @@ export async function generateMetadata({
   return {
     title: `All articles, page ${n} — Blog — Hyper3D`,
     description: `The full blog catalog, 40 routes per page — written articles, honestly marked routes, and the computed census.`,
+    ...familyMetadata({
+      title: `All articles, page ${n}`,
+      description: "The full blog catalog, 40 routes per page — written articles, honestly marked routes, and the computed census.",
+      path: `/blog/page/${n}`,
+    }),
   };
 }
 

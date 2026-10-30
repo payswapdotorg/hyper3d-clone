@@ -226,22 +226,34 @@ describe("features registry — index and nav wiring", () => {
 });
 
 describe("features sitemap", () => {
-  it("public/sitemap.xml lists every features route and live tool route", () => {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
+  it("public/landing-sitemap-features-en.xml lists every features route; static-en carries the live tools", () => {
+    // t67: the monolith became a 90-child sitemap index; features own their
+    // child, the live omnicraft tools ride in the static family child.
+    const xml = readFileSync(
+      join(process.cwd(), "public", "landing-sitemap-features-en.xml"),
+      "utf8",
+    );
+    const staticXml = readFileSync(
+      join(process.cwd(), "public", "landing-sitemap-static-en.xml"),
+      "utf8",
+    );
     for (const route of featureRoutes()) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
     for (const tool of OMNICRAFT_TOOLS.filter((t) => t.status === "live")) {
-      expect(xml.includes(`<loc>${SITE_ORIGIN}/omnicraft/${tool.slug}</loc>`), tool.slug).toBe(
+      expect(staticXml.includes(`<loc>${SITE_ORIGIN}/omnicraft/${tool.slug}</loc>`), tool.slug).toBe(
         true,
       );
     }
-    expect(xml.includes(`<loc>${SITE_ORIGIN}/</loc>`)).toBe(true);
+    expect(staticXml.includes(`<loc>${SITE_ORIGIN}/</loc>`)).toBe(true);
     expect(xml.includes(`<loc>${SITE_ORIGIN}/features</loc>`)).toBe(true);
   });
 
   it("uses absolute URLs for every loc (sitemap protocol requirement, t58)", () => {
-    const xml = readFileSync(join(process.cwd(), "public", "sitemap.xml"), "utf8");
+    const xml = readFileSync(
+      join(process.cwd(), "public", "landing-sitemap-features-en.xml"),
+      "utf8",
+    );
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     expect(locs.length).toBeGreaterThan(0);
     for (const loc of locs) {

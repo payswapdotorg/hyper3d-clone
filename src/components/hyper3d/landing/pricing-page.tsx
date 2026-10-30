@@ -9,6 +9,8 @@ import {
   LandingSectionHeading,
   LandingTopBar,
 } from "./landing-shared";
+import { baselineJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * /pricing renderer — mirrors the reference's pricing anatomy (recon
@@ -21,8 +23,16 @@ import {
  * <details> so no client JS is needed.
  */
 export function PricingPageView({ page }: { page: PricingPageDef }) {
+  // t67: baseline WebPage + breadcrumb for the pricing route.
+  const jsonLd = baselineJsonLd(page.hero.headline, page.hero.eyebrow, "/pricing", [
+    { name: "Home", path: "/" },
+    { name: "Pricing", path: "/pricing" },
+  ]);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <LandingTopBar label="Pricing" />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">

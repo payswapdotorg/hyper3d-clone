@@ -5,6 +5,8 @@ import type { BlogArticleDef, BlogCategory, BlogEntry } from "@/lib/blog-types";
 import { BLOG_CENSUS, BLOG_PAGE_COUNT, BLOG_PAGE_SIZE } from "@/lib/blog-registry";
 import { BLOG_CATEGORIES, findBlogCategory } from "@/lib/blog";
 import { cn } from "@/lib/utils";
+import { blogIndexJsonLd, blogPageJsonLd, blogCategoryJsonLd } from "@/lib/schema-org";
+import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Renderers for the blog front page, the twenty pagination pages, and the
@@ -186,8 +188,13 @@ export function BlogIndexPage({
   pageEntries: BlogEntry[];
   page: number;
 }) {
+  // t67: CollectionPage + BreadcrumbList on the blog front page.
+  const jsonLd = blogIndexJsonLd();
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <BlogHeader />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
@@ -268,8 +275,13 @@ export function BlogIndexPage({
 
 /** A pagination page: /blog/page/[page] (pages 2..N). */
 export function BlogListPage({ pageEntries, page }: { pageEntries: BlogEntry[]; page: number }) {
+  // t67: CollectionPage + breadcrumb for the pagination pages.
+  const jsonLd = blogPageJsonLd(page);
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <BlogHeader />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
@@ -311,8 +323,13 @@ export function BlogCategoryPage({
   entries: BlogEntry[];
 }) {
   const cat = findBlogCategory(category);
+  // t67: CollectionPage + breadcrumb for the topic hubs.
+  const jsonLd = cat ? blogCategoryJsonLd(cat) : [];
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
+      {jsonLd.map((block, i) => (
+        <JsonLd key={i} data={block} />
+      ))}
       <BlogHeader />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { HelpCategoryPage } from "@/components/hyper3d/help/help-category-page";
 import { HELP_CATEGORY_SLUGS, findHelpCategory, helpArticlesByCategory } from "@/lib/help";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /help/[category] — the six topic hubs from the registry (single source
@@ -29,6 +30,7 @@ export async function generateMetadata({
   return {
     title: `${def.name} — Help Center`,
     description: def.blurb.slice(0, 180),
+    ...familyMetadata({ title: def.name, description: def.blurb.slice(0, 180), path: `/help/${def.slug}` }),
   };
 }
 

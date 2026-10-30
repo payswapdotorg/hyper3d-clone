@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { FEATURE_GROUPS, FEATURE_PAGES } from "@/lib/features";
 import { STATUS_CHIP_CLASS, STATUS_LABEL, statusOrder } from "@/components/hyper3d/features/status";
+import { familyMetadata } from "@/lib/seo";
 
 /**
  * /features index — the reference's "Features Matrix" page (recon
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   title: "Features — AI 3D features for image to 3D and creative pipelines",
   description:
     "Explore this Hyper3D clone's features: text-to-3D, image-to-3D, MCP agent access, and the OmniCraft toolbag — each page honest about what is live.",
+  ...familyMetadata({ title: "Features — AI 3D features for image to 3D and creative pipelines", description: "Explore this Hyper3D clone's features: text-to-3D, image-to-3D, MCP agent access, and the OmniCraft toolbag — each page honest about what is live.", path: "/features" }),
 };
 
 export default function FeaturesIndexPage() {
