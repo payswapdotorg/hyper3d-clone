@@ -1,6 +1,6 @@
 # Reset recovery — how to restore this workspace after a sandbox reset
 
-The sandbox that hosts this clone gets recycled periodically (8 resets
+The sandbox that hosts this clone gets recycled periodically (9 resets
 and counting as of 2026-10-31). Everything under the project root is
 wiped except what lives in the git remote. This file is the restore
 procedure, kept IN the repo so it survives resets with the code.
@@ -13,7 +13,7 @@ procedure, kept IN the repo so it survives resets with the code.
   `.env` (never commit secrets — this repo is public)
 - Node modules, databases, `.next` builds
 
-## Restore procedure (verified on the 8th reset, 2026-10-31)
+## Restore procedure (verified on the 8th and 9th resets, 2026-10-31)
 
 1. **Rebuild git credentials** (the PAT comes from the session context,
    never from this file):
