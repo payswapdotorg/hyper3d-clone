@@ -1773,3 +1773,75 @@ build bakes the pinned descriptions into every censused page's HTML
 /zh/use-cases/3d-printing, /tools/converter/3ds/to/dae,
 /help/articles/are-credits-deducted-when-a-generation-fails,
 /fr/styles/voxel at full 296 chars, /zh).
+
+## 57. t77 — the byte-faithful og:image registry: every censused page serves the reference's real link-preview image
+
+Recon 2026-10-31 (`recon/t77/`): the t75/t76 census was re-probed for
+the image dimension — 7,079 URLs, ~97 seconds, capturing og:image,
+og:image:alt, twitter:image, twitter:image:alt and any dimension
+metas. 7,077 carry an og:image (the same two honest exclusions as the
+description registry: `/content-preview` serves 200 with NO og:image,
+`/content-preview/render` is the 405), so the image URL is pinned
+verbatim in a generated 7,077-entry registry
+(`src/lib/reference-og-images.ts`, `referenceOgImage(path)`), wired
+through the same two funnel points as t76 — `familyMetadata()` for
+every EN family route and the locale catch-all's own card — with the
+honest fallback `OG_BANNER_FALLBACK_URL` (the reference's own
+`og-banner.webp`) everywhere a route falls outside the census.
+
+Shape of the captured set, verified across the full probe:
+
+- 797 unique image URLs on two hosts: `storage.deemos.dev` (4,014
+  pages of per-page CDN art — `features/`, `help/`, `blog/`,
+  `use-cases/`, `seo-page-main/`, `event/`) and `hyper3d.ai` (3,063
+  pages of the shared `og-banner.webp`); extensions webp 547 / png
+  232 / jpg 9 / avif 8 / svg 1.
+- twitter:image equals og:image on every pinned page (0 mismatches in
+  7,077) and twitter:image:alt equals og:image:alt (0 mismatches), so
+  one pinned URL covers both surfaces; the twitter image entry is
+  promoted from a bare string to `{ url, alt }` because the reference
+  ships twitter:image:alt on every page.
+- The alt is NOT a second registry: on all 7,077 pages it equals the
+  t75 title minus the trailing " | Hyper3D" suffix — exactly
+  `referenceCardTitle()` — so the alt flows from the title registry
+  through the card title every route already passes to
+  `familyMetadata`. One string per dimension, like the reference's
+  own pages derive theirs.
+- No page ships og:image:width/height/type — nothing to pin there.
+- The banner this clone hotlinked since t53
+  (`hyper3d.ai/assets/og-banner.png`) is served by ZERO censused
+  pages — the real banners are `og-banner.webp` (hyper3d.ai, 3,063
+  pages) and `assets/og-banner.png` (storage.deemos.dev, 60 locale
+  family roots). The old URL survives only as the JSON-LD surface's
+  wrong host: the reference's own Organization.logo pins the
+  `storage.deemos.dev` URL, so `OG_IMAGE_URL` moves there and
+  `bannerImageNode` gains the reference's `"width":1200,"height":625`.
+
+Honest boundary: the registry covers exactly the t76
+description-registry paths; deep served-but-not-sitemapped routes
+(prompt-library pagination/details/hubs, blog pagination, per-locale
+sub-category slugs) keep the honest fallback banner — the same webp
+banner the reference serves on those very families' censused deep
+routes. The clone hotlinks the reference's own CDN URLs rather than
+mirroring 797 assets (the t53 hotlink discipline, now pointed at the
+right URLs). `/content-preview` keeps its own honest image by design.
+
+Copy discipline (84 new tests → 820 / 43 suites green, lint clean,
+tsc baseline 27 → 26 with no new errors): the census pinned (7,077
+entries; registry == description registry both ways; the two
+exclusions resolving undefined; 797 unique URLs; the 4,014/3,063
+host split; both shared banners' page counts; the old hotlink served
+by zero; the extension census; the registry equal to the raw probe
+capture entry-for-entry); the alt invariant pinned against the raw
+probe on the full 7,077 (alt == referenceCardTitle, plus spot pins);
+~40 wiring pins importing each route's generateMetadata — static
+routes, dynamic routes, written and not-written blog, the locale
+catch-all (agentic banner locale landings, localized alts, the
+served-not-sitemapped `/de/tools` extension, unknown-locale 404), and
+the uncensused fallback boundary both ways. The production build
+bakes the pinned images into every probed page's HTML (spot-verified:
+/pricing, /help, /features/text-to-3d, /blog/zbrush-alternative,
+/zh/use-cases/3d-printing, /tools/converter/3ds/to/dae, /zh,
+/styles/voxel, /3d-prompts, the deep /3d-prompts/2 fallback, and the
+alt + twitter:image:alt + JSON-LD logo + ImageObject dimensions on
+the homepage).

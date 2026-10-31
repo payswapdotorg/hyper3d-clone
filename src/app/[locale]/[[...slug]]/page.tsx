@@ -8,7 +8,8 @@ import { localeStaticParams, resolveLocalePage } from "@/lib/i18n-pages";
 import { PROMPT_CENSUS, PROMPT_PAGE_COUNT } from "@/lib/prompts-registry";
 import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
-import { OG_IMAGE_URL, SITE_ORIGIN } from "@/lib/schema-org";
+import { referenceOgImage } from "@/lib/reference-og-images";
+import { OG_BANNER_FALLBACK_URL, SITE_ORIGIN } from "@/lib/schema-org";
 
 /**
  * /[locale]/[[...slug]] — the entire localized landing tree in one
@@ -135,6 +136,14 @@ export async function generateMetadata({
     localizedDescription(locale, path)?.slice(0, 180);
   const cardTitle =
     referenceCardTitle(localePath) ?? title ?? `${locale} · Hyper3D`;
+  // t77: a censused locale path serves the reference's own og:image,
+  // pinned byte-faithfully (the same URL serves og:image and
+  // twitter:image on the reference — 0 mismatches in the probe);
+  // every other route keeps the honest shared banner. The alt is the
+  // card title — exactly the reference's og:image:alt on every censused
+  // page (the t75 title minus " | Hyper3D").
+  const image =
+    referenceOgImage(localePath) ?? OG_BANNER_FALLBACK_URL;
   const def = isLocale(locale) ? resolveLocalePage(locale, path) : null;
   const cardType: "website" | "article" =
     def?.kind === "article" ? "article" : "website";
@@ -147,14 +156,14 @@ export async function generateMetadata({
       title: cardTitle,
       description,
       url: `${SITE_ORIGIN}${localePath}`,
-      images: [{ url: OG_IMAGE_URL, alt: cardTitle }],
+      images: [{ url: image, alt: cardTitle }],
     },
     twitter: {
       card: "summary_large_image",
       site: "@DeemosTech",
       title: cardTitle,
       description,
-      images: [OG_IMAGE_URL],
+      images: [{ url: image, alt: cardTitle }],
     },
     alternates: {
       canonical: enPath,

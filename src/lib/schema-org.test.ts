@@ -5,6 +5,7 @@ import { join } from "node:path";
 import {
   SITE_ORIGIN,
   OG_IMAGE_URL,
+  OG_BANNER_FALLBACK_URL,
   homeGraph,
   featureJsonLd,
   useCaseJsonLd,
@@ -200,20 +201,52 @@ describe("seo — per-family link-preview metadata", () => {
       description: "Generate 3D models from text prompts.",
       path: "/features/text-to-3d",
     });
+    // t77: /features/text-to-3d is censused, so the card serves the
+    // reference's own per-page og:image, and twitter:image:alt ships
+    // (the reference ships it on every censused page).
     expect(md.openGraph).toMatchObject({
       type: "website",
       siteName: "Hyper3D",
       title: "Text to 3D",
       url: `${SITE_ORIGIN}/features/text-to-3d`,
-      images: [{ url: OG_IMAGE_URL, alt: "Text to 3D" }],
+      images: [
+        {
+          url: "https://storage.deemos.dev/features/text-to-3d/prompt-img-1.avif",
+          alt: "Text to 3D",
+        },
+      ],
     });
     expect(md.twitter).toMatchObject({
       card: "summary_large_image",
       site: "@DeemosTech",
       title: "Text to 3D",
-      images: [OG_IMAGE_URL],
+      images: [
+        {
+          url: "https://storage.deemos.dev/features/text-to-3d/prompt-img-1.avif",
+          alt: "Text to 3D",
+        },
+      ],
     });
     expect(md.alternates).toEqual({ canonical: `${SITE_ORIGIN}/features/text-to-3d` });
+  });
+
+  it("uncensused paths fall back to the reference's own shared og-banner.webp", () => {
+    const md = familyMetadata({
+      title: "A deep prompt-library page",
+      description: "Not in the census.",
+      path: "/3d-prompts/2",
+    });
+    const og = md.openGraph as { images: { url: string; alt: string }[] };
+    const tw = md.twitter as { images: { url: string; alt: string }[] };
+    expect(og.images[0].url).toBe(OG_BANNER_FALLBACK_URL);
+    expect(tw.images[0].url).toBe(OG_BANNER_FALLBACK_URL);
+    expect(og.images[0].alt).toBe("A deep prompt-library page");
+    // the fallback is the webp banner the reference serves on 3,063
+    // censused pages — NOT the old .png hotlink (served by zero)
+    expect(OG_BANNER_FALLBACK_URL).toBe(
+      "https://hyper3d.ai/assets/og-banner.webp",
+    );
+    expect(OG_BANNER_FALLBACK_URL).not.toBe(OG_IMAGE_URL);
   });
 
   it("article prose pages request og:type article", () => {

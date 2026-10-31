@@ -43,13 +43,19 @@ export interface BlogCategoryInfo {
 export const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
 /**
- * The link-preview image. The reference hotlinks its own
- * storage.deemos.dev per-page art; this clone uses the reference's own
- * og-banner asset (the t53 twitter-card pattern) so cards look right
- * without mirroring thousands of CDN images. The ImageObject nodes
- * below credit it to Deemos because it is theirs.
+ * The JSON-LD banner/logo image — the reference's own Organization
+ * node pins exactly this storage.deemos.dev URL (t77 probe), and the
+ * ImageObject nodes below credit it to Deemos because it is theirs.
  */
-export const OG_IMAGE_URL = "https://hyper3d.ai/assets/og-banner.png";
+export const OG_IMAGE_URL = "https://storage.deemos.dev/assets/og-banner.png";
+
+/**
+ * The og:image fallback for routes outside the t77 registry — the
+ * banner the reference itself serves on 3,063 censused pages (the
+ * /tools matrix, help articles, legal, EN blog) and therefore the
+ * honest stand-in for the deep routes it serves but never sitemaps.
+ */
+export const OG_BANNER_FALLBACK_URL = "https://hyper3d.ai/assets/og-banner.webp";
 
 /** Our real terms route — the license / acquireLicensePage target. */
 const TERMS_URL = `${SITE_ORIGIN}/legal/terms`;
@@ -117,6 +123,8 @@ export function bannerImageNode(name: string, caption: string): JsonLdObject {
     "@type": "ImageObject",
     url: OG_IMAGE_URL,
     contentUrl: OG_IMAGE_URL,
+    width: 1200,
+    height: 625,
     name,
     caption,
     license: TERMS_URL,
