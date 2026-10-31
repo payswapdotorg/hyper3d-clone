@@ -1378,3 +1378,86 @@ page. One build lesson recorded for the next reset: incremental
 `next build` runs over a warm .next produced SSG HTML referencing a
 chunk the build never wrote (the host's code 500'd) — rm -rf .next
 before any standalone smoke after multi-patch sessions.
+
+## 52. t72 — the workspace tab routes: research library, user stories, login
+
+Recon 2026-10-31 (fresh pull, agent-walked): the crawler surface is at
+full parity — the 90-child sitemap index matches byte-for-byte (7,157
+<url> across 91 served children, census-compared) and robots.txt is
+identical — so the drift this task closes lives in the app surface the
+sitemap never sees. Three routes the reference serves that this clone
+404'd, all probed live:
+
+- **/workspace/rodin/tab/research** — "Rodin - Research Library | Hyper3D":
+  one 800×320 glass card per published paper. Two papers, every
+  bibliographic constant real: CLAY (2024, SIGGRAPH Best Paper Honorable
+  Mention, ACM TOG, DOI 10.1145/3658146, YouTube cloVLY6lWdI, Bilibili
+  BV17vV6zZEU3, six figure slides x1/x3/ga3/overview/PBR/
+  control_short_V3) and CAST (2025, SIGGRAPH Best Paper, ACM TOG, DOI
+  10.1145/3730840, YouTube UL5nSyg2Aps, Bilibili BV1T3bGzvEGF, three
+  figure slides teaser/pipeline1/gallery_small). The clone renders the
+  same cards: figure slides as labeled placeholder art (no CDN image
+  copying), the same public YouTube/Bilibili embeds in a video dialog,
+  and PDF buttons that open the real ACM pages in new tabs. Abstracts
+  are the papers' own quoted text (a research library cites); the
+  one-line connection notes are clone-written and never claim this
+  clone's pipeline runs the research.
+- **/workspace/rodin/tab/story** — "Rodin - User Stories Collection |
+  Hyper3D": the reference's earn surface (its t48-era announcement-card
+  feed is gone). Story-sharing bonus tracker (Pending/Approved/
+  Rejected), an Affiliate Partner section with two program cards —
+  20% cash via PayPal (13th-of-month payouts, $50 minimum carryover)
+  and 40% credits ($1.50 per Credit, 8-day delay, 2-Credit instant
+  signups, 10/month cap) — and a social-post referral (1 Credit per
+  approved post across YouTube/X/Ins/Reddit/Bilibili/Xiaohongshu, the
+  paste-a-link Claim Now). Honest wiring throughout: the tracker reads
+  honest zeros (no moderation queue exists here), a signed-in user's
+  Invite panel shows their REAL /r/<code> referral link (the t53 deep
+  link, copy button and all), and PayPal/claim actions say plainly that
+  the programs are not operated by this clone.
+- **/workspace/login** — the reference's marketing header Login button
+  and hero "Start Creating" CTA both point here (hrefs probed on its
+  homepage). The clone renders the same shell with the real sign-in
+  panel auto-opened (email + password — this clone's actual auth; the
+  Google/GitHub/SSO buttons stay honest reference-chrome), default
+  marketing title, and post-sign-in redirect into /workspace/rodin.
+
+Architecture: the studio route became an optional catch-all
+(src/app/workspace/rodin/[[...tab]]/page.tsx) so all three tabs are one
+mounted Studio — generation state survives tab switches exactly like
+the reference's SPA (browser-verified: a window marker set on the story
+tab survives navigation to research and back to ASSET). The Studio
+derives its tab from the pathname (src/lib/workspace-tabs.ts is the
+single route table: routes, per-tab titles, path/segment parsers, the
+three static param sets), and unknown /tab/* segments fall back to the
+default view — the reference's own client-router behavior (probed
+/tab/unknownxyz → default view + default title, 200). The nav row is
+the reference's: ASSET (26px, → /workspace/rodin) · EXPLORE (26px,
+active on both sub-tabs, → /tab/story) · Story (14px) · Research (14px)
+· search/Filter right. The t48 in-page EXPLORE toggle and its
+story-feed.tsx are retired with this task.
+
+One Next 16 lesson pinned by test: generateStaticParams for an optional
+catch-all must describe the bare route as `{ tab: [] }` — an empty `{}`
+entry silently prerenders NOTHING (the route registers as pure dynamic;
+verified against .next/prerender-manifest.json). With `{ tab: [] }` all
+three paths prerender with their exact titles. Sitemap: zero change —
+/workspace stays robots-disallowed, so no loc was added anywhere
+(census re-verified 7,157/7,157).
+
+Copy discipline (27 new tests → 518 / 35 suites): the route table,
+titles, unknown-tab fallback, and static param shape pinned; both
+papers' badges/venues/DOIs/video IDs/figure lists pinned verbatim; the
+embed builders pinned to the exact URLs; the honest-copy invariant
+(connection notes say "reference", never claim this clone); the story
+program numbers pinned (20/40/$1.50/2/10/$50/8-day/13th); the studio
+nav pinned to render from the route table with the t48 toggle absent;
+the header/hero CTAs pinned to /workspace/login and the tab routes; the
+login route pinned (initialView, default title, marker script); and no
+workspace route may ever appear in static-en or robots-allowed paths.
+Local smoke: all routes 200 with correct titles, /workspace → 307,
+unknown tab → default view; the carousel, both video dialogs, the close
+button, the claim-now honest toast, the demo sign-in → studio redirect,
+the real referral link + copy + /r/<code> 307 chain, and cross-tab
+state preservation all browser-verified. Lint clean; tsc baseline
+unchanged (26 pre-existing errors, none in the new files).

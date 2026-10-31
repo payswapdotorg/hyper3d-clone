@@ -18,7 +18,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Boxes,
   Bot,
@@ -90,7 +90,9 @@ import {
   ALL_PREFS,
   type CookiePrefs,
 } from "./cookie-preferences-overlay";
-import { StoryFeed } from "./story-feed";
+import { ResearchLibrary } from "./research-library";
+import { StoryCollection } from "./story-collection";
+import { WORKSPACE_TAB_ROUTES, tabFromPathname, type WorkspaceTab } from "@/lib/workspace-tabs";
 import { OrientationPopup } from "./orientation-popup";
 import { PresetsModal, presetHint, type PresetGeometry } from "./presets-modal";
 import { TaskRail, type RailTask } from "./task-rail";
@@ -483,10 +485,18 @@ export function Studio({
 
   /* ---- interaction parity (UX-recon 2026-10-22, agent-walked on the live
    * reference): Subscribe → full membership overlay; gallery tile → asset
-   * detail; EXPLORE → story feed; rotating hero tips; chat widget ---- */
+   * detail; EXPLORE/Story/Research → the reference's real tab routes
+   * (t72: /workspace/rodin/tab/{story,research}, probed 2026-10-31);
+   * rotating hero tips; chat widget ---- */
   const [pricingOpen, setPricingOpen] = useState(false);
   const [detailAsset, setDetailAsset] = useState<AssetDetailData | null>(null);
-  const [storyOpen, setStoryOpen] = useState(false);
+  const pathname = usePathname();
+  /* t72: the workspace tab follows the URL (the reference's tabs are real
+   * routes); unknown /tab/* segments fall back to the asset view like the
+   * reference's client router. Deriving from pathname keeps the three
+   * catch-all routes on one mounted Studio — generation state survives
+   * tab switches, exactly like the reference's SPA. */
+  const tab: WorkspaceTab = tabFromPathname(pathname);
   const [chatOpen, setChatOpen] = useState(false);
   const [tipIndex, setTipIndex] = useState(0);
   /* card sub-tab flavor for image mode (reference: Remix Gen / Turbo Gen
@@ -569,6 +579,16 @@ export function Studio({
     return () => window.clearInterval(t);
   }, []);
   const [redoBusy, setRedoBusy] = useState<"geometry" | "material" | null>(null);
+
+  /* t72: routing between the workspace tabs scrolls the workspace pane
+   * back to the top (the reference's client router lands each tab at the
+   * top of the app scroll container). */
+  const tabRef = useRef(tab);
+  useEffect(() => {
+    if (tabRef.current === tab) return;
+    tabRef.current = tab;
+    if (typeof document !== "undefined") document.querySelector(".h3d-scroll")?.scrollTo({ top: 0 });
+  }, [tab]);
 
   const [prompt, setPrompt] = useState(initial.prompt);
   const [upload, setUpload] = useState<{ dataUrl: string; name: string; file: File } | null>(null);
@@ -2406,21 +2426,56 @@ export function Studio({
               below-left; no Share button. Gallery grid, Load More.
               UX-recon (agent-walked): EXPLORE swaps to the story feed
               (reference routes /tab/story); tile click opens the asset
-              detail (reference /workspace/rodin/{uuid}). */}
+              detail (reference /workspace/rodin/{uuid}).
+              t72 recon (2026-10-31, probed live): the reference's tab row
+              is now ASSET (26px bold link → /workspace/rodin) · EXPLORE
+              (26px bold link → /tab/story, active on both sub-tabs) ·
+              Story (14px link → /tab/story) · Research (14px link →
+              /tab/research) · search/Filter right — real routes, one
+              mounted studio. */}
           <section className="mx-auto mt-14 w-full max-w-[1280px] px-6 pb-20 md:px-20" aria-label="Assets">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-              <h2 className={cn("text-[26px] font-bold leading-none", storyOpen ? "text-white/40" : "text-white")}>ASSET</h2>
-              <button
-                type="button"
-                onClick={() => {
-                  setStoryOpen(true);
-                  if (typeof document !== "undefined") document.querySelector(".h3d-scroll")?.scrollTo({ top: 0 });
-                }}
-                aria-pressed={storyOpen}
-                className={cn("text-[26px] font-bold leading-none transition-colors", storyOpen ? "text-white" : "text-white/40 hover:text-white/70")}
+              <Link
+                href={WORKSPACE_TAB_ROUTES.asset}
+                aria-current={tab === "asset" ? "page" : undefined}
+                className={cn(
+                  "text-[26px] font-bold leading-none transition-colors",
+                  tab === "asset" ? "text-white" : "text-white/40 hover:text-white/70",
+                )}
+              >
+                ASSET
+              </Link>
+              <Link
+                href={WORKSPACE_TAB_ROUTES.story}
+                aria-current={tab !== "asset" ? "page" : undefined}
+                className={cn(
+                  "text-[26px] font-bold leading-none transition-colors",
+                  tab !== "asset" ? "text-white" : "text-white/40 hover:text-white/70",
+                )}
               >
                 EXPLORE
-              </button>
+              </Link>
+              {/* sub-tab links (reference: 14px/400, #cfcfcf) */}
+              <Link
+                href={WORKSPACE_TAB_ROUTES.story}
+                aria-current={tab === "story" ? "page" : undefined}
+                className={cn(
+                  "text-sm font-normal leading-none transition-colors",
+                  tab === "story" ? "text-white" : "text-[#cfcfcf] hover:text-white",
+                )}
+              >
+                Story
+              </Link>
+              <Link
+                href={WORKSPACE_TAB_ROUTES.research}
+                aria-current={tab === "research" ? "page" : undefined}
+                className={cn(
+                  "text-sm font-normal leading-none transition-colors",
+                  tab === "research" ? "text-white" : "text-[#cfcfcf] hover:text-white",
+                )}
+              >
+                Research
+              </Link>
               <div className="ml-auto flex items-center gap-3">
                 {/* Task 48: real search — click reveals the input (reference
                     behavior); Enter/clear submits to ?q= on the gallery list */}
@@ -2518,14 +2573,14 @@ export function Studio({
                 </div>
               </div>
             </div>
-            {/* story feed (reference EXPLORE) vs Featured gallery */}
-            {storyOpen ? (
-              <StoryFeed
-                onBack={() => {
-                  setStoryOpen(false);
-                  if (typeof document !== "undefined") document.querySelector(".h3d-scroll")?.scrollTo({ top: 0 });
-                }}
-              />
+            {/* tab content (t72, probed live 2026-10-31): story collection /
+                research library are real routes now — the gallery, the story
+                earn surface, or the research library swap below the shared
+                workspace chrome; the Featured gallery stays the default. */}
+            {tab === "story" ? (
+              <StoryCollection user={user} onNeedAuth={() => onNeedAuth("Sign in to manage your story and referral panels.")} />
+            ) : tab === "research" ? (
+              <ResearchLibrary />
             ) : (
               <>
             <div className="mt-3">

@@ -218,8 +218,11 @@ export function MarketingHome() {
                 spend credits when you confirm a result worth keeping.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
+                {/* t72: the reference's hero main CTA (its own btn1, probed
+                    2026-10-31) links /workspace/login — the dedicated login
+                    route — not the studio root. */}
                 <Link
-                  href={STUDIO_PATH}
+                  href="/workspace/login"
                   className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#f4b183] via-[#ee8f6d] to-[#e2735e] px-7 text-sm font-black tracking-wide text-[#20121a] shadow-[0_8px_30px_rgba(238,143,109,0.35)] transition-transform hover:scale-[1.02]"
                 >
                   Start Creating
@@ -498,7 +501,7 @@ export function MarketingHome() {
               on every generation.
             </p>
             <Link
-              href={STUDIO_PATH}
+              href="/workspace/login"
               className="mt-7 inline-flex min-h-11 items-center justify-center rounded-full bg-[#f7ecdf] px-8 text-sm font-black tracking-wide text-[#20121a] shadow-xl transition-transform hover:scale-[1.02]"
             >
               Start Creating

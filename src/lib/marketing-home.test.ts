@@ -27,7 +27,11 @@ import { LOCALE_CODES } from "./i18n";
 const read = (p: string) => readFileSync(join(__dirname, p), "utf8");
 
 const landingPage = read("../app/page.tsx");
-const studioPage = read("../app/workspace/rodin/page.tsx");
+/* t72: the studio route moved from page.tsx to the optional catch-all
+   [[...tab]]/page.tsx (the reference's story/research tabs are real
+   routes now — see workspace-tabs.test.ts). */
+const studioPage = read("../app/workspace/rodin/[[...tab]]/page.tsx");
+const loginPage = read("../app/workspace/login/page.tsx");
 const nextConfig = read("../../next.config.ts");
 const headerSrc = read("../components/hyper3d/site-header.tsx");
 const footerSrc = read("../components/hyper3d/site-footer.tsx");
@@ -44,9 +48,15 @@ describe("t68 URL shape — landing at /, studio at /workspace/rodin", () => {
   it("the studio route renders the app and stamps the visit markers", () => {
     expect(studioPage).toContain("Hyper3DApp");
     expect(studioPage).toContain("WORKSPACE_MARKER_SCRIPT");
-    expect(studioPage).toContain(
-      '"Rodin AI - Free AI 3D Model Generator For Everyone',
-    );
+    // t72: the title flows from the per-tab table (pinned byte-exact in
+    // workspace-tabs.test.ts — the root still serves the long shell title)
+    expect(studioPage).toContain("WORKSPACE_TAB_TITLES[resolved]");
+  });
+
+  it("the dedicated login route renders the same shell in login view", () => {
+    expect(loginPage).toContain('initialView="login"');
+    expect(loginPage).toContain("WORKSPACE_MARKER_SCRIPT");
+    expect(loginPage).toContain("WORKSPACE_TAB_TITLES.asset");
   });
 
   it("the landing page renders the marketing home, the bounce, and the @graph", () => {
@@ -164,6 +174,11 @@ describe("t68 landing chrome — every href resolves to a real route", () => {
       const ok =
         href === "/" ||
         href === STUDIO_PATH ||
+        // t72: the header's Login button + the tab-route links the
+        // Story/Research menu items resolve through WORKSPACE_TAB_ROUTES
+        href === "/workspace/login" ||
+        href === "/workspace/rodin/tab/story" ||
+        href === "/workspace/rodin/tab/research" ||
         href === "/pricing" ||
         href === "/blog" ||
         href === "/3d-prompts" ||
@@ -176,6 +191,9 @@ describe("t68 landing chrome — every href resolves to a real route", () => {
         LOCALE_CODES.includes(href.slice(1) as never);
       expect(ok, `header href ${href}`).toBe(true);
     }
+    // the Story/Research menu items link the tab routes (constant refs)
+    expect(headerSrc).toContain('{ label: "Story", href: WORKSPACE_TAB_ROUTES.story }');
+    expect(headerSrc).toContain('{ label: "Research", href: WORKSPACE_TAB_ROUTES.research }');
   });
 
   it("header: the locale picker covers the reference's 12 languages as real routes", () => {
