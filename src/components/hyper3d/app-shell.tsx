@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SignInDialog } from "./sign-in-dialog";
 import { Studio, type StudioInitial } from "./studio/studio";
 import { WORKSPACE_TAB_ROUTES } from "@/lib/workspace-tabs";
+import type { WorkspaceEntryView } from "@/lib/workspace-routes";
 import { useSession } from "@/lib/use-session";
 
 const DEFAULT_SEED: StudioInitial = {
@@ -19,7 +20,13 @@ const DEFAULT_SEED: StudioInitial = {
 export function Hyper3DApp({
   initialView,
 }: {
-  initialView?: "login" | "contact";
+  /* t72/t73: "login" (/workspace/login) and "contact" (/workspace/contact-us)
+   * mount the studio with that surface opened. t74 adds the reference's
+   * three remaining entry views: "register" (the signup panel),
+   * "subscribe" (the membership overlay), and "api-dashboard" (the
+   * studio view guests see — the reference's dashboard panel is
+   * auth-gated, its guests get the studio). */
+  initialView?: "login" | "contact" | WorkspaceEntryView;
 } = {}) {
   const router = useRouter();
   const { user, refresh, signOut } = useSession();
@@ -56,20 +63,35 @@ export function Hyper3DApp({
    * button and hero "Start Creating" CTA both point here, probed
    * 2026-10-31); a session — existing or just created — continues into
    * the studio, exactly like the reference's post-login landing. ---------- */
-  const loginView = initialView === "login";
+  const loginView = initialView === "login" || initialView === "register";
   const loginHandledRef = useRef(false);
   useEffect(() => {
     if (!loginView || loginHandledRef.current) return;
     // the ?auth=signup deep link owns the panel on this route (above)
     if (new URLSearchParams(window.location.search).get("auth") === "signup") return;
     if (!user) {
-      // guests get the open panel (signin mode, no intent banner).
-      // One-time client-only initialization from the route (no event to
-      // hook): same deep-link pattern as the effect above — the rule is
-      // over-strict here.
+      // guests get the open panel. /workspace/login opens signin mode
+      // (no intent banner); /workspace/register opens the sign-up form —
+      // the reference's register view (probed 2026-10-31: Email + Send
+      // Code, Google/GitHub/SSO stand-ins) — and reads the referral_code
+      // param the /r/:code and /a/:code short links carry in (t74: those
+      // redirects now land on this route). One-time client-only
+      // initialization from the route (no event to hook): same deep-link
+      // pattern as the effect above — the rule is over-strict here.
       loginHandledRef.current = true;
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSignInMode("signin");
+      setSignInMode(initialView === "register" ? "signup" : "signin");
+      if (initialView === "register") {
+        const referral =
+          new URLSearchParams(window.location.search).get("referral_code")?.trim().slice(0, 40) ||
+          undefined;
+        if (referral) setSignInReferral(referral);
+        setSignInIntent(
+          referral
+            ? "You were invited — create your account to continue."
+            : "Create an account — 50 free credits start you off.",
+        );
+      }
       setSignInOpen(true);
       return;
     }
@@ -77,6 +99,22 @@ export function Hyper3DApp({
     loginHandledRef.current = true;
     router.replace(WORKSPACE_TAB_ROUTES.asset);
   }, [loginView, user, router]);
+
+  /* ---------- t74: /workspace/api-dashboard — the reference's guests
+   * get the studio view on this route (its dashboard panel is
+   * auth-gated, probed 2026-10-31); a signed-in user landing here gets
+   * the honest word instead of a fake dashboard: this clone's API is
+   * the real REST surface, with no key management. ---------- */
+  const apiDashboardView = initialView === "api-dashboard";
+  const apiDashboardNotifiedRef = useRef(false);
+  useEffect(() => {
+    if (!apiDashboardView || !user || apiDashboardNotifiedRef.current) return;
+    apiDashboardNotifiedRef.current = true;
+    toast.info("API Dashboard", {
+      description:
+        "The reference's dashboard manages API keys — this clone has none to manage. Its API is the real REST surface at /api/task/* that powers this workspace.",
+    });
+  }, [apiDashboardView, user]);
 
   /* ---------- auth flows ---------- */
   const requestAuth = useCallback((intent: string, then?: () => void) => {
@@ -131,6 +169,9 @@ export function Hyper3DApp({
            "Chat with us" dock opened (the reference's own contact
            surface — probed 2026-10-31, agent-walked). */
         chatInitiallyOpen={initialView === "contact"}
+        /* t74: /workspace/subscribe opens the membership overlay (the
+           reference's subscribe view, probed 2026-10-31). */
+        pricingInitiallyOpen={initialView === "subscribe"}
       />
 
       <SignInDialog

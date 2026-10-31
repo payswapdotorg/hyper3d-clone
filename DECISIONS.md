@@ -1530,3 +1530,97 @@ routes 200, the dock auto-opens with 22 details elements and working
 tab switches, unknown tabs still fall back, sitemap census unchanged.
 Lint clean; tsc baseline unchanged (26 pre-existing errors, none in
 the new files).
+
+## 54. t74 — the workspace entry routes and the landing's served-link census
+
+Recon 2026-10-31 (fresh, static-HTML diff of both served homepages):
+the crawler surface stayed at parity (sitemap index unchanged, 90
+children), so the drift lived in the /workspace URL space the sitemaps
+never see. The reference's homepage links twelve /workspace URLs this
+clone did not: five routes that 404'd or redirected (register,
+subscribe, api-dashboard, chatavatar, video) plus eight OmniCraft tool
+links that live inside the reference's hidden workspace rail in its
+served HTML (the t71 tool routes already existed; only the links were
+missing) — and one external Trustpilot badge in the footer's brand
+column.
+
+The five routes (all probed live, all SPA shells with client-set
+titles, all robots-disallowed — zero sitemap change):
+
+- **/workspace/register** — the reference serves 200 (not a redirect):
+  its register view (Email + Send Code, Google/GitHub/SSO stand-ins)
+  for guests, the default workspace title. The clone replaces its old
+  307 → /workspace/rodin?auth=signup shortcut with the real route: the
+  studio shell with the sign-in panel opened in sign-up mode, the
+  referral_code param read natively (the /r/:code and /a/:code short
+  links now land here with their code), a completed signup continuing
+  into the studio. The public /register alias still redirects — now to
+  the new route.
+- **/workspace/subscribe** — title "Pricing | Hyper3D"; the studio
+  shell with the membership overlay opened on mount (the reference's
+  plans drawer — the honest surface that says this clone takes no
+  payments). The header's subscribe pill (both the trial-button and
+  subscribe-button hrefs) rewires from /pricing to this route, matching
+  the reference's own homepage hrefs.
+- **/workspace/api-dashboard** — title "API Dashboard | Hyper3D". The
+  reference's dashboard panel is auth-gated: its guests get the studio
+  view, and so does this clone. A signed-in user gets the honest word
+  instead of a faked dashboard: this clone's API is the real REST
+  surface at /api/task/* with no keys to manage.
+- **/workspace/chatavatar** — a whole second product (V0.7 (Beta),
+  "Progressive Generation of Animatable 3D Faces under Text/Image
+  Guidance", image-upload and generate-from-text cards, "A clear
+  portrait with bright lighting and no shadows works best.", a
+  Featured gallery) under its own long product title. The clone
+  reproduces the surface honestly: no face-generation model exists
+  here — Generate says so and points at the real studio — and the
+  Featured gallery is the reference's own public set (17 cards,
+  usernames/likes/titles observed 2026-10-31), labeled as such, the
+  t73 Popular Questions pattern.
+- **/workspace/video** — the third product (Image to Video: upload
+  JPG/PNG/WebP max 10MB, prompt, Sound Effect, Resolution 720p,
+  Duration 5, "Generate Video 0.5 Credits", "No Videos Yet") under its
+  own long title. The left asset rail keeps the reference's groups
+  (All Assets / Image / Video) with every item linked to a route this
+  clone really serves; the empty state says plainly that no video will
+  ever appear here.
+
+Both product pages share a compact ProductWorkspaceShell: the
+workspace top bar (logo → /, the subscribe pill → /workspace/subscribe,
+Plug-in/MCP&CLI/Login at their real targets), the right product rail
+(Avatar/3D/Video as real links, the nine OmniCraft tools linked to the
+t71 routes — an honest improvement over the reference's display-only
+labels), and a Chat-with-us stub routing to the t73 contact surface.
+
+The landing's served HTML now carries the reference's link census: the
+hidden workspace rail ships with all twelve hrefs (three products +
+nine tools) exactly like the reference's own embedded-hidden chrome
+(the t73 mega-menu lesson applied again), the two auth-only header
+actions (Workspace, API dashboard) ship hidden for guests like the
+reference's h3d-header-auth-only markup, the "Sign up for free" CTA
+joins Login at the reference's own targets, the Products menu links
+ChatAvatar at its workspace route, and the footer gains the brand
+column's Trustpilot block (TRUSTPILOT, five stars, "Rated 4.5 out of 5
+on Trustpilot") linking the reference's real review page — honestly
+theirs, titled as such, with the Product column rewired to the
+reference's actual footer targets (chatavatar / rodin /
+omnicraft/hdri).
+
+Local smoke: the homepage link diff against the reference's served
+HTML is now empty (ref-only links: none, excluding its _astro build
+assets); all five routes 200 with byte-faithful titles; register opens
+the signup panel; subscribe opens the overlay; api-dashboard guests
+see the studio; both product surfaces render their chrome; every
+existing workspace route unchanged. Copy discipline (26 new tests →
+572 / 37 suites): the five slugs and titles pinned byte-faithful; the
+route files pinned to their entry views + marker scripts; the register
+redirect-table change pinned; the header/footer href census pinned
+(every internal href resolves to a real route); the hidden rail's
+twelve links pinned against the registries; the auth-only actions
+pinned hidden; the ChatAvatar chrome and Featured set pinned (17
+cards, spot-pinned entries); the Video constants pinned (10MB hint,
+0.5 credits, empty state); the rail groups pinned with resolvable
+hrefs; the honest gates pinned ("no avatar is produced", "no video is
+rendered"); robots.txt and the 90-child sitemap census pinned
+unchanged. Lint clean; tsc baseline unchanged (0 errors in the t74
+files).

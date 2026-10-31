@@ -20,10 +20,13 @@ const nextConfig: NextConfig = {
       { source: "/workspace", destination: "/workspace/rodin", permanent: false },
       { source: "/signup", destination: "/workspace/rodin?auth=signup", permanent: false },
       { source: "/workspace/signup", destination: "/workspace/rodin?auth=signup", permanent: false },
-      { source: "/register", destination: "/workspace/rodin?auth=signup", permanent: false },
-      { source: "/workspace/register", destination: "/workspace/rodin?auth=signup", permanent: false },
-      { source: "/r/:code", destination: "/workspace/rodin?auth=signup&referral_code=:code", permanent: false },
-      { source: "/a/:code", destination: "/workspace/rodin?auth=signup&referral_code=:code", permanent: false },
+      { source: "/register", destination: "/workspace/register", permanent: false },
+      // t74: /workspace/register is now a real route (the reference serves
+      // 200 there — its register view, probed 2026-10-31), so the old
+      // 307 → /workspace/rodin?auth=signup shortcut is gone; the public
+      // /register alias still lands on the new route.
+      { source: "/r/:code", destination: "/workspace/register?referral_code=:code", permanent: false },
+      { source: "/a/:code", destination: "/workspace/register?referral_code=:code", permanent: false },
       // t71: the reference retired its public OmniCraft landing tree —
       // /omnicraft and three of the four tool URLs 301 to the HDRI feature
       // page, /omnicraft/viewer to the viewer marketing hub (probed

@@ -457,6 +457,7 @@ export function Studio({
   onSessionRefresh,
   onSignOut,
   chatInitiallyOpen = false,
+  pricingInitiallyOpen = false,
 }: {
   initial: StudioInitial;
   user: UserInfo | null;
@@ -468,6 +469,10 @@ export function Studio({
      2026-10-31: its SPA shell serves the studio chrome with the
      right-hand dock opened, title = the default workspace title). */
   chatInitiallyOpen?: boolean;
+  /* t74: /workspace/subscribe mounts the studio with the membership
+     overlay already open — the reference's subscribe view (probed
+     2026-10-31: "Pricing | Hyper3D" title, the plans drawer). */
+  pricingInitiallyOpen?: boolean;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<GenMode>(initial.mode);
@@ -495,7 +500,7 @@ export function Studio({
    * detail; EXPLORE/Story/Research → the reference's real tab routes
    * (t72: /workspace/rodin/tab/{story,research}, probed 2026-10-31);
    * rotating hero tips; chat widget ---- */
-  const [pricingOpen, setPricingOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(pricingInitiallyOpen);
   const [detailAsset, setDetailAsset] = useState<AssetDetailData | null>(null);
   const pathname = usePathname();
   /* t72: the workspace tab follows the URL (the reference's tabs are real

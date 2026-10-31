@@ -6,6 +6,8 @@ import { ChevronDown, Globe, Menu } from "lucide-react";
 
 import { STUDIO_PATH } from "@/lib/studio-path";
 import { WORKSPACE_TAB_ROUTES } from "@/lib/workspace-tabs";
+import { OMNICRAFT_TOOLS } from "@/lib/omnicraft";
+import { WORKSPACE_RAIL_PRODUCTS } from "@/lib/workspace-routes";
 
 /**
  * t68 — the marketing landing header (the reference hyper3d.ai header).
@@ -20,12 +22,22 @@ import { WORKSPACE_TAB_ROUTES } from "@/lib/workspace-tabs";
  * Honest mapping: every dropdown entry that has a real page in this clone
  * links to it (the features tree, use-cases tree, styles tree, blog,
  * 3d-prompts, pricing, help, locale pages); Rodin deep-links into the
- * real studio at /workspace/rodin; ChatAvatar routes to the clone's
- * ChatAvatar feature page (the reference's is an app-gated route);
- * plug-ins keep the reference's external docs.deemos.dev targets; Story,
- * Research and ComfyUI land in the studio (this clone has no tab-routed
- * research surface). Subscribe / 7-Day Trial point at the pricing page —
- * the clone's honest subscription surface.
+ * real studio at /workspace/rodin; t74: ChatAvatar now routes to the
+ * real workspace product route (/workspace/chatavatar) like the
+ * reference's own menu; plug-ins keep the reference's external
+ * docs.deemos.dev targets; Story, Research and ComfyUI land in the
+ * studio. t74: the subscribe pill points at /workspace/subscribe (the
+ * reference's own pill hrefs, probed on its homepage) and the
+ * "Sign up for free" CTA joins Login at the reference's own
+ * /workspace/register target.
+ *
+ * t74 served-HTML parity: the reference's landing statically ships its
+ * full workspace chrome — hidden — including the product/tool rail
+ * (ChatAvatar, Rodin, Video, nine OmniCraft tools) and two auth-only
+ * header actions (Workspace, API dashboard). The same links ship here,
+ * hidden the same way (the t73 mega-menu lesson: markup in the served
+ * HTML, CSS-hidden until needed — crawlers and no-JS browsers see the
+ * reference's link census, not a smaller one).
  */
 
 interface NavLink {
@@ -36,7 +48,9 @@ interface NavLink {
 
 const PRODUCTS: NavLink[] = [
   { label: "Rodin", href: STUDIO_PATH, note: "The studio — text/image to 3D" },
-  { label: "ChatAvatar", href: "/features/chatavatar", note: "3D avatar packages" },
+  // t74: the reference's Products menu links ChatAvatar at its real
+  // workspace route (href probed on the homepage, 2026-10-31).
+  { label: "ChatAvatar", href: "/workspace/chatavatar", note: "3D avatar packages" },
 ];
 
 const FEATURES: NavLink[] = [
@@ -144,17 +158,19 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        {/* the reference's subscribe pill, left of the nav */}
+        {/* the reference's subscribe pill, left of the nav — its own hrefs
+            land on /workspace/subscribe (t74: the studio route that opens
+            the membership overlay), not the marketing pricing page */}
         <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1">
           <Link
-            href="/pricing"
+            href="/workspace/subscribe"
             className="text-[11px] font-semibold text-violet-200/90 transition-colors hover:text-violet-100"
           >
             Free 7-Day Trial
           </Link>
           <span className="h-3 w-px bg-white/15" aria-hidden="true" />
           <Link
-            href="/pricing"
+            href="/workspace/subscribe"
             className="text-[11px] font-semibold text-white/75 transition-colors hover:text-white"
           >
             Subscribe
@@ -201,6 +217,35 @@ export function SiteHeader() {
             className="inline-flex min-h-9 items-center rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-white/80 transition-colors hover:border-violet-400/40 hover:text-white"
           >
             Login
+          </Link>
+          {/* t74: the reference's "Sign up for free" CTA (its signup-entry,
+              visible for guests) lands on /workspace/register — the real
+              signup route this clone now serves. */}
+          <Link
+            href="/workspace/register"
+            className="inline-flex min-h-9 items-center rounded-lg bg-violet-500 px-3 text-sm font-bold text-white transition-colors hover:bg-violet-400"
+          >
+            Sign up for free
+          </Link>
+          {/* t74: the reference's two auth-only header actions — Workspace
+              (→ /workspace/rodin) and the API dashboard action (→
+              /workspace/api-dashboard) — ship hidden for guests in its
+              served HTML (h3d-header-auth-only). Same here: hidden for
+              the guest every marketing page serves; the Login button
+              above already carries signed-in users into the studio. */}
+          <Link
+            href={STUDIO_PATH}
+            className="hidden"
+            aria-label="Workspace (signed-in chrome — hidden for guests, like the reference)"
+          >
+            Workspace
+          </Link>
+          <Link
+            href="/workspace/api-dashboard"
+            className="hidden"
+            aria-label="API dashboard (signed-in chrome — hidden for guests, like the reference)"
+          >
+            API Dashboard
           </Link>
           <div className="relative">
             <button
@@ -278,6 +323,25 @@ export function SiteHeader() {
           <NavPanelColumn title="Styles" links={RESOURCES_STYLES} onNavigate={() => setOpen(null)} />
         </div>
       </NavPanel>
+
+      {/* t74: the reference's hidden workspace rail, shipped in the served
+          HTML like its own landing does — its static homepage embeds the
+          full workspace chrome (hidden), so crawlers and no-JS browsers
+          see the product/tool hrefs: ChatAvatar, Rodin, Video, and the
+          nine OmniCraft tools. Hidden here exactly the same way; the
+          visible copy of this rail lives on the product pages. */}
+      <nav hidden aria-label="Workspace products and tools (hidden rail — served-HTML parity)">
+        {WORKSPACE_RAIL_PRODUCTS.map((p) => (
+          <Link key={p.label} href={p.href}>
+            {p.label}
+          </Link>
+        ))}
+        {OMNICRAFT_TOOLS.map((tool) => (
+          <Link key={tool.slug} href={`/workspace/omnicraft/${tool.slug}`}>
+            {tool.name}
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }

@@ -78,11 +78,13 @@ describe("t68 URL shape — landing at /, studio at /workspace/rodin", () => {
     expect(nextConfig).toContain(
       '{ source: "/signup", destination: "/workspace/rodin?auth=signup", permanent: false }',
     );
+    // t74: the referral short links land on the real register route (the
+    // reference serves 200 at /workspace/register — its register view)
     expect(nextConfig).toContain(
-      '{ source: "/r/:code", destination: "/workspace/rodin?auth=signup&referral_code=:code", permanent: false }',
+      '{ source: "/r/:code", destination: "/workspace/register?referral_code=:code", permanent: false }',
     );
     expect(nextConfig).toContain(
-      '{ source: "/a/:code", destination: "/workspace/rodin?auth=signup&referral_code=:code", permanent: false }',
+      '{ source: "/a/:code", destination: "/workspace/register?referral_code=:code", permanent: false }',
     );
   });
 });
@@ -179,6 +181,15 @@ describe("t68 landing chrome — every href resolves to a real route", () => {
         href === "/workspace/login" ||
         href === "/workspace/rodin/tab/story" ||
         href === "/workspace/rodin/tab/research" ||
+        // t74: the reference's own header hrefs — the subscribe pill, the
+        // signup CTA, the Products-menu ChatAvatar, the auth-only hidden
+        // actions, and the hidden rail's product/tool links
+        href === "/workspace/subscribe" ||
+        href === "/workspace/register" ||
+        href === "/workspace/chatavatar" ||
+        href === "/workspace/video" ||
+        href === "/workspace/api-dashboard" ||
+        href.startsWith("/workspace/omnicraft/") ||
         href === "/pricing" ||
         href === "/blog" ||
         href === "/3d-prompts" ||
@@ -209,7 +220,10 @@ describe("t68 landing chrome — every href resolves to a real route", () => {
       const ok =
         href === "/" ||
         href === STUDIO_PATH ||
-        href === "/workspace/omnicraft" ||
+        // t74: the reference's own footer targets — the Product column's
+        // workspace routes
+        href === "/workspace/chatavatar" ||
+        href === "/workspace/omnicraft/hdri" ||
         href.startsWith("/workspace/omnicraft/") ||
         href.startsWith("/features/") ||
         href.startsWith("/legal/") ||

@@ -8,11 +8,18 @@ import { STUDIO_PATH } from "@/lib/studio-path";
  * Recon 2026-10-31: five link columns (Product / Features / Tools /
  * Plug-ins / Legal), an "Ask AI about us" row of five assistant links with
  * prefilled prompts, a "Contact Us" socials block, the © line, and the
- * language selector. Every column entry maps to a real route in this
- * clone where one exists; plug-ins keep the reference's external
+ * language selector — plus (t74) the brand column's Trustpilot rating
+ * block: "TRUSTPILOT", five stars, "Rated 4.5 out of 5 on Trustpilot",
+ * linking the reference's own review page. Every column entry maps to a
+ * real route in this clone where one exists; t74: the Product column
+ * links the reference's own workspace hrefs (ChatAvatar →
+ * /workspace/chatavatar, Rodin → /workspace/rodin, OmniCraft →
+ * /workspace/omnicraft/hdri — the reference's actual footer targets,
+ * probed on its served homepage); plug-ins keep the reference's external
  * docs.deemos.dev targets; the socials are the reference's own accounts
  * (this clone is not affiliated and does not claim to be — the © line
- * says so plainly).
+ * says so plainly, and the Trustpilot block is the reference's own
+ * rating, linked to its own page, honestly theirs).
  */
 
 interface FooterLink {
@@ -22,9 +29,12 @@ interface FooterLink {
 }
 
 const PRODUCT: FooterLink[] = [
-  { label: "ChatAvatar", href: "/features/chatavatar" },
+  // t74: the reference's own Product-column hrefs (probed on its served
+  // homepage, 2026-10-31) — ChatAvatar and Rodin at their workspace
+  // routes, OmniCraft at the HDRI tool (the reference's actual target).
+  { label: "ChatAvatar", href: "/workspace/chatavatar" },
   { label: "Rodin", href: STUDIO_PATH },
-  { label: "OmniCraft", href: "/workspace/omnicraft" },
+  { label: "OmniCraft", href: "/workspace/omnicraft/hdri" },
 ];
 
 const FEATURES: FooterLink[] = [
@@ -80,6 +90,13 @@ const ASK_AI: { label: string; href: string }[] = [
   { label: "Perplexity", href: `https://www.perplexity.ai/search/new?q=${encodeURIComponent(ASK_AI_PROMPT)}` },
 ];
 
+/** The reference's own Trustpilot rating — external link to its real
+ * review page, honestly theirs (this clone has no reviews of its own;
+ * the block reproduces the reference's observed footer chrome:
+ * "TRUSTPILOT", five stars, "Rated 4.5 out of 5 on Trustpilot"). */
+const TRUSTPILOT_URL = "https://www.trustpilot.com/review/hyper3d.ai";
+const TRUSTPILOT_RATING_LABEL = "Rated 4.5 out of 5 on Trustpilot";
+
 /** The reference's own social accounts — external links, honestly theirs. */
 const SOCIALS: { label: string; href: string }[] = [
   { label: "X", href: "https://twitter.com/DeemosTech" },
@@ -134,6 +151,44 @@ export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-white/8 bg-[#0c0c10]" aria-label="Footer">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:py-16">
+        {/* brand + Trustpilot — the reference's footer brand column: logo,
+            wordmark, and the TRUSTPILOT rating block (t74). The rating is
+            the reference product's own — the link lands on its real review
+            page; this clone claims nothing. */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/8 pb-6">
+          <Link href="/" aria-label="Hyper3D home" className="flex items-center gap-2">
+            <img src="/images/hyper3d-logo.png" alt="" aria-hidden="true" className="h-8 w-auto" />
+            <span className="font-display text-base font-bold tracking-wide text-white">
+              HYPER3D<span className="text-violet-300">.AI</span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
+              Trustpilot
+            </span>
+            <a
+              href={TRUSTPILOT_URL}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={TRUSTPILOT_RATING_LABEL}
+              title="The reference product's real Trustpilot rating — external link, honestly theirs. This clone has no reviews of its own."
+              className="flex items-center gap-1"
+            >
+              {[0, 1, 2, 3, 4].map((i) => (
+                <svg
+                  key={i}
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  className="size-4 fill-emerald-400/85"
+                >
+                  <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.3 1.3-6.5-4.9-4.6 6.6-.8L12 2.5z" />
+                </svg>
+              ))}
+              <span className="ml-1 text-xs font-semibold text-white/70">4.5</span>
+            </a>
+          </div>
+        </div>
+
         {/* Ask AI row — the reference's five prefilled assistant links */}
         <div className="flex flex-col gap-4 border-b border-white/8 pb-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
