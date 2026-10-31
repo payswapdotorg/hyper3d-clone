@@ -69,6 +69,11 @@ describe("t71 content-preview protocol constants", () => {
     expect(host).toContain("allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms");
     // the origin gate: this clone allows exactly its own origin
     expect(host).toContain("const allowed = window.location.origin");
+    // the status element is React-controlled (ref attached — a hydration
+    // that never updates the line would silently say "Loading…" forever)
+    expect(host).toContain('role="status" ref={statusRef}');
+    expect(host).toContain("PREVIEW_STANDALONE_MESSAGE");
+    expect(host).toContain("PREVIEW_WAITING_MESSAGE");
   });
 
   it("the host page is noindex with the reference's title", () => {

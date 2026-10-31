@@ -229,17 +229,25 @@ export function ContentPreviewHost() {
 
     const onMessage = (event: MessageEvent) => {
       const source = event.source;
-      if (!(source instanceof Window)) return;
-      if (!editors.includes(source)) return;
+      // Duck-typed window check — `source instanceof Window` is FALSE for
+      // windows from other realms (the parent's Window belongs to the
+      // parent's realm), and identity against the collected editors is
+      // the check that actually matters.
+
+      if (!source || typeof source !== "object") return;
+      if (!editors.includes(source as Window)) return;
       const data = event.data as RenderMessageData | null;
       if (!data || typeof data !== "object" || typeof data.type !== "string") return;
       if (!data.type.startsWith("h3d-content-preview:")) return;
       if (event.origin !== allowed) {
-        source.postMessage({ type: PREVIEW_MESSAGES.refused, origin: event.origin }, event.origin);
+        (source as Window).postMessage(
+          { type: PREVIEW_MESSAGES.refused, origin: event.origin },
+          event.origin,
+        );
         return;
       }
       if (data.type === PREVIEW_MESSAGES.render) {
-        editorRef.current = { source, origin: event.origin };
+        editorRef.current = { source: source as Window, origin: event.origin };
         void render(data);
       }
     };
@@ -252,5 +260,9 @@ export function ContentPreviewHost() {
     };
   }, [render, setStatus]);
 
-  return <p id="preview-status" role="status">Loading…</p>;
+  return (
+    <p id="preview-status" role="status" ref={statusRef}>
+      Loading…
+    </p>
+  );
 }
