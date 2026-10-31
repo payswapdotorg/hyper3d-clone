@@ -6,6 +6,7 @@ import { BLOG_CATALOG } from "@/lib/blog-registry";
 import { BLOG_RESERVED_SLUGS, findBlogEntry } from "@/lib/blog";
 import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
+import { referenceArticleMeta } from "@/lib/reference-article-metas";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -32,7 +33,7 @@ export async function generateMetadata({
     return {
       title: referenceTitle(path) ?? `${entry.article.title} — Blog — Hyper3D`,
       description: referenceDescription(path) ?? entry.article.description.slice(0, 180),
-      ...familyMetadata({ title: referenceCardTitle(path) ?? entry.article.title, description: referenceDescription(path) ?? entry.article.description.slice(0, 180), path, type: "article" }),
+      ...familyMetadata({ title: referenceCardTitle(path) ?? entry.article.title, description: referenceDescription(path) ?? entry.article.description.slice(0, 180), path, type: "article", article: referenceArticleMeta(path), rss: true }),
     };
   }
   return {
@@ -44,6 +45,11 @@ export async function generateMetadata({
       description: referenceDescription(path) ??
         "A reference-parity blog route kept honestly marked — no article was written for it, and none is faked.",
       path,
+      // t78: the reference pins article metas and the RSS link on its
+      // blog articles regardless of whether a body exists on this
+      // clone — the census covers all 3,358 of them.
+      article: referenceArticleMeta(path),
+      rss: true,
     }),
   };
 }

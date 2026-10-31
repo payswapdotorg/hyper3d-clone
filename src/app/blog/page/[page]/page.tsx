@@ -33,6 +33,9 @@ export async function generateMetadata({
       title: `All articles, page ${n}`,
       description: "The full blog catalog, 40 routes per page — written articles, honestly marked routes, and the computed census.",
       path: `/blog/page/${n}`,
+      // t78: the reference ships the RSS alternate link on its blog
+      // pagination too (recon/t78/notes.md).
+      rss: true,
     }),
   };
 }

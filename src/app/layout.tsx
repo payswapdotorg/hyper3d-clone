@@ -107,6 +107,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      {/* t78: the reference preconnects (and dns-prefetches) the
+          storage.deemos.dev CDN on every page — this clone now hotlinks
+          4,014 og:images from that same host, so its own head carries
+          the same two hints. React hoists both links into <head>. */}
+      <link rel="preconnect" href="https://storage.deemos.dev" />
+      <link rel="dns-prefetch" href="https://storage.deemos.dev" />
       <body
         className={`${poppins.variable} ${inter.variable} ${plexMono.variable} antialiased bg-background text-foreground`}
       >

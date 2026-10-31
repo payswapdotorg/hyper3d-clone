@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { MarketingHome } from "@/components/hyper3d/landing/marketing-home";
 import { JsonLd } from "@/components/hyper3d/json-ld";
-import { homeGraph } from "@/lib/schema-org";
+import { homeGraph, FACEBOOK_DOMAIN_VERIFICATION } from "@/lib/schema-org";
 import { WORKSPACE_BOUNCE_SCRIPT } from "@/lib/workspace-visit";
 
 /**
@@ -22,9 +22,13 @@ import { WORKSPACE_BOUNCE_SCRIPT } from "@/lib/workspace-visit";
 export const metadata: Metadata = {
   // The reference landing's own served title/description (byte-faithful
   // anchors), card image hotlinked from their CDN (the t53 pattern).
+  // t78: plus the reference's crawler-surface head — robots
+  // "index, follow" and its facebook-domain-verification token.
   title: "Hyper3D Rodin - Best AI 3D Model Generator",
   description:
     "Rodin generates high-quality 3D assets that are nearly production-ready for supported workflows.",
+  robots: "index, follow",
+  other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION },
   openGraph: {
     title: "Hyper3D Rodin - Best AI 3D Model Generator",
     description:

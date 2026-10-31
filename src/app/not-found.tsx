@@ -1,10 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+import { FACEBOOK_DOMAIN_VERIFICATION } from "@/lib/schema-org";
 
 /**
  * Themed 404 — the reference's own error page copy (recon 2026-10-29 of a
  * missing /features route): "404 / Reconstruction failed — This page slipped
  * out of the mesh..." Parity means matching the misses too.
+ *
+ * t78: the reference's 404 head — the <title> "404 Page Not Found |
+ * Hyper3D", robots "noindex, nofollow", and the same
+ * facebook-domain-verification token every crawler-surface page carries
+ * (probe-verified on the reference's own 404 responses).
  */
+export const metadata: Metadata = {
+  title: "404 Page Not Found | Hyper3D",
+  robots: "noindex, nofollow",
+  other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION },
+};
+
 export default function NotFound() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-[#0f0f12] p-8 text-white">

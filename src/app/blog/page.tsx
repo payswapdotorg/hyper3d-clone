@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     title: referenceCardTitle("/blog") ?? "Blog — Hyper3D",
     description: referenceDescription("/blog") ?? `The honest blog of an AI-3D workspace clone: ${BLOG_CENSUS.written} written articles anchored to real code, ${BLOG_CENSUS.total - BLOG_CENSUS.written} catalog routes honestly marked instead of faked.`,
     path: "/blog",
+    // t78: the reference ships its RSS alternate link on every blog
+    // index / article / pagination / category page.
+    rss: true,
   }),
 };
 

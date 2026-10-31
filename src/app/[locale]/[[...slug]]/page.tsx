@@ -9,7 +9,12 @@ import { PROMPT_CENSUS, PROMPT_PAGE_COUNT } from "@/lib/prompts-registry";
 import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { referenceOgImage } from "@/lib/reference-og-images";
-import { OG_BANNER_FALLBACK_URL, SITE_ORIGIN } from "@/lib/schema-org";
+import { referenceArticleMeta } from "@/lib/reference-article-metas";
+import {
+  FACEBOOK_DOMAIN_VERIFICATION,
+  OG_BANNER_FALLBACK_URL,
+  SITE_ORIGIN,
+} from "@/lib/schema-org";
 
 /**
  * /[locale]/[[...slug]] — the entire localized landing tree in one
@@ -147,9 +152,22 @@ export async function generateMetadata({
   const def = isLocale(locale) ? resolveLocalePage(locale, path) : null;
   const cardType: "website" | "article" =
     def?.kind === "article" ? "article" : "website";
+  // t78: the blog family's own head pieces — the reference pins its
+  // article namespace (published / modified / author) on every locale
+  // blog article (the census's 3,358 blog pages include all 11 locale
+  // variants) and ships the RSS alternate link on the locale blog
+  // indexes and articles alike.
+  const isBlogArticle = def?.kind === "article" && def.family === "blog";
+  const isBlogIndex = path === "blog";
+  const article = isBlogArticle ? referenceArticleMeta(localePath) : undefined;
   return {
     title,
     description,
+    // t78: the reference's own crawler-surface head — robots
+    // "index, follow" and its facebook-domain-verification token on
+    // every censused locale page.
+    robots: "index, follow",
+    other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION },
     openGraph: {
       type: cardType,
       siteName: "Hyper3D",
@@ -157,6 +175,13 @@ export async function generateMetadata({
       description,
       url: `${SITE_ORIGIN}${localePath}`,
       images: [{ url: image, alt: cardTitle }],
+      ...(article
+        ? {
+            publishedTime: article.published,
+            modifiedTime: article.modified,
+            authors: [article.author],
+          }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -168,6 +193,15 @@ export async function generateMetadata({
     alternates: {
       canonical: enPath,
       languages: hreflangFor(enPath),
+      ...((isBlogIndex || isBlogArticle)
+        ? {
+            types: {
+              "application/rss+xml": [
+                { url: "/blog/rss.xml", title: "Hyper3D Blog" },
+              ],
+            },
+          }
+        : {}),
     },
   };
 }

@@ -28,7 +28,12 @@ export async function generateMetadata({
   return {
     title: `${cat.name} — Blog — Hyper3D`,
     description: cat.blurb.slice(0, 180),
-    ...familyMetadata({ title: cat.name, description: cat.blurb.slice(0, 180), path: `/blog/category/${cat.slug}` }),
+    ...familyMetadata({ title: cat.name, description: cat.blurb.slice(0, 180), path: `/blog/category/${cat.slug}`, rss: true }),
+    // t78: the reference serves its blog category hubs as
+    // noindex, follow — crawled for links, kept out of the index —
+    // and still carries the RSS alternate link. Verified on every
+    // served category of the reference (recon/t78/notes.md).
+    robots: "noindex, follow",
   };
 }
 

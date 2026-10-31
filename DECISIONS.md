@@ -1845,3 +1845,94 @@ bakes the pinned images into every probed page's HTML (spot-verified:
 /styles/voxel, /3d-prompts, the deep /3d-prompts/2 fallback, and the
 alt + twitter:image:alt + JSON-LD logo + ImageObject dimensions on
 the homepage).
+
+## 58. t78 — the remaining head dimensions: robots, facebook-domain-verification, the article namespace, and the blog RSS link
+
+Recon 2026-10-31 (`recon/t78/`): the t77 census was re-probed for every
+head dimension the t68–t77 chain had not covered — 7,079 URLs, ~99
+seconds, capturing robots, facebook-domain-verification, og:type, the
+article:* namespace, and the blog RSS alternate link. Four real gaps
+were found and closed:
+
+- **robots** — the reference serves `index, follow` on 7,077 censused
+  pages (the single noindex is `/content-preview`, consistent with its
+  t76/t77 exclusions), and — probed outside the census — `noindex,
+  follow` on all nine blog category hubs and plain `index, follow` on
+  blog pagination. Wired: `robots: "index, follow"` in
+  `familyMetadata()` + the locale catch-all + the homepage inline; the
+  category route overrides to `noindex, follow` (the one deliberate
+  family exception); `not-found.tsx` gains the reference's own 404 head
+  (title "404 Page Not Found | Hyper3D" + robots "noindex, nofollow" +
+  the fb token). Documented artifact: Next 16 unconditionally injects
+  `<meta name="robots" content="noindex">` on notFound() responses, so
+  the 404 carries two robots metas where the reference carries one —
+  semantically identical (most-restrictive interpretation), and
+  suppressing Next's auto-tag is impossible.
+- **facebook-domain-verification** — one constant token
+  (`lu7584v1wtckhvpsboezn5jbytqgf8`) on every censused page, absent
+  only on `/content-preview` and the workspace app surface (verified
+  post-login-redirect). Wired as `metadata.other` at the same three
+  funnels; like the @DeemosTech twitter attribution it is the
+  reference's own published head byte, inert elsewhere.
+- **the OpenGraph article namespace** — 3,358 blog-article pages (EN +
+  all 11 locale variants) carry article:published_time /
+  article:modified_time / article:author; the 396 help articles serve
+  og:type=article with ZERO article metas (the reference emits the
+  namespace on blog articles only). Pinned per-page in a generated
+  3,358-entry registry (`src/lib/reference-article-metas.ts`,
+  `referenceArticleMeta(path)`): 3,331 distinct published timestamps,
+  629 distinct modified (2,640 pages share the global rebuild
+  2026-06-25T21:05:48.398Z), and four real bylines ("Hyper3D" 3,328 /
+  "Hyper3D News" 11 / "joel" 12 / "Hyper3D Team" 7). Wired through two
+  new `familyMetadata` inputs (`article` → openGraph
+  publishedTime/modifiedTime/authors) on the written AND not-written
+  blog branches, and in the locale catch-all for locale articles.
+- **the blog RSS alternate link** — `<link rel="alternate"
+  type="application/rss+xml" title="Hyper3D Blog">` ships on 3,370
+  censused pages (the 12 locale blog indexes + 3,358 articles) and,
+  probed outside the census, on pagination and the category hubs. Wired
+  as `alternates.types` via a new `rss` input on the four blog routes +
+  the locale catch-all's blog pages; the relative href resolves through
+  metadataBase to the clone's own /blog/rss.xml — the same origin
+  translation every canonical already applies.
+
+Bonus alignment: the reference preconnects + dns-prefetches
+storage.deemos.dev on every page; since t77 this clone hotlinks 4,014
+og:images from that host, so the root layout now ships the same two
+hints (React 19 hoists them into <head>, verified in served HTML).
+
+Honest boundary: `/content-preview` keeps its own honest head (its
+robots `noindex, nofollow` + no fb token + no og:type matches the
+reference's own served shape byte-for-byte — the t76/t77 exclusion
+page is an exclusion for content, not for robots); the workspace app
+surface stays robots/fb-free because the reference's own app surface
+is (verified post-redirect); uncensused deep routes keep honest
+defaults except the blog family's pagination/categories, whose
+probed behavior (index,follow / noindex,follow + RSS) is wired like
+every other blog page.
+
+Discovery queued for t79: the reference serves `/{locale}/blog/
+category/{slug}` (200, noindex, follow) and `/{locale}/blog/page/{n}`
+(200) routes that this clone's locale catch-all does not resolve —
+locale blog category and pagination pages are the next real gap.
+
+Copy discipline (42 new tests → 862 / 45 suites green, lint clean,
+tsc baseline unchanged at 26, none new): the raw-probe census pinned
+(robots 7,077+1 distribution; the one fb constant; og:type 3,323 /
+3,754 / 1; article namespace == 3,358 blog pages, == article-typed
+minus the 396 help articles; RSS link on 3,370 all-blog pages = 12
+indexes + 3,358 articles); the article registry pinned
+(entry-for-entry against the raw capture; the author/published/
+modified censuses; ISO format; registry ⊂ description registry; the
+help-article and non-blog exclusions; six spot-pin families including
+the four bylines); the wiring pinned by importing every touched
+route's metadata — familyMetadata units (robots/fb/rss/article), the
+static family routes, the blog family (index, written and not-written
+articles, pagination, the noindex-follow category exception), the
+locale catch-all (family pages, blog index, locale article, help
+without the namespace), the homepage, and the 404 head. The local
+standalone production build spot-verified on served HTML across ten
+routes (the Vercel serving edge being account-blocked mid-session —
+402 DEPLOYMENT_DISABLED on every route including direct deployment
+URLs while the API reports READY; production verification to be
+re-run when serving is restored; the code is pushed to GitHub).

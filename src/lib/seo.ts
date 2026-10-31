@@ -24,8 +24,13 @@
  */
 
 import type { Metadata } from "next";
-import { OG_BANNER_FALLBACK_URL, SITE_ORIGIN } from "./schema-org";
+import {
+  FACEBOOK_DOMAIN_VERIFICATION,
+  OG_BANNER_FALLBACK_URL,
+  SITE_ORIGIN,
+} from "./schema-org";
 import { referenceOgImage } from "./reference-og-images";
+import type { ReferenceArticleMeta } from "./reference-article-metas";
 
 export interface FamilyMetadataInput {
   /** Page <title> — the family route's own title string. */
@@ -36,6 +41,23 @@ export interface FamilyMetadataInput {
   path: string;
   /** og:type — "website" for landing pages, "article" for help/blog prose. */
   type?: "website" | "article";
+  /**
+   * t78 — the reference's OpenGraph article metas (published / modified /
+   * author) for blog articles, registry-pinned. Served as
+   * article:published_time / article:modified_time / article:author like
+   * the reference's own blog pages (help articles ship none — probe-
+   * verified — and stay article-meta-free by omitting this).
+   */
+  article?: ReferenceArticleMeta;
+  /**
+   * t78 — the blog family's own RSS alternate link
+   * (`<link rel="alternate" type="application/rss+xml" title="Hyper3D Blog">`),
+   * which the reference ships on every blog index, article, pagination and
+   * category page. The href resolves against metadataBase to the clone's
+   * own /blog/rss.xml — the same origin translation every canonical
+   * already applies to the reference's relative self-URLs.
+   */
+  rss?: boolean;
 }
 
 export function familyMetadata({
@@ -43,6 +65,8 @@ export function familyMetadata({
   description,
   path,
   type = "website",
+  article,
+  rss,
 }: FamilyMetadataInput): Metadata {
   const url = `${SITE_ORIGIN}${path}`;
   // t77: the reference's own og:image for censused paths, hotlinked
@@ -50,6 +74,13 @@ export function familyMetadata({
   // uncensused deep routes get the reference's own shared banner.
   const image = referenceOgImage(path) ?? OG_BANNER_FALLBACK_URL;
   return {
+    // t78: the reference's own crawler-surface head — robots
+    // "index, follow" and its facebook-domain-verification token on
+    // every censused family page (the category override below is the
+    // one deliberate exception, matching the reference's own
+    // noindex-follow category behavior).
+    robots: "index, follow",
+    other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION },
     openGraph: {
       type,
       siteName: "Hyper3D",
@@ -57,6 +88,13 @@ export function familyMetadata({
       description,
       url,
       images: [{ url: image, alt: title }],
+      ...(article
+        ? {
+            publishedTime: article.published,
+            modifiedTime: article.modified,
+            authors: [article.author],
+          }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -67,6 +105,13 @@ export function familyMetadata({
     },
     alternates: {
       canonical: url,
+      ...(rss
+        ? {
+            types: {
+              "application/rss+xml": [{ url: "/blog/rss.xml", title: "Hyper3D Blog" }],
+            },
+          }
+        : {}),
     },
   };
 }

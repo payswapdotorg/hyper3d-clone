@@ -57,6 +57,16 @@ export const OG_IMAGE_URL = "https://storage.deemos.dev/assets/og-banner.png";
  */
 export const OG_BANNER_FALLBACK_URL = "https://hyper3d.ai/assets/og-banner.webp";
 
+/**
+ * t78 — the reference's own facebook-domain-verification token, served
+ * verbatim on every censused crawler-surface page (7,077 of 7,078
+ * probed; /content-preview and the app-surface workspace routes carry
+ * none, and neither does this clone's — see recon/t78/notes.md). Like
+ * the @DeemosTech twitter attribution it is the reference's own
+ * published head byte, inert on any other domain.
+ */
+export const FACEBOOK_DOMAIN_VERIFICATION = "lu7584v1wtckhvpsboezn5jbytqgf8";
+
 /** Our real terms route — the license / acquireLicensePage target. */
 const TERMS_URL = `${SITE_ORIGIN}/legal/terms`;
 
