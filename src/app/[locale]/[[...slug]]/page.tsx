@@ -6,6 +6,8 @@ import { hreflangFor, isLocale } from "@/lib/i18n";
 import { LOCALE_MESSAGES, fillCount } from "@/lib/i18n-messages";
 import { localeStaticParams, resolveLocalePage } from "@/lib/i18n-pages";
 import { PROMPT_CENSUS, PROMPT_PAGE_COUNT } from "@/lib/prompts-registry";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
+import { OG_IMAGE_URL, SITE_ORIGIN } from "@/lib/schema-org";
 
 /**
  * /[locale]/[[...slug]] — the entire localized landing tree in one
@@ -74,8 +76,17 @@ function localizedDescription(locale: string, path: string): string | undefined 
   return messages.localeOnly.body;
 }
 
+/**
+ * The served <title> for a localized page (t75): the reference's own
+ * byte-faithful title when the path is pinned in the registry (the
+ * sitemap-censused locale tree plus the twelve /{locale}/tools indexes),
+ * else the honest template title below — the deep served-but-not-
+ * sitemapped routes keep their template titles.
+ */
 function localizedTitle(locale: string, path: string): string | undefined {
   if (!isLocale(locale)) return undefined;
+  const pinned = referenceTitle(`/${locale}${path === "" ? "" : `/${path}`}`);
+  if (pinned) return pinned;
   const messages = LOCALE_MESSAGES[locale];
   const def = resolveLocalePage(locale, path);
   if (!def) return undefined;
@@ -108,9 +119,37 @@ export async function generateMetadata({
   const path = (slug ?? []).join("/");
   const enPath = englishPath(locale, slug);
   if (!enPath) return { title: "Page not found" };
+  const title = localizedTitle(locale, path);
+  const description = localizedDescription(locale, path)?.slice(0, 180);
+  // t75: the reference's locale pages ship full link-preview cards —
+  // og:title is the <title> minus the " | Hyper3D" suffix (registry card
+  // title), og:url is the locale page's own URL, and the description is
+  // this clone's honest localized copy. The canonical stays the English
+  // original with the 13-link hreflang set (the t66 contract).
+  const localePath = `/${locale}${path === "" ? "" : `/${path}`}`;
+  const cardTitle =
+    referenceCardTitle(localePath) ?? title ?? `${locale} · Hyper3D`;
+  const def = isLocale(locale) ? resolveLocalePage(locale, path) : null;
+  const cardType: "website" | "article" =
+    def?.kind === "article" ? "article" : "website";
   return {
-    title: localizedTitle(locale, path),
-    description: localizedDescription(locale, path)?.slice(0, 180),
+    title,
+    description,
+    openGraph: {
+      type: cardType,
+      siteName: "Hyper3D",
+      title: cardTitle,
+      description,
+      url: `${SITE_ORIGIN}${localePath}`,
+      images: [{ url: OG_IMAGE_URL, alt: cardTitle }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@DeemosTech",
+      title: cardTitle,
+      description,
+      images: [OG_IMAGE_URL],
+    },
     alternates: {
       canonical: enPath,
       languages: hreflangFor(enPath),

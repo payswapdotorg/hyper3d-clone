@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { SubCategoryPageView } from "@/components/hyper3d/sub-categories/subcategory-page";
 import { SUBCATEGORY_SLUGS, findSubCategory } from "@/lib/subcategories";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -25,10 +26,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const def = findSubCategory(slug);
   if (!def) return { title: "Collection not found" };
+  const path = `/sub-categories/${def.slug}`;
   return {
-    title: `${def.title} — Sub-Categories`,
+    title: referenceTitle(path) ?? `${def.title} — Sub-Categories`,
     description: def.description.slice(0, 180),
-    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/sub-categories/${def.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? def.title, description: def.description.slice(0, 180), path }),
   };
 }
 

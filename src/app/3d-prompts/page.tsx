@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { PromptsPageView } from "@/components/hyper3d/landing/prompts-page";
 import { LANDING_PROMPTS_PAGE } from "@/lib/landing";
 import { promptPage } from "@/lib/prompts-registry";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -13,10 +14,10 @@ import { familyMetadata } from "@/lib/seo";
  * how-to steps, and the honest note).
  */
 export const metadata: Metadata = {
-  title: `${LANDING_PROMPTS_PAGE.title} — Hyper3D`,
+  title: referenceTitle("/3d-prompts") ?? `${LANDING_PROMPTS_PAGE.title} — Hyper3D`,
   description: LANDING_PROMPTS_PAGE.description,
   ...familyMetadata({
-    title: `${LANDING_PROMPTS_PAGE.title} — Hyper3D`,
+    title: referenceCardTitle("/3d-prompts") ?? `${LANDING_PROMPTS_PAGE.title} — Hyper3D`,
     description: LANDING_PROMPTS_PAGE.description,
     path: "/3d-prompts",
   }),

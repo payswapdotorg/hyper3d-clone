@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, MinusCircle } from "lucide-react";
 
 import { STYLE_GROUPS, STYLE_PAGES, findStylePage } from "@/lib/styles";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { cn } from "@/lib/utils";
 import { familyMetadata } from "@/lib/seo";
 
@@ -12,10 +13,10 @@ import { familyMetadata } from "@/lib/seo";
  * that name the honest delivery mode of each family.
  */
 export const metadata: Metadata = {
-  title: "AI 3D Style Generator Matrix",
+  title: referenceTitle("/styles") ?? "AI 3D Style Generator Matrix",
   description:
     "Explore AI 3D model generator pages by visual style — low poly, voxel, anime, photorealistic and more — each stating plainly what steers generation in this clone.",
-  ...familyMetadata({ title: "AI 3D Style Generator Matrix", description: "Explore AI 3D model generator pages by visual style — low poly, voxel, anime, photorealistic and more — each stating plainly what steers generation in this clone.", path: "/styles" }),
+  ...familyMetadata({ title: referenceCardTitle("/styles") ?? "AI 3D Style Generator Matrix", description: "Explore AI 3D model generator pages by visual style — low poly, voxel, anime, photorealistic and more — each stating plainly what steers generation in this clone.", path: "/styles" }),
 };
 
 export default function StylesIndexPage() {

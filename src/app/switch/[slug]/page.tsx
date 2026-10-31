@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { SwitchPageView } from "@/components/hyper3d/landing/switch-page";
 import { SWITCH_PAGES, switchPageBySlug } from "@/lib/landing";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -25,10 +26,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = switchPageBySlug(slug);
   if (!page || page.slug === "index") return { title: "Switch page not found" };
+  const path = `/switch/${page.slug}`;
   return {
-    title: `${page.title} — Hyper3D`,
+    title: referenceTitle(path) ?? `${page.title} — Hyper3D`,
     description: page.description.slice(0, 180),
-    ...familyMetadata({ title: page.title, description: page.description.slice(0, 180), path: `/switch/${page.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? page.title, description: page.description.slice(0, 180), path }),
   };
 }
 

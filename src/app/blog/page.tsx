@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { BlogIndexPage } from "@/components/hyper3d/blog/blog-index-pages";
 import { BLOG_CENSUS } from "@/lib/blog-registry";
 import { blogPage, WRITTEN_BLOG_ARTICLES } from "@/lib/blog";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -12,10 +13,10 @@ import { familyMetadata } from "@/lib/seo";
  * 40-row slice with the computed status dots.
  */
 export const metadata: Metadata = {
-  title: "Blog — Hyper3D",
+  title: referenceTitle("/blog") ?? "Blog — Hyper3D",
   description: `The honest blog of an AI-3D workspace clone: ${BLOG_CENSUS.written} written articles anchored to real code, ${BLOG_CENSUS.total - BLOG_CENSUS.written} catalog routes honestly marked instead of faked.`,
   ...familyMetadata({
-    title: "Blog — Hyper3D",
+    title: referenceCardTitle("/blog") ?? "Blog — Hyper3D",
     description: `The honest blog of an AI-3D workspace clone: ${BLOG_CENSUS.written} written articles anchored to real code, ${BLOG_CENSUS.total - BLOG_CENSUS.written} catalog routes honestly marked instead of faked.`,
     path: "/blog",
   }),

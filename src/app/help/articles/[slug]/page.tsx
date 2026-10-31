@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { HelpArticlePage } from "@/components/hyper3d/help/help-article-page";
 import { HELP_ARTICLE_SLUGS, findHelpArticle } from "@/lib/help";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -22,10 +23,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const def = findHelpArticle(slug);
   if (!def) return { title: "Article not found" };
+  const path = `/help/articles/${def.slug}`;
   return {
-    title: `${def.title} — Help Center`,
+    title: referenceTitle(path) ?? `${def.title} — Help Center`,
     description: def.description.slice(0, 180),
-    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/help/articles/${def.slug}`, type: "article" }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? def.title, description: def.description.slice(0, 180), path, type: "article" }),
   };
 }
 

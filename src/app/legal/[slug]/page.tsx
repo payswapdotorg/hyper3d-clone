@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { LegalPage } from "@/components/hyper3d/legal/legal-page";
 import { LEGAL_DOCUMENTS, legalBySlug, legalSlugs } from "@/lib/legal";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -22,10 +23,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const doc = legalBySlug(slug);
   if (!doc) return { title: "Legal document not found" };
+  const path = `/legal/${doc.slug}`;
   return {
-    title: `${doc.title} — Legal`,
+    title: referenceTitle(path) ?? `${doc.title} — Legal`,
     description: doc.description.slice(0, 180),
-    ...familyMetadata({ title: doc.title, description: doc.description.slice(0, 180), path: `/legal/${doc.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? doc.title, description: doc.description.slice(0, 180), path }),
   };
 }
 

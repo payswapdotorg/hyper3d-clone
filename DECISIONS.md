@@ -1624,3 +1624,78 @@ hrefs; the honest gates pinned ("no avatar is produced", "no video is
 rendered"); robots.txt and the 90-child sitemap census pinned
 unchanged. Lint clean; tsc baseline unchanged (0 errors in the t74
 files).
+
+## 55. t75 — the byte-faithful <title> registry: every censused page serves the reference's real title
+
+Recon 2026-10-31 (the 10th reset landed first; recovery re-verified —
+credentials rebuilt, clone, install, 572/37 baseline green before any
+work): the homepage link census stayed closed and the 90-child sitemap
+index stayed at exact parity, so the drift hunt moved to a dimension no
+pass had audited — the served `<title>` of every censused page. A full
+probe of the reference's own landing-sitemap tree (all 90 children,
+7,067 URLs across 12 locales × 8 families) found 59/60 sampled pages
+drifting: the clone stitched honest template titles ("— Use Cases",
+"— not written here — Blog — Hyper3D") where the reference serves real
+per-page SEO copy ("AI 3D Model Generator for 3D Printing – Image to
+STL | Hyper3D", "Best ZBrush Alternative? Free AI Sculpting Tools
+(2026) | Hyper3D"), each locale carrying its own human translation, and
+three index pages had no brand suffix at all.
+
+The fix is a generated registry, not templates — the titles cannot be
+derived from slugs:
+
+- **`src/lib/reference-titles.ts`** — `REFERENCE_TITLES`, 7,078
+  pathname → exact-title entries captured verbatim by
+  `recon/t75/full-title-probe.py` (7,066 of the 7,067 census URLs carry
+  a title; the single miss is `/content-preview/render`, which the
+  reference itself answers with HTTP 405 to a plain GET while this
+  clone serves its own page — no entry, template stays). Plus the
+  twelve bare `/tools` indexes (EN + 11 locales), separately probed:
+  the reference serves them with real localized titles but never
+  sitemaps them (the t70 gap — pinned as the registry's one explicit
+  extension). `referenceTitle(path)` resolves; `referenceCardTitle(path)`
+  derives the og/twitter card title.
+- **Shape, verified across the full capture**: 7,066 titles end with
+  the " | Hyper3D" suffix; the 12 homepages use the brand-first
+  pattern ("Hyper3D Rodin - Best AI 3D Model Generator" and its
+  localized siblings) with no suffix; the reference's og:title /
+  twitter:title equal the title minus that suffix (0 mismatches in the
+  sampled verification).
+
+Wiring — every family route's metadata prefers the registry and falls
+back to its honest template when a path is not pinned (19 EN route
+files: the five t62 landing routes, the help tree, features, tools,
+use-cases, styles, legal, sub-categories, blog): the `<title>` and the
+familyMetadata card title both resolve through the registry, so the
+og:title / twitter:title match the reference's own card shape. The
+`[locale]/[[...slug]]` catch-all carries the whole localized tree with
+one lookup (`/{locale}/{path}`), and gains the link-preview cards the
+reference's locale pages ship (og:title = card title, og:url = the
+locale page's own URL, og:type article for help/blog prose) — the
+canonical stays the English original with the 13-link hreflang set
+(the t66 contract, unchanged); the og:description stays this clone's
+honest localized copy. The 12 locale homepages, previously
+"Hyper3D — 中文版"-style stubs, now serve the reference's real
+brand-first titles.
+
+Honest boundary, pinned both ways by test: registry == sitemap minus
+the reference's own 405, plus the twelve /tools indexes. Body copy,
+meta descriptions, and the deep served-but-not-sitemapped routes (the
+3D prompt library's pagination/details/hubs, blog pagination,
+per-locale sub-category slugs beyond each locale's own sitemap list)
+keep their honest clone titles and copy — a body-copy/description
+parity pass would be a separate task with different rules.
+
+Copy discipline (86 new tests → 658 / 39 suites green, lint clean,
+tsc baseline unchanged): the census pinned (7,078 entries; suffix
+shape; the 12 homepages; the exact sitemap⇄registry boundary both
+ways); ~50 spot pins across every family and locale, including the
+en-dash/em-dash/typographic-apostrophe character classes; and the
+wiring pinned by importing each route's generateMetadata — static
+routes, dynamic routes, the written and not-written blog branches, and
+the locale catch-all (title + card + article type + unknown-locale
+fallback). The production build bakes the pinned titles into every
+censused page's HTML (spot-verified in the build output: /pricing,
+/zh/help, /features/ai-image-generator, /blog/zbrush-alternative,
+/zh/tools, /tools/converter/3ds/to/dae, /de/blog/3d-animation-pipeline-de,
+/zh/use-cases/3d-printing, /help/articles/are-credits-deducted-when-a-generation-fails).

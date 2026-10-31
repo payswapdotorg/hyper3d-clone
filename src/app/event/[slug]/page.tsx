@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { EventPageView } from "@/components/hyper3d/landing/event-page";
 import { EVENT_PAGES, eventPageBySlug } from "@/lib/landing";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -24,10 +25,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = eventPageBySlug(slug);
   if (!page) return { title: "Event page not found" };
+  const path = `/event/${page.slug}`;
   return {
-    title: `${page.title} — Hyper3D`,
+    title: referenceTitle(path) ?? `${page.title} — Hyper3D`,
     description: page.description.slice(0, 180),
-    ...familyMetadata({ title: page.title, description: page.description.slice(0, 180), path: `/event/${page.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? page.title, description: page.description.slice(0, 180), path }),
   };
 }
 

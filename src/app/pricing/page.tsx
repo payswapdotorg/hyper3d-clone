@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { PricingPageView } from "@/components/hyper3d/landing/pricing-page";
 import { LANDING_PRICING_PAGE } from "@/lib/landing";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -12,9 +13,9 @@ import { familyMetadata } from "@/lib/seo";
  * confirm, 10 per agentic.
  */
 export const metadata: Metadata = {
-  title: `${LANDING_PRICING_PAGE.title} — Hyper3D`,
+  title: referenceTitle("/pricing") ?? `${LANDING_PRICING_PAGE.title} — Hyper3D`,
   description: LANDING_PRICING_PAGE.description,
-  ...familyMetadata({ title: `${LANDING_PRICING_PAGE.title} — Hyper3D`, description: LANDING_PRICING_PAGE.description, path: "/pricing" }),
+  ...familyMetadata({ title: referenceCardTitle("/pricing") ?? `${LANDING_PRICING_PAGE.title} — Hyper3D`, description: LANDING_PRICING_PAGE.description, path: "/pricing" }),
 };
 
 export default function PricingRoute() {

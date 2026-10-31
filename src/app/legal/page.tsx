@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
 
 import { LEGAL_DOCUMENTS } from "@/lib/legal";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -10,10 +11,10 @@ import { familyMetadata } from "@/lib/seo";
  * intro + the five documents). Same public-page family as /features.
  */
 export const metadata: Metadata = {
-  title: "Legal Center",
+  title: referenceTitle("/legal") ?? "Legal Center",
   description:
     "This service's privacy policy, terms of service, refund policy, copyright license, and fulfillment policy in one place.",
-  ...familyMetadata({ title: "Legal Center", description: "This service's privacy policy, terms of service, refund policy, copyright license, and fulfillment policy in one place.", path: "/legal" }),
+  ...familyMetadata({ title: referenceCardTitle("/legal") ?? "Legal Center", description: "This service's privacy policy, terms of service, refund policy, copyright license, and fulfillment policy in one place.", path: "/legal" }),
 };
 
 export default function LegalIndexPage() {

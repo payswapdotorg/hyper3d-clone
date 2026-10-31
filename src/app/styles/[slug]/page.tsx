@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { StylePageView } from "@/components/hyper3d/styles/style-page";
 import { findStylePage, STYLE_SLUGS } from "@/lib/styles";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -23,10 +24,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const def = findStylePage(slug);
   if (!def) return { title: "Style not found" };
+  const path = `/styles/${def.slug}`;
   return {
-    title: `${def.title} — Styles`,
+    title: referenceTitle(path) ?? `${def.title} — Styles`,
     description: def.description.slice(0, 180),
-    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/styles/${def.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? def.title, description: def.description.slice(0, 180), path }),
   };
 }
 

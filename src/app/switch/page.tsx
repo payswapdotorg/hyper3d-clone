@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { SwitchPageView } from "@/components/hyper3d/landing/switch-page";
 import { SWITCH_INDEX_PAGE } from "@/lib/landing";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -12,9 +13,9 @@ import { familyMetadata } from "@/lib/seo";
  * at the free studio and the real price list instead.
  */
 export const metadata: Metadata = {
-  title: `${SWITCH_INDEX_PAGE.title} — Hyper3D`,
+  title: referenceTitle("/switch") ?? `${SWITCH_INDEX_PAGE.title} — Hyper3D`,
   description: SWITCH_INDEX_PAGE.description,
-  ...familyMetadata({ title: `${SWITCH_INDEX_PAGE.title} — Hyper3D`, description: SWITCH_INDEX_PAGE.description, path: "/switch" }),
+  ...familyMetadata({ title: referenceCardTitle("/switch") ?? `${SWITCH_INDEX_PAGE.title} — Hyper3D`, description: SWITCH_INDEX_PAGE.description, path: "/switch" }),
 };
 
 export default function SwitchRoute() {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { UseCasePage } from "@/components/hyper3d/use-cases/use-case-page";
 import { findUseCasePage, USE_CASE_SLUGS } from "@/lib/use-cases";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -23,10 +24,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const def = findUseCasePage(slug);
   if (!def) return { title: "Use case not found" };
+  const path = `/use-cases/${def.slug}`;
   return {
-    title: `${def.title} — Use Cases`,
+    title: referenceTitle(path) ?? `${def.title} — Use Cases`,
     description: def.description.slice(0, 180),
-    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: `/use-cases/${def.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? def.title, description: def.description.slice(0, 180), path }),
   };
 }
 

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BlogArticlePage, BlogFillerPage } from "@/components/hyper3d/blog/blog-page";
 import { BLOG_CATALOG } from "@/lib/blog-registry";
 import { BLOG_RESERVED_SLUGS, findBlogEntry } from "@/lib/blog";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -25,22 +26,23 @@ export async function generateMetadata({
   const { slug } = await params;
   const entry = findBlogEntry(slug);
   if (!entry) return { title: "Article not found" };
+  const path = `/blog/${entry.slug}`;
   if (entry.family === "written" && entry.article) {
     return {
-      title: `${entry.article.title} — Blog — Hyper3D`,
+      title: referenceTitle(path) ?? `${entry.article.title} — Blog — Hyper3D`,
       description: entry.article.description.slice(0, 180),
-      ...familyMetadata({ title: entry.article.title, description: entry.article.description.slice(0, 180), path: `/blog/${entry.slug}`, type: "article" }),
+      ...familyMetadata({ title: referenceCardTitle(path) ?? entry.article.title, description: entry.article.description.slice(0, 180), path, type: "article" }),
     };
   }
   return {
-    title: `${entry.title} — not written here — Blog — Hyper3D`,
+    title: referenceTitle(path) ?? `${entry.title} — not written here — Blog — Hyper3D`,
     description:
       "This blog route is kept for reference-sitemap parity and served as an honestly marked page — no article was written for it, and none is faked.",
     ...familyMetadata({
-      title: `${entry.title} — not written here`,
+      title: referenceCardTitle(path) ?? `${entry.title} — not written here`,
       description:
         "A reference-parity blog route kept honestly marked — no article was written for it, and none is faked.",
-      path: `/blog/${entry.slug}`,
+      path,
     }),
   };
 }

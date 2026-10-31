@@ -18,6 +18,7 @@ import {
 } from "@/lib/tools-content";
 import { CONVERTER_INDEX } from "@/lib/tools-index-content";
 import type { ToolPageDef } from "@/lib/tool-types";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -90,10 +91,10 @@ export async function generateMetadata({
   const { slug } = await params;
   if (slug.length === 1 && slug[0] === "converter") {
     return {
-      title: `${CONVERTER_INDEX.title} — Tools`,
+      title: referenceTitle("/tools/converter") ?? `${CONVERTER_INDEX.title} — Tools`,
       description: CONVERTER_INDEX.description.slice(0, 180),
       ...familyMetadata({
-        title: CONVERTER_INDEX.title,
+        title: referenceCardTitle("/tools/converter") ?? CONVERTER_INDEX.title,
         description: CONVERTER_INDEX.description.slice(0, 180),
         path: "/tools/converter",
       }),
@@ -101,10 +102,10 @@ export async function generateMetadata({
   }
   if (slug.length === 1 && slug[0] === "viewer") {
     return {
-      title: `${CONVERTER_INDEX.viewerTitle} — Tools`,
+      title: referenceTitle("/tools/viewer") ?? `${CONVERTER_INDEX.viewerTitle} — Tools`,
       description: CONVERTER_INDEX.viewerDescription.slice(0, 180),
       ...familyMetadata({
-        title: CONVERTER_INDEX.viewerTitle,
+        title: referenceCardTitle("/tools/viewer") ?? CONVERTER_INDEX.viewerTitle,
         description: CONVERTER_INDEX.viewerDescription.slice(0, 180),
         path: "/tools/viewer",
       }),
@@ -113,9 +114,9 @@ export async function generateMetadata({
   const def = resolveToolPage(slug);
   if (!def) return { title: "Tool not found" };
   return {
-    title: `${def.title} — Tools`,
+    title: referenceTitle(def.route) ?? `${def.title} — Tools`,
     description: def.description.slice(0, 180),
-    ...familyMetadata({ title: def.title, description: def.description.slice(0, 180), path: def.route }),
+    ...familyMetadata({ title: referenceCardTitle(def.route) ?? def.title, description: def.description.slice(0, 180), path: def.route }),
   };
 }
 

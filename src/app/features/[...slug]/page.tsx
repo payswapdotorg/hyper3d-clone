@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { featureBySlug, featureSlugs } from "@/lib/features";
 import { FeaturePage } from "@/components/hyper3d/features/feature-page";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -22,10 +23,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const def = featureBySlug(slug.join("/"));
   if (!def) return { title: "Feature not found" };
+  const path = `/features/${def.slug}`;
   return {
-    title: `${def.title} — Features`,
+    title: referenceTitle(path) ?? `${def.title} — Features`,
     description: def.subline.slice(0, 180),
-    ...familyMetadata({ title: def.title, description: def.subline.slice(0, 180), path: `/features/${def.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? def.title, description: def.subline.slice(0, 180), path }),
   };
 }
 

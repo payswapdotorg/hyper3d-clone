@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { HelpCategoryPage } from "@/components/hyper3d/help/help-category-page";
 import { HELP_CATEGORY_SLUGS, findHelpCategory, helpArticlesByCategory } from "@/lib/help";
+import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -27,10 +28,11 @@ export async function generateMetadata({
   const { category } = await params;
   const def = findHelpCategory(category);
   if (!def) return { title: "Help topic not found" };
+  const path = `/help/${def.slug}`;
   return {
-    title: `${def.name} — Help Center`,
+    title: referenceTitle(path) ?? `${def.name} — Help Center`,
     description: def.blurb.slice(0, 180),
-    ...familyMetadata({ title: def.name, description: def.blurb.slice(0, 180), path: `/help/${def.slug}` }),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? def.name, description: def.blurb.slice(0, 180), path }),
   };
 }
 
