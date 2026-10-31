@@ -257,12 +257,14 @@ describe("i18n resolver — every localized route resolves honestly", () => {
     return out;
   }
 
-  it("generates exactly 5,975 + 4,943 = 10,918 serving static params", () => {
+  it("generates exactly 5,975 + 5,284 = 11,259 serving static params", () => {
     // t70: the SERVING set — the sitemap set plus the unsitemapped deep
     // trees the live reference serves (recon/locale-deep-trees.md):
     // 4,873 prompt routes + 11 tools indexes + 59 new sub-category
-    // routes (66 served, 7 already in the sitemap set)
-    expect(localeStaticParams()).toHaveLength(10918);
+    // routes (66 served, 7 already in the sitemap set). t79: + 341 blog
+    // category/pagination routes (11 locales × (12 + 19), probed 383/383
+    // → 200 on the reference, recon/t79/heads.json).
+    expect(localeStaticParams()).toHaveLength(11259);
   });
 
   it("resolves every generated param — zero dead routes", () => {
@@ -330,8 +332,14 @@ describe("i18n resolver — every localized route resolves honestly", () => {
     const dead = [
       ["zh", "event/chroma-awards"],
       ["zh", "omnicraft/hdri"],
-      ["zh", "blog/page/2"],
-      ["zh", "blog/category/news"],
+      // t79: the reference's own locale blog boundaries — page 1 lives at
+      // the index, page 21 is past the window, categories never localize
+      // (the -zh suffixed form 404s), and unknown categories 404.
+      ["zh", "blog/page/1"],
+      ["zh", "blog/page/21"],
+      ["zh", "blog/page/not-a-number"],
+      ["zh", "blog/category/news-zh"],
+      ["zh", "blog/category/not-a-category"],
       ["zh", "blog/rss.xml"],
       // t70 boundaries — the localized prompt tree keeps the EN math:
       // /1 and /18 are outside the 2..17 pagination, unknown models,
@@ -408,22 +416,24 @@ describe("i18n deep trees (t70) — served-but-not-sitemapped parity", () => {
   /** The per-locale SERVING additions: the localized 3D prompt library
    * (16 pagination + 403 details + 11 hubs + 13 hub pages = 443), the
    * bare tools index (1), and the sub-category matrix widened from the
-   * sitemap subset to all six slugs (6 - the sitemap-listed count). */
+   * sitemap subset to all six slugs (6 - the sitemap-listed count).
+   * t79 adds the blog category/pagination matrix per locale: 12
+   * category hubs + 19 pagination pages (2..BLOG_PAGE_COUNT) = 31. */
   const SERVING_ADDITIONS: Record<string, number> = {
-    zh: 443 + 1 + 6,
-    de: 443 + 1 + 6,
-    ja: 443 + 1 + 5, // sitemap already lists nsfw-content
-    ko: 443 + 1 + 4, // sitemap already lists insects-bugs + nsfw-content
-    ru: 443 + 1 + 6,
-    pt: 443 + 1 + 5, // sitemap already lists nsfw-content
-    fr: 443 + 1 + 6,
-    es: 443 + 1 + 4, // sitemap already lists firearms + nsfw-content
-    ar: 443 + 1 + 6,
-    tr: 443 + 1 + 5, // sitemap already lists rocks-minerals
-    it: 443 + 1 + 6,
+    zh: 443 + 1 + 6 + 31,
+    de: 443 + 1 + 6 + 31,
+    ja: 443 + 1 + 5 + 31, // sitemap already lists nsfw-content
+    ko: 443 + 1 + 4 + 31, // sitemap already lists insects-bugs + nsfw-content
+    ru: 443 + 1 + 6 + 31,
+    pt: 443 + 1 + 5 + 31, // sitemap already lists nsfw-content
+    fr: 443 + 1 + 6 + 31,
+    es: 443 + 1 + 4 + 31, // sitemap already lists firearms + nsfw-content
+    ar: 443 + 1 + 6 + 31,
+    tr: 443 + 1 + 5 + 31, // sitemap already lists rocks-minerals
+    it: 443 + 1 + 6 + 31,
   };
 
-  it("serves the deep trees in every locale: 5,975 + 4,943 = 10,918", () => {
+  it("serves the deep trees in every locale: 5,975 + 5,284 = 11,259", () => {
     let total = 0;
     for (const locale of LOCALE_CODES) {
       const serving = localeServingPaths(locale);
@@ -432,7 +442,7 @@ describe("i18n deep trees (t70) — served-but-not-sitemapped parity", () => {
       );
       total += serving.length;
     }
-    expect(total).toBe(10918);
+    expect(total).toBe(11259);
   });
 
   it("every locale carries the full localized prompt library", () => {

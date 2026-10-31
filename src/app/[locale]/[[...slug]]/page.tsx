@@ -11,6 +11,12 @@ import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { referenceOgImage } from "@/lib/reference-og-images";
 import { referenceArticleMeta } from "@/lib/reference-article-metas";
 import {
+  EN_CATEGORY_TITLE_NAMES,
+  LOCALE_BLOG_WORD,
+  LOCALE_CATEGORY_NAMES,
+  LOCALE_PAGE_WORD,
+} from "@/lib/locale-blog-terms";
+import {
   FACEBOOK_DOMAIN_VERIFICATION,
   OG_BANNER_FALLBACK_URL,
   SITE_ORIGIN,
@@ -42,7 +48,11 @@ export function generateStaticParams() {
   return localeStaticParams();
 }
 
-/** The English path a localized page mirrors (for canonical + hreflang). */
+/** The English path a localized page mirrors (for canonical + hreflang).
+ * t79 exceptions (both the reference's own shapes, probed): the blog
+ * category hubs canonicalize to THEMSELVES in-locale and carry zero
+ * hreflang, and the blog pagination pages canonicalize to the locale
+ * blog index while their hreflang still points page-for-page. */
 function englishPath(locale: string, slug: string[] | undefined): string | null {
   if (!isLocale(locale)) return null;
   const path = (slug ?? []).join("/");
@@ -51,6 +61,8 @@ function englishPath(locale: string, slug: string[] | undefined): string | null 
   if (def.kind === "home") return "/";
   if (def.kind === "hub") return def.enHref;
   if (def.kind === "article") return def.enHref;
+  if (def.kind === "blog-category") return `/blog/category/${def.category}`;
+  if (def.kind === "blog-pagination") return `/blog/page/${def.page}`;
   if (def.kind === "prompts-index") {
     return def.page === 1 ? "/3d-prompts" : `/3d-prompts/${def.page}`;
   }
@@ -80,6 +92,19 @@ function localizedDescription(locale: string, path: string): string | undefined 
   }
   if (def.kind === "hub") return fillCount(messages.hub.intro, def.count);
   if (def.kind === "article") return messages.notice.body;
+  if (def.kind === "blog-category") {
+    // t79: the reference's own template — EN sentence, localized name.
+    return `Browse the latest Hyper3D blog posts in the ${LOCALE_CATEGORY_NAMES[locale][def.category]} category.`;
+  }
+  if (def.kind === "blog-pagination") {
+    // t79: the reference prefixes its locale index description with
+    // "{Page word} {n}: " on every pagination page (0/209 mismatches
+    // against the probed index descriptions).
+    const base =
+      referenceDescription(`/${locale}/blog`) ??
+      localizedDescription(locale, "blog") ?? "";
+    return `${LOCALE_PAGE_WORD[locale]} ${def.page}: ${base}`;
+  }
   return messages.localeOnly.body;
 }
 
@@ -112,6 +137,16 @@ function localizedTitle(locale: string, path: string): string | undefined {
   if (def.kind === "prompt-hub") {
     return `${def.hub.name} · ${messages.families.prompts} — Hyper3D`;
   }
+  if (def.kind === "blog-category") {
+    // t79: "{localized category} | {localized Blog} | Hyper3D" — the
+    // reference's exact two-separator title on all 132 locale hubs.
+    return `${LOCALE_CATEGORY_NAMES[locale][def.category]} | ${LOCALE_BLOG_WORD[locale]} | Hyper3D`;
+  }
+  if (def.kind === "blog-pagination") {
+    // t79: "{localized Blog} — {localized Page} {n} | Hyper3D" — the
+    // reference's exact title on all 209 locale pagination pages.
+    return `${LOCALE_BLOG_WORD[locale]} — ${LOCALE_PAGE_WORD[locale]} ${def.page} | Hyper3D`;
+  }
   const familyLabel = messages.families[def.family];
   if (def.kind === "hub") return `${familyLabel} — Hyper3D`;
   return `${def.title} — ${familyLabel} — Hyper3D`;
@@ -126,6 +161,9 @@ export async function generateMetadata({
   const path = (slug ?? []).join("/");
   const enPath = englishPath(locale, slug);
   if (!enPath) return { title: "Page not found" };
+  const def = isLocale(locale) ? resolveLocalePage(locale, path) : null;
+  const isBlogCategory = def?.kind === "blog-category";
+  const isBlogPagination = def?.kind === "blog-pagination";
   const title = localizedTitle(locale, path);
   // t75: the reference's locale pages ship full link-preview cards —
   // og:title is the <title> minus the " | Hyper3D" suffix (registry card
@@ -136,11 +174,24 @@ export async function generateMetadata({
   // meta description, pinned byte-faithfully (full length — 106 pinned
   // descriptions run past the 180-char slice this clone's templates
   // use); every other route keeps the honest localized template copy.
+  // t79: the blog category/pagination descriptions are also served full
+  // length — the reference derives them from templates that embed the
+  // full index description, never a 180-char slice.
   const description =
     referenceDescription(localePath) ??
-    localizedDescription(locale, path)?.slice(0, 180);
+    (isBlogCategory || isBlogPagination
+      ? localizedDescription(locale, path)
+      : localizedDescription(locale, path)?.slice(0, 180));
   const cardTitle =
-    referenceCardTitle(localePath) ?? title ?? `${locale} · Hyper3D`;
+    referenceCardTitle(localePath) ??
+    // t79: the reference's og:title on its blog category/pagination
+    // routes is exactly the <title> minus the " | Hyper3D" suffix —
+    // the same rule the registry card titles follow (probe: 383/383).
+    (isBlogCategory || isBlogPagination
+      ? title?.replace(/ \| Hyper3D$/, "")
+      : undefined) ??
+    title ??
+    `${locale} · Hyper3D`;
   // t77: a censused locale path serves the reference's own og:image,
   // pinned byte-faithfully (the same URL serves og:image and
   // twitter:image on the reference — 0 mismatches in the probe);
@@ -149,7 +200,6 @@ export async function generateMetadata({
   // page (the t75 title minus " | Hyper3D").
   const image =
     referenceOgImage(localePath) ?? OG_BANNER_FALLBACK_URL;
-  const def = isLocale(locale) ? resolveLocalePage(locale, path) : null;
   const cardType: "website" | "article" =
     def?.kind === "article" ? "article" : "website";
   // t78: the blog family's own head pieces — the reference pins its
@@ -160,20 +210,35 @@ export async function generateMetadata({
   const isBlogArticle = def?.kind === "article" && def.family === "blog";
   const isBlogIndex = path === "blog";
   const article = isBlogArticle ? referenceArticleMeta(localePath) : undefined;
+  // t79: the reference's own canonical/hreflang exceptions on the blog
+  // family's category/pagination routes (recon/t79/heads.json, verified
+  // on all 341 pages): category hubs canonicalize to THEMSELVES in-locale
+  // and carry zero hreflang; pagination pages canonicalize (and set
+  // og:url) to the LOCALE BLOG INDEX while their 13-link hreflang set
+  // still points page-for-page at every locale's pagination route.
+  const canonical = isBlogCategory
+    ? localePath
+    : isBlogPagination
+      ? `/${locale}/blog`
+      : enPath;
+  const ogUrl = isBlogPagination ? `/${locale}/blog` : localePath;
+  const languages = isBlogCategory ? undefined : hreflangFor(enPath);
   return {
     title,
     description,
     // t78: the reference's own crawler-surface head — robots
     // "index, follow" and its facebook-domain-verification token on
-    // every censused locale page.
-    robots: "index, follow",
+    // every censused locale page. t79: the blog category override —
+    // the reference serves every locale category hub as
+    // "noindex, follow" (132/132 in the probe).
+    robots: isBlogCategory ? "noindex, follow" : "index, follow",
     other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION },
     openGraph: {
       type: cardType,
       siteName: "Hyper3D",
       title: cardTitle,
       description,
-      url: `${SITE_ORIGIN}${localePath}`,
+      url: `${SITE_ORIGIN}${ogUrl}`,
       images: [{ url: image, alt: cardTitle }],
       ...(article
         ? {
@@ -191,9 +256,9 @@ export async function generateMetadata({
       images: [{ url: image, alt: cardTitle }],
     },
     alternates: {
-      canonical: enPath,
-      languages: hreflangFor(enPath),
-      ...((isBlogIndex || isBlogArticle)
+      canonical,
+      ...(languages ? { languages } : {}),
+      ...((isBlogIndex || isBlogArticle || isBlogCategory || isBlogPagination)
         ? {
             types: {
               "application/rss+xml": [

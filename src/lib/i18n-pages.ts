@@ -34,8 +34,12 @@ import { findStylePage } from "./styles";
 import { findUseCasePage } from "./use-cases";
 import { legalBySlug } from "./legal";
 import { SUBCATEGORY_PAGES } from "./subcategories";
-import { findBlogEntry } from "./blog";
-import type { BlogFamily } from "./blog-types";
+import {
+  BLOG_CATEGORIES,
+  BLOG_PAGE_COUNT,
+  findBlogEntry,
+} from "./blog";
+import type { BlogCategory, BlogFamily } from "./blog-types";
 import {
   REFERENCE_CONVERTER_PAIRS,
   REFERENCE_IMAGE_TO_FORMATS,
@@ -64,6 +68,10 @@ export type LocaleFamilyKey =
   | "legal"
   | "subCategories"
   | "blog";
+
+/** t79: a blog category slug as the locale tree accepts it (the
+ * reference's twelve, never localized — the suffixed forms 404). */
+export type BlogCategorySlug = BlogCategory;
 
 export interface LocaleLink {
   href: string;
@@ -95,6 +103,26 @@ export type LocalePageDef =
       family: "subCategories";
       slug: string;
       title: string;
+    }
+  | {
+      /** t79: a localized blog topic hub — /{loc}/blog/category/{slug}. The
+       * reference serves all 12 categories in every locale (200,
+       * noindex,follow, canonical self, zero hreflang). Body: the locale's
+       * own articles in that topic + the EN category link. */
+      kind: "blog-category";
+      category: BlogCategorySlug;
+      /** The locale's articles in this topic, in catalog order. */
+      links: LocaleLink[];
+    }
+  | {
+      /** t79: a localized blog pagination page — /{loc}/blog/page/{n} (n in
+       * 2..BLOG_PAGE_COUNT). The reference serves its full 20-page window in
+       * every locale with the index-aliased head (canonical/og:url → the
+       * locale blog index); each page's body is the reference's index list
+       * repeated (probe: 36/39 links identical across pages) — this clone
+       * shows the honest hub view with the page number named instead. */
+      kind: "blog-pagination";
+      page: number;
     }
   | {
       /** The localized prompt-library index — /{loc}/3d-prompts plus its
@@ -162,8 +190,11 @@ export const SUBCATEGORY_SERVING_SLUGS: readonly string[] = [
  * (t70): the sitemap set above PLUS the deep trees the live site serves
  * under locale prefixes but never lists — the full localized 3D prompt
  * library (16 pagination + 403 details + 11 hubs + 13 hub pages), the
- * bare tools index, and the six-slug sub-category matrix. The static-param
- * source of truth; the sitemap generator keeps using localePaths(). */
+ * bare tools index, and the six-slug sub-category matrix. t79 adds the
+ * blog family's category/pagination matrix (12 categories + 19 pages,
+ * every locale, probed 383/383 → 200 — recon/t79/heads.json). The
+ * static-param source of truth; the sitemap generator keeps using
+ * localePaths() (these routes are unsitemapped on the reference too). */
 export function localeServingPaths(locale: LocaleCode): string[] {
   const paths = new Set(localePaths(locale));
   for (let page = 2; page <= PROMPT_PAGE_COUNT; page += 1) {
@@ -181,6 +212,14 @@ export function localeServingPaths(locale: LocaleCode): string[] {
   paths.add("tools");
   for (const slug of SUBCATEGORY_SERVING_SLUGS) {
     paths.add(`sub-categories/${slug}`);
+  }
+  // t79: the blog category/pagination matrix (never sitemapped, always
+  // served — the reference's own serving set, probed per locale).
+  for (const cat of BLOG_CATEGORIES) {
+    paths.add(`blog/category/${cat.slug}`);
+  }
+  for (let page = 2; page <= BLOG_PAGE_COUNT; page += 1) {
+    paths.add(`blog/page/${page}`);
   }
   return [...paths];
 }
@@ -367,6 +406,22 @@ export function resolveLocalePage(locale: LocaleCode, path: string): LocalePageD
 
   /* ---- blog: the locale-suffixed article set ------------------------ */
   if (path === "blog") return blogHub(locale);
+  // t79: /{loc}/blog/category/{slug} — the 12 topic hubs, EN slugs verbatim
+  // (the reference 404s the localized-suffixed forms; probe recon/t79).
+  if (path.startsWith("blog/category/")) {
+    const slug = path.slice("blog/category/".length);
+    const cat = BLOG_CATEGORIES.find((c) => c.slug === slug);
+    if (!cat) return null;
+    return { kind: "blog-category", category: cat.slug, links: localeBlogCategoryLinks(locale, cat.slug) };
+  }
+  // t79: /{loc}/blog/page/{n} — the 20-page window, page 1 at the index.
+  if (path.startsWith("blog/page/")) {
+    const num = path.slice("blog/page/".length);
+    if (!/^\d+$/.test(num)) return null;
+    const page = Number(num);
+    if (page < 2 || page > BLOG_PAGE_COUNT) return null;
+    return { kind: "blog-pagination", page };
+  }
   if (path.startsWith("blog/")) {
     const slug = path.slice("blog/".length);
     if (!LOCALE_BLOG_SLUGS[locale].includes(slug)) return null;
@@ -385,6 +440,23 @@ export function resolveLocalePage(locale: LocaleCode, path: string): LocalePageD
   }
 
   return null;
+}
+
+/** t79: the locale's own articles in one blog topic, in catalog order —
+ * the exact set the reference's locale category pages list (probe:
+ * /zh/blog/category/news lists precisely the three -zh news articles
+ * this clone's census knows). Category membership is the registry's
+ * computed category, exactly what the EN category hubs slice. */
+function localeBlogCategoryLinks(locale: LocaleCode, category: BlogCategory): LocaleLink[] {
+  const links: LocaleLink[] = [];
+  for (const slug of LOCALE_BLOG_SLUGS[locale]) {
+    let base = blogBaseSlug(locale, slug);
+    if (!findBlogEntry(base) && base.endsWith("-zh")) base = base.slice(0, -3);
+    const entry = findBlogEntry(base);
+    if (!entry || entry.category !== category) continue;
+    links.push({ href: `/${locale}/blog/${slug}`, label: entry.title });
+  }
+  return links;
 }
 
 /* ------------------------------------------------- the prompt library */

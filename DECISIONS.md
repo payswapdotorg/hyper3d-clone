@@ -1936,3 +1936,83 @@ routes (the Vercel serving edge being account-blocked mid-session —
 402 DEPLOYMENT_DISABLED on every route including direct deployment
 URLs while the API reports READY; production verification to be
 re-run when serving is restored; the code is pushed to GitHub).
+
+## 59. t79 — the locale blog category/pagination routes: 341 pages the reference serves and this clone used to 404
+
+The t78 probe found the reference serving `/{locale}/blog/category/
+{slug}` and `/{locale}/blog/page/{n}` that this clone 404'd. The t79
+probe (recon/t79 — 389 URLs, HEAD matrix + full head GET, 383/383 real
+routes → 200) found the complete matrix: all 11 locales serve all 12
+categories (EN slugs verbatim — the suffixed forms 404) and the full
+19-page pagination window, even though the locale sitemaps carry only
+234–235 articles each. The window is the EN math, not the locale's.
+
+The head is byte-faithful on every dimension, and — like og:image in
+t77 — almost everything DERIVES from a tiny registry, nothing per-page
+is pinned: 11 Blog words + 11 Page words + 132 localized category names
++ 12 EN title-case names (~155 words total, pinned verbatim in
+`src/lib/locale-blog-terms.ts`, generator-asserted against all 383
+probed routes). From those: pagination titles
+`{Blog} — {Page} {n} | Hyper3D` (0/209 mismatches), category titles
+`{category} | {Blog} | Hyper3D` (0/144), pagination descriptions
+`{Page} {n}: {the t76 locale index description}` (byte-identical,
+0/209), category descriptions the EN `Browse the latest Hyper3D blog
+posts in the {name} category.` sentence (144/144), og:title = title
+minus the suffix (383/383), og:image the shared og-banner.webp on all
+383 (exactly the t77 fallback URL — no registry needed).
+
+Two canonical-shape exceptions to the t66 locale contract, both the
+reference's own and both pinned: the category hubs canonicalize to
+THEMSELVES in-locale with ZERO hreflang links (144/144 — the only
+family-route class without an alternate set); the pagination pages
+canonicalize and set og:url to the LOCALE BLOG INDEX while their
+13-link hreflang set still points page-for-page. Also fixed: the
+Portuguese hreflang tag is `pt-BR` on every page of the reference —
+`hreflangFor` was emitting bare `pt` on every locale page this clone
+serves.
+
+EN head corrections discovered en route (routes this clone already
+served with template head): the real EN pagination title is
+`Blog — Page {n} | Hyper3D` with canonical/og:url aliased to /blog and
+the description `Page {n}: {the /blog registry description}`; the real
+EN category title is `{Name} | Blog | Hyper3D` in the reference's own
+title case (`Text To 3D` — its display name says `Text to 3D`, both
+pinned separately), description the same Browse sentence, zero
+hreflang.
+
+The body stays honest per the two-tier contract: locale category pages
+list the locale's own census-derived articles (the reference's zh/news
+lists three of the five this clone's registry slices — its locale
+category lists are partial CMS lists; the clone serves the complete
+topic set the EN hub computes), and locale pagination pages state the
+page number and link the EN slice — the reference's own pagination
+pages don't paginate either (36/39 links identical across its pages 2,
+3, 19, 20; the EN pages repeat a 37-link fixed block with a small
+per-page tail).
+
+Discovery queued for t80: the reference serves a 13-link hreflang set
+on EVERY censused EN page (/pricing, /features/*, /blog articles,
+/help, /tools all probed with it) while this clone's EN family routes
+emit none — `familyMetadata` never generates `alternates.languages`.
+A full-tree dimension (~5,000 EN routes), deliberately not smuggled
+into this one.
+
+Copy discipline (24 new tests + 3 updated pins → 886 / 46 suites
+green, lint clean, tsc baseline unchanged at 26, none new): the terms
+registry pinned (word/spot pins across all scripts, the EN title-case
+pair, the 11×12 census); resolution pinned (all 132 category pairs,
+all 209 pagination pages, the four 404 boundaries — page/1, page/21,
+suffixed and unknown categories; the zh/news superset; every locale
+category link targeting a real localized article); the head pinned by
+importing the routes' generateMetadata (zh/ar/de/fr spot checks with
+byte-level titles and descriptions, canonicals, zero-hreflang
+categories, index-aliased pagination with its 13-link set, full-length
+descriptions; EN title-case and alias corrections); hreflangFor's
+pt-BR tag pinned. The local standalone production build verified on
+served HTML (titles, descriptions, robots, canonicals, og cards, the
+13-link hrefLang sets with pt-BR, RSS links, the zero-hreflang
+category shape, the h1/article-link bodies, and the 404 boundaries).
+Production: the Vercel account is still fair-use blocked
+(`resource_creation_blocked` on both tokens) — as at the end of t78;
+production re-verification stays pending; the code is pushed to
+GitHub.

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { BlogListPage } from "@/components/hyper3d/blog/blog-index-pages";
 import { BLOG_PAGE_COUNT } from "@/lib/blog-registry";
 import { blogPage } from "@/lib/blog";
+import { referenceDescription } from "@/lib/reference-descriptions";
+import { hreflangFor } from "@/lib/i18n";
 import { familyMetadata } from "@/lib/seo";
 
 /**
@@ -11,6 +13,13 @@ import { familyMetadata } from "@/lib/seo";
  * articles across 20 pages; ours computes the same math from the catalog).
  * Params come from the registry only — no smuggled literals — and pages
  * outside 2..BLOG_PAGE_COUNT 404. Page 1 lives at /blog itself.
+ *
+ * t79: the head is the reference's own byte-faithful shape (probed on all
+ * 19 pages — recon/t79/heads.json): <title> "Blog — Page {n} | Hyper3D",
+ * og:title "Blog — Page {n}", the description is the index description
+ * prefixed "Page {n}: ", and BOTH the canonical and og:url alias to /blog
+ * (never the pagination URL itself) while the 13-link hreflang set still
+ * points page-for-page at every locale's pagination route.
  */
 export function generateStaticParams() {
   const pages: { page: string }[] = [];
@@ -26,17 +35,39 @@ export async function generateMetadata({
   const { page } = await params;
   const n = Number(page);
   if (!Number.isInteger(n) || n < 2 || n > BLOG_PAGE_COUNT) return { title: "Blog not found" };
+  // The reference's own index description with its "Page {n}: " prefix —
+  // the pinned t76 registry value, falling back to the honest template.
+  const indexDescription =
+    referenceDescription("/blog") ??
+    "The honest blog of an AI-3D workspace clone: written articles anchored to real code, honestly marked catalog routes.";
+  const description = `Page ${n}: ${indexDescription}`;
+  const cardTitle = `Blog — Page ${n}`;
+  // t77 wiring: uncensused pagination paths fall back to the shared
+  // og-banner.webp — exactly the image the reference serves here.
+  const family = familyMetadata({
+    title: cardTitle,
+    description,
+    path: `/blog/page/${n}`,
+    // t78: the reference ships the RSS alternate link on its blog
+    // pagination too (recon/t78/notes.md).
+    rss: true,
+  });
   return {
-    title: `All articles, page ${n} — Blog — Hyper3D`,
-    description: `The full blog catalog, 40 routes per page — written articles, honestly marked routes, and the computed census.`,
-    ...familyMetadata({
-      title: `All articles, page ${n}`,
-      description: "The full blog catalog, 40 routes per page — written articles, honestly marked routes, and the computed census.",
-      path: `/blog/page/${n}`,
-      // t78: the reference ships the RSS alternate link on its blog
-      // pagination too (recon/t78/notes.md).
-      rss: true,
-    }),
+    title: `${cardTitle} | Hyper3D`,
+    description,
+    ...family,
+    // t79: canonical + og:url alias to /blog, hreflang stays page-for-page.
+    alternates: {
+      canonical: "/blog",
+      languages: hreflangFor(`/blog/page/${n}`),
+      types: {
+        "application/rss+xml": [{ url: "/blog/rss.xml", title: "Hyper3D Blog" }],
+      },
+    },
+    openGraph: {
+      ...family.openGraph,
+      url: "/blog",
+    },
   };
 }
 

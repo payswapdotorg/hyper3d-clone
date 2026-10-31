@@ -7,6 +7,12 @@ import { STUDIO_PATH } from "@/lib/studio-path";
 import { LOCALE_SUBCATEGORY_SLUGS } from "@/lib/i18n-locale-data";
 import type { LocaleFamilyKey, LocaleLink, LocalePageDef, LocaleStatus } from "@/lib/i18n-pages";
 import {
+  EN_CATEGORY_TITLE_NAMES,
+  LOCALE_BLOG_WORD,
+  LOCALE_CATEGORY_NAMES,
+  LOCALE_PAGE_WORD,
+} from "@/lib/locale-blog-terms";
+import {
   PROMPT_CENSUS,
   PROMPT_PAGE_COUNT,
   promptPage,
@@ -177,6 +183,32 @@ export function LocalePageView({
       </div>
     );
   }
+  if (def.kind === "blog-category") {
+    return (
+      <div
+        lang={locale}
+        dir={dir}
+        className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white"
+      >
+        <LocaleTopBar locale={locale} familyLabel={familyLabelFor(locale, "blog")} familyHref={`/${locale}/blog`} path={path} />
+        <BlogCategoryLocaleView locale={locale} def={def} />
+        <LocaleFooter locale={locale} />
+      </div>
+    );
+  }
+  if (def.kind === "blog-pagination") {
+    return (
+      <div
+        lang={locale}
+        dir={dir}
+        className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white"
+      >
+        <LocaleTopBar locale={locale} familyLabel={familyLabelFor(locale, "blog")} familyHref={`/${locale}/blog`} path={path} />
+        <BlogPaginationLocaleView locale={locale} def={def} />
+        <LocaleFooter locale={locale} />
+      </div>
+    );
+  }
   const familyLabel = familyLabelFor(locale, def.family);
   const familyHref = familyHrefFor(locale, def.family, def);
   return (
@@ -313,6 +345,112 @@ function HomeView({ locale }: { locale: LocaleCode }) {
             </li>
           ))}
         </ul>
+      </section>
+    </main>
+  );
+}
+
+/* ------------------------------------------------- t79 blog category/page */
+
+/**
+ * /{loc}/blog/category/{slug} — the locale topic hub. The reference serves
+ * these as noindex,follow link farms listing the locale's own articles in
+ * the topic (probe: /zh/blog/category/news lists exactly the three -zh
+ * news articles); this clone lists the same census-derived set with the
+ * EN category as the content-bearing original.
+ */
+function BlogCategoryLocaleView({
+  locale,
+  def,
+}: {
+  locale: LocaleCode;
+  def: Extract<LocalePageDef, { kind: "blog-category" }>;
+}) {
+  const messages = LOCALE_MESSAGES[locale];
+  const name = LOCALE_CATEGORY_NAMES[locale][def.category];
+  return (
+    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
+      <section className="border-b border-white/10 pb-8">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300/80">
+          {messages.home.eyebrow}
+        </p>
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-4xl">
+          {name}
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+          {fillCount(messages.hub.intro, def.links.length)}
+        </p>
+        <div className="mt-6">
+          <Link
+            href={`/blog/category/${def.category}`}
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-white/15 bg-white/[0.04] px-4 text-sm font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
+          >
+            {messages.hub.browse} · {EN_CATEGORY_TITLE_NAMES[def.category]}
+          </Link>
+        </div>
+      </section>
+
+      {def.links.length > 0 ? (
+        <section className="mt-8">
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {def.links.map((link: LocaleLink) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="flex min-h-11 items-center rounded-xl border border-white/10 bg-white/[0.02] px-4 text-sm font-bold text-white/75 transition-colors hover:border-violet-400/40 hover:bg-violet-400/[0.04] hover:text-violet-100"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <section className="mt-8">
+          <p className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center text-sm text-white/45">
+            {messages.parity}
+          </p>
+        </section>
+      )}
+    </main>
+  );
+}
+
+/**
+ * /{loc}/blog/page/{n} — the locale pagination surface. The reference serves
+ * its full 20-page window per locale but repeats the index's article list
+ * on every page (probe: 36/39 links identical across pages 2, 3, 19, 20) —
+ * the honest clone states the page number and points at the EN pagination
+ * that actually slices the catalog.
+ */
+function BlogPaginationLocaleView({
+  locale,
+  def,
+}: {
+  locale: LocaleCode;
+  def: Extract<LocalePageDef, { kind: "blog-pagination" }>;
+}) {
+  const messages = LOCALE_MESSAGES[locale];
+  return (
+    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
+      <section className="border-b border-white/10 pb-8">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300/80">
+          {LOCALE_PAGE_WORD[locale]} {def.page}
+        </p>
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-4xl">
+          {LOCALE_BLOG_WORD[locale]}
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+          {messages.parity}
+        </p>
+        <div className="mt-6">
+          <Link
+            href={`/blog/page/${def.page}`}
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-white/15 bg-white/[0.04] px-4 text-sm font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
+          >
+            {messages.hub.browse}
+          </Link>
+        </div>
       </section>
     </main>
   );

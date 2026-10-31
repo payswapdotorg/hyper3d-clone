@@ -70,12 +70,17 @@ export function localePath(locale: LocaleCode, path: string): string {
 
 /** The locale-aware hreflang map for one page: EN (unprefixed) + the 11
  * localized prefixes, exactly the reference's 13-link set (12 languages +
- * x-default pointing at the English original). */
+ * x-default pointing at the English original).
+ *
+ * t79: the reference emits pt-BR (not pt) as the Portuguese hreflang on
+ * every HTML <link rel="alternate"> — verified across the blog family
+ * probe (recon/t79/heads.json) and the schema-org JSON-LD parity already
+ * shipped. The map key mirrors the reference's own tag byte-for-byte. */
 export function hreflangFor(path: string): Record<string, string> {
   const clean = path === "/" ? "" : path;
   const map: Record<string, string> = { en: clean || "/" };
   for (const loc of LOCALE_CODES) {
-    map[loc] = `/${loc}${clean}`;
+    map[loc === "pt" ? "pt-BR" : loc] = `/${loc}${clean}`;
   }
   map["x-default"] = clean || "/";
   return map;
