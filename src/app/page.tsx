@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { MarketingHome } from "@/components/hyper3d/landing/marketing-home";
 import { JsonLd } from "@/components/hyper3d/json-ld";
 import { homeGraph, FACEBOOK_DOMAIN_VERIFICATION } from "@/lib/schema-org";
+import { referenceAlternateLanguages } from "@/lib/reference-alternate-languages";
 import { WORKSPACE_BOUNCE_SCRIPT } from "@/lib/workspace-visit";
 
 /**
@@ -50,7 +51,13 @@ export const metadata: Metadata = {
       "https://storage.deemos.dev/features/agentic/b7faa93dd63010643d74db337da0f2ee03b365ea.webp",
     ],
   },
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    // t80: the reference's own 13-link hreflang set on the landing root
+    // (en first, the eleven locale roots, x-default last) — same set
+    // familyMetadata derives for every EN family route.
+    languages: referenceAlternateLanguages("/") ?? undefined,
+  },
 };
 
 export default function Home() {

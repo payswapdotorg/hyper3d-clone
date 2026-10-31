@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { ToolsMatrixIndexView } from "@/components/hyper3d/tools/tools-matrix-page";
-import { hreflangFor } from "@/lib/i18n";
 import { TOOLS_MATRIX_INDEX } from "@/lib/tools-index-content";
 import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
@@ -18,9 +17,11 @@ import { familyMetadata } from "@/lib/seo";
  * and the page itself is the clone's own honest index — computed census,
  * the reference's own link set, and pointers to the four real tools.
  *
- * Metadata mirrors the reference's own shape for this route:
+ * Metadata mirrors the reference's own shape for this route: the
  * self-canonical plus the full 13-link hreflang set (all eleven
- * /{locale}/tools mirrors exist since t70).
+ * /{locale}/tools mirrors exist since t70) — both now derived by
+ * familyMetadata itself (t80), which previously this route pinned by
+ * hand.
  */
 export const metadata: Metadata = {
   title: referenceTitle("/tools") ?? `${TOOLS_MATRIX_INDEX.title} — Hyper3D`,
@@ -30,10 +31,6 @@ export const metadata: Metadata = {
     description: referenceDescription("/tools") ?? TOOLS_MATRIX_INDEX.description.slice(0, 180),
     path: "/tools",
   }),
-  alternates: {
-    canonical: "/tools",
-    languages: hreflangFor("/tools"),
-  },
 };
 
 export default function ToolsMatrixRoute() {

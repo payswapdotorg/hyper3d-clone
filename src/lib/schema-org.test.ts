@@ -16,6 +16,7 @@ import {
   breadcrumbList,
 } from "./schema-org";
 import { familyMetadata } from "./seo";
+import { referenceAlternateLanguages } from "./reference-alternate-languages";
 import { FEATURE_PAGES } from "./features-content-core";
 import { featureBySlug } from "./features";
 import { findUseCasePage, USE_CASE_ROUTES } from "./use-cases";
@@ -227,7 +228,11 @@ describe("seo — per-family link-preview metadata", () => {
         },
       ],
     });
-    expect(md.alternates).toEqual({ canonical: `${SITE_ORIGIN}/features/text-to-3d` });
+    expect(md.alternates).toEqual({
+      canonical: `${SITE_ORIGIN}/features/text-to-3d`,
+      // t80: family routes carry the reference's own 13-link hreflang set
+      languages: referenceAlternateLanguages("/features/text-to-3d"),
+    });
   });
 
   it("uncensused paths fall back to the reference's own shared og-banner.webp", () => {

@@ -30,6 +30,7 @@ import {
   SITE_ORIGIN,
 } from "./schema-org";
 import { referenceOgImage } from "./reference-og-images";
+import { referenceAlternateLanguages } from "./reference-alternate-languages";
 import type { ReferenceArticleMeta } from "./reference-article-metas";
 
 export interface FamilyMetadataInput {
@@ -58,6 +59,14 @@ export interface FamilyMetadataInput {
    * already applies to the reference's relative self-URLs.
    */
   rss?: boolean;
+  /**
+   * t80 — override the hreflang alternate set this path would derive
+   * (see referenceAlternateLanguages). Only for routes that need a
+   * different set than the reference's own per-path behavior; every
+   * funnel so far is fully path-derived, so this stays unused-in-practice
+   * insurance.
+   */
+  languages?: Record<string, string> | null;
 }
 
 export function familyMetadata({
@@ -67,12 +76,20 @@ export function familyMetadata({
   type = "website",
   article,
   rss,
+  languages,
 }: FamilyMetadataInput): Metadata {
   const url = `${SITE_ORIGIN}${path}`;
   // t77: the reference's own og:image for censused paths, hotlinked
   // from its CDN (the honest alternative to mirroring 797 assets);
   // uncensused deep routes get the reference's own shared banner.
   const image = referenceOgImage(path) ?? OG_BANNER_FALLBACK_URL;
+  // t80: the reference's own hreflang alternate set for this path —
+  // the full 13-link set on family routes, per-article subsets on blog
+  // articles, en+x-default on the untranslated, and none at all on
+  // the zero-link classes (categories, the app surface, the 3d-prompts
+  // tree below its index). Relative hrefs resolve against metadataBase,
+  // the same origin translation every canonical already applies.
+  const alternateLanguages = languages ?? referenceAlternateLanguages(path);
   return {
     // t78: the reference's own crawler-surface head — robots
     // "index, follow" and its facebook-domain-verification token on
@@ -105,6 +122,9 @@ export function familyMetadata({
     },
     alternates: {
       canonical: url,
+      ...(alternateLanguages
+        ? { languages: alternateLanguages }
+        : {}),
       ...(rss
         ? {
             types: {

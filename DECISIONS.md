@@ -2016,3 +2016,74 @@ Production: the Vercel account is still fair-use blocked
 (`resource_creation_blocked` on both tokens) — as at the end of t78;
 production re-verification stays pending; the code is pushed to
 GitHub.
+
+## 60. t80 — the hreflang alternate dimension: every censused EN page serves the reference's own 13-link set (or its per-page exception)
+
+What was missing: the reference serves a 13-link hreflang set on every
+censused EN page — `en` first, the eleven locales in sitemap order
+(Portuguese tagged `pt-BR`), `x-default` → EN last, absolute URLs —
+while this clone's EN family routes emitted none (`familyMetadata`
+never generated `alternates.languages`; only the locale tree, /tools
+and the blog pagination carried sets). t79 queued it as a full-tree
+dimension; this task closed it.
+
+The probe (recon/t80, 1,092 EN census pages, all 200): 542 pages carry
+the full 13-link set (309 family routes — the root, /pricing, the
+tools/help/features/styles/legal/use-cases/switch trees, the blog
+index, the 3d-prompts index — plus 233 translated blog articles); 546
+carry `en + x-default` only (the 543 untranslated blog articles,
+/event/chroma-awards, /sub-categories/dark-fantasy and roblox);
+/sub-categories/nsfw-content carries 6 links (ja/ko/pt-BR/es — its
+four censused locale mirrors); and exactly one censused page carries
+zero (/content-preview). Blog article targets use the reference's own
+`-{loc}`-suffixed locale slugs, with two double-suffixed oddballs
+(`ai-game-character-creator` → `/ar/blog/…-zh-ar`,
+`what-is-ply-file` → `/tr/blog/…-zh-tr`) already catalogued in
+LOCALE_BLOG_ODDBALLS. Zero-link classes beyond the census, probed not
+assumed: the whole app surface (/workspace, /workspace/omnicraft) and
+every 3d-prompts route below the index (numbered pages, the 403 detail
+slugs, the model hubs) — only the index carries the set.
+
+Two quirks mirrored deliberately: (1) the EN help oddball
+/help/articles/use-bang-and-partial-edit emits mechanical unsuffixed
+locale targets (`/zh/help/articles/use-bang-and-partial-edit`) that
+404 on the reference itself — the renamed `-zh` routes are the live
+ones; the clone emits the same seven dead links, because that is what
+the reference serves. (2) The two partial blog sets are the reference's
+own gaps (free-stl-files-for-3d-printing without zh; use-bang-and-
+partial-edit in only the seven locales that translate it), pinned
+byte-for-byte in the registry's exceptions.
+
+The wiring is one funnel: `referenceAlternateLanguages(path)`
+(src/lib/reference-alternate-languages.ts, generated + cross-validated
+against both the probe and the t75 census before emission — the
+2,580-article locale-URL reconciliation is exact) resolves any EN path
+to its set, and `familyMetadata` calls it for every family route; the
+homepage adds its set inline; /tools drops its now-redundant hand
+override. Hrefs are relative and resolve against metadataBase exactly
+like every canonical this clone emits — path shapes byte-identical to
+the reference, on this clone's own origin (the established honest
+self-canonicalization, DECISIONS.md #46/#53). Key order is
+load-bearing and matches the reference's own emission order; the
+category hubs, the app surface and the 3d-prompts sub-tree resolve to
+null (no languages key, hence no links).
+
+Verification: 28 new tests (the registry pins — 233 full slugs, the
+two exception lists, the oddball targets, every target a served locale
+slug — and the wiring pins across every funnel class) + 1 updated pin
+in schema-org.test.ts; 914 / 48 suites green, lint clean, tsc 26 =
+baseline 26 (no new errors). The local standalone production build
+verified on served HTML against the probe, route class by route class:
+13-link family/article/pagination sets, the 12/9/6/2-link partial
+sets, zero-link categories/app-surface/prompts, the dead help-oddball
+targets, canonicals, RSS links and the pt-BR tag — all byte-identical
+except the homepage's two self links, where Next.js normalizes root
+URLs to origin form (`https://hyper3d-clone.vercel.app` vs the
+reference's `https://hyper3d.ai/`): equivalent URLs per RFC 3986,
+unavoidable through the Metadata API, documented here as the one
+framework artifact (the same class of deviation as t78's noindex
+duplicate note).
+
+Production: the Vercel account was fair-use blocked at session start
+per t79's note — re-checked before commit; the deploy attempt and its
+outcome are recorded in recon/t80/notes.md. Code is pushed to GitHub.
