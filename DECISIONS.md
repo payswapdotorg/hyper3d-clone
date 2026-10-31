@@ -1358,3 +1358,23 @@ unknown slugs keep the honest panel, the five public URLs 301 to the
 reference's exact targets, /content-preview answers 200 noindex with
 the standalone status, GET /content-preview/render 405, and a curl POST
 hits the 403 gate. Lint clean; the tsc baseline is unchanged.
+
+**Post-deploy hardening (812bb5d).** The first production pass exposed
+two real host bugs the unit pins could not see, both found by driving
+the actual protocol in a browser and both now pinned by test: (1) the
+status paragraph was never React-controlled — statusRef existed but the
+JSX never attached it, so hydration rendered "Loading…" forever while
+the reference's page swaps it for the standalone/waiting line; (2)
+`event.source instanceof Window` is false for windows from another
+realm, so a RENDER posted by the parent window was silently dropped —
+the listener now duck-types the source and checks identity against the
+collected editors, which is the check that actually matters. E2E
+verified locally and in production: an editor page embeds
+/content-preview, receives ready (version 1), posts a draft, and gets
+back rendered with the unknown-types list and the live iframe size,
+plus size events on resize; a draft without a document answers error
+(status 400); the standalone line renders when no editor opened the
+page. One build lesson recorded for the next reset: incremental
+`next build` runs over a warm .next produced SSG HTML referencing a
+chunk the build never wrote (the host's code 500'd) — rm -rf .next
+before any standalone smoke after multi-patch sessions.
