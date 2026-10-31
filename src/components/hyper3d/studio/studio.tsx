@@ -93,6 +93,7 @@ import {
 import { ResearchLibrary } from "./research-library";
 import { StoryCollection } from "./story-collection";
 import { WORKSPACE_TAB_ROUTES, tabFromPathname, type WorkspaceTab } from "@/lib/workspace-tabs";
+import { LIVE_CHAT_STATUS, POPULAR_QUESTIONS } from "@/lib/home-sections";
 import { OrientationPopup } from "./orientation-popup";
 import { PresetsModal, presetHint, type PresetGeometry } from "./presets-modal";
 import { TaskRail, type RailTask } from "./task-rail";
@@ -455,12 +456,18 @@ export function Studio({
   onNeedAuth,
   onSessionRefresh,
   onSignOut,
+  chatInitiallyOpen = false,
 }: {
   initial: StudioInitial;
   user: UserInfo | null;
   onNeedAuth: (intent: string) => void;
   onSessionRefresh: () => void;
   onSignOut: () => void;
+  /* t73: /workspace/contact-us mounts the studio with the "Chat with
+     us" dock already open — the reference's contact surface (probed
+     2026-10-31: its SPA shell serves the studio chrome with the
+     right-hand dock opened, title = the default workspace title). */
+  chatInitiallyOpen?: boolean;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<GenMode>(initial.mode);
@@ -497,7 +504,11 @@ export function Studio({
    * catch-all routes on one mounted Studio — generation state survives
    * tab switches, exactly like the reference's SPA. */
   const tab: WorkspaceTab = tabFromPathname(pathname);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(chatInitiallyOpen);
+  /* t73: the dock's two tabs (the reference's tablist — "Chat with us" /
+     "Notifications"); the notifications side is this clone's honest
+     empty state, nothing watches your account. */
+  const [chatTab, setChatTab] = useState<"chat" | "notifications">("chat");
   const [tipIndex, setTipIndex] = useState(0);
   /* card sub-tab flavor for image mode (reference: Remix Gen / Turbo Gen
    * pills stacked at the card's bottom-right; Remix = remix-your-idea
@@ -3957,27 +3968,36 @@ export function Studio({
         Feedback
       </button>
 
-      {/* chat widget (reference: Feedback → Chat with us / Notifications
-          tabs + message form w/ Submit) */}
+      {/* chat widget — the reference's "Chat with us" dock (t73 recon,
+          agent-walked on /workspace/contact-us 2026-10-31): a
+          "Chat with us" / "Notifications" tablist, the "Chat with Us"
+          heading + intro, a "Live Chat Support" away card with a Start
+          Conversation button (the reference embeds a live-chat iframe
+          here — this clone states plainly that no chat backend exists),
+          the 21-question Popular Questions accordion, and the message
+          form with Submit. */}
       {chatOpen && (
         <div
           role="dialog"
           aria-label="Chat with us"
-          className="absolute bottom-20 right-6 z-40 flex w-[300px] flex-col overflow-hidden rounded-[22px] border border-white/12 bg-[#17181c]/95 shadow-[0_18px_50px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+          className="absolute bottom-20 right-6 z-40 flex w-[340px] flex-col overflow-hidden rounded-[22px] border border-white/12 bg-[#17181c]/95 shadow-[0_18px_50px_rgba(0,0,0,0.55)] backdrop-blur-xl"
         >
           <div className="flex border-b border-white/10" role="tablist" aria-label="Support">
-            {(["Chat with us", "Notifications"] as const).map((t, i) => (
+            {(["chat", "notifications"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 role="tab"
-                aria-selected={i === 0}
+                aria-selected={chatTab === t}
+                onClick={() => setChatTab(t)}
                 className={cn(
                   "flex-1 py-2.5 text-xs font-bold transition-colors",
-                  i === 0 ? "border-b-2 border-[#d2b6df] text-white" : "text-white/50 hover:text-white/80",
+                  chatTab === t
+                    ? "border-b-2 border-[#d2b6df] text-white"
+                    : "text-white/50 hover:text-white/80",
                 )}
               >
-                {t}
+                {t === "chat" ? "Chat with us" : "Notifications"}
               </button>
             ))}
             <button
@@ -3989,26 +4009,101 @@ export function Studio({
               ×
             </button>
           </div>
-          <div className="flex flex-col gap-2 p-3.5">
-            <p className="text-[11px] leading-relaxed text-white/55">
-              Hi! This clone's support channel is this honest notice — the workspace itself is fully wired.
-            </p>
-            <textarea
-              aria-label="Message"
-              placeholder="Type your message…"
-              rows={3}
-              className="w-full resize-none rounded-xl border border-white/10 bg-black/30 p-2.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-white/25"
-            />
-            <button
-              type="button"
-              onClick={() =>
-                toast.info("Chat with us", { description: "The reference's live chat is not part of this clone — feedback stays local." })
-              }
-              className="h-9 rounded-full bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-xs font-bold text-[#17181c]"
-            >
-              Submit
-            </button>
-          </div>
+          {chatTab === "chat" ? (
+            <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto p-3.5">
+              <div>
+                <p className="text-sm font-bold text-white">Chat with Us</p>
+                <p className="mt-1 text-[11px] leading-relaxed text-white/55">
+                  We make it simple to connect with us. Feel free to ask us anything or share your
+                  feedback.
+                </p>
+              </div>
+
+              {/* the reference's Live Chat Support card — its iframe says
+                  "We are away at the moment / We will be back as soon as
+                  possible"; this clone has no chat backend, so the card
+                  says exactly that and the button states it too. */}
+              <div className="rounded-xl border border-white/10 bg-black/30 p-3">
+                <p className="text-xs font-bold text-white">Live Chat Support</p>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-white/50">
+                  {LIVE_CHAT_STATUS.away} — {LIVE_CHAT_STATUS.back}. There is no live-chat
+                  backend behind this clone: the honest channels are the Popular Questions below
+                  and the help center they link to.
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast.info("Live Chat Support", {
+                      description:
+                        "No conversation can start here — this clone ships no chat backend. The help center answers what the codebase really does.",
+                    })
+                  }
+                  className="mt-2.5 h-9 w-full rounded-full bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-xs font-bold text-[#17181c]"
+                >
+                  Start Conversation
+                </button>
+              </div>
+
+              {/* the reference's scrollable 21-question list (topics
+                  verbatim, answers ours, each linked to the real help
+                  article that covers it) */}
+              <div>
+                <p className="text-xs font-bold text-white">Popular Questions</p>
+                <div className="mt-1.5 flex flex-col">
+                  {POPULAR_QUESTIONS.map((q) => (
+                    <details key={q.question} className="border-b border-white/8 last:border-b-0">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-2 text-[11px] leading-snug text-white/70 transition-colors hover:text-white [&::-webkit-details-marker]:hidden">
+                        {q.question}
+                        <span aria-hidden="true" className="shrink-0 text-white/30">
+                          ›
+                        </span>
+                      </summary>
+                      <div className="pb-2.5">
+                        <p className="text-[11px] leading-relaxed text-white/50">{q.answer}</p>
+                        {q.helpHref ? (
+                          <Link
+                            href={q.helpHref}
+                            className="mt-1 inline-flex text-[11px] font-bold text-[#d2b6df] hover:text-[#e5d3ee]"
+                          >
+                            The help article →
+                          </Link>
+                        ) : null}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <textarea
+                  aria-label="Message"
+                  placeholder="Type your message…"
+                  rows={3}
+                  className="w-full resize-none rounded-xl border border-white/10 bg-black/30 p-2.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-white/25"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast.info("Chat with us", { description: "The reference's live chat is not part of this clone — feedback stays local." })
+                  }
+                  className="h-9 rounded-full bg-[linear-gradient(112.97deg,#9ec9ff_4.67%,#ffaeb0_96%)] text-xs font-bold text-[#17181c]"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* the Notifications tab — the reference's dock has it; this
+               clone has nothing that watches your account, so the empty
+               state is the whole truth. */
+            <div className="flex max-h-[70vh] flex-col gap-2 overflow-y-auto p-3.5">
+              <p className="text-sm font-bold text-white">Notifications</p>
+              <p className="text-[11px] leading-relaxed text-white/50">
+                Nothing here — no notification source exists in this clone. No cron, no watcher,
+                no moderation queue: your tasks live in your own task history and nowhere else.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

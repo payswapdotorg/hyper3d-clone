@@ -5,6 +5,14 @@ import { SiteFooter } from "../site-footer";
 import { SiteHeader } from "../site-header";
 import { EXPORT_FORMATS } from "@/lib/hyper3d";
 import { STUDIO_PATH } from "@/lib/studio-path";
+import {
+  FAQ_STILL_HAVE_QUESTIONS_HREF,
+  HOME_FAQS,
+  RESEARCH_INTRO,
+  RESEARCH_LEARN_MORE_HREF,
+  WHY_CHOOSE_CARDS,
+  WORKFLOW_CARDS,
+} from "@/lib/home-sections";
 
 /**
  * t68 — the marketing landing page body (the reference hyper3d.ai home).
@@ -16,6 +24,15 @@ import { STUDIO_PATH } from "@/lib/studio-path";
  * Free Retry / Smart Low-Poly) → "How It Works" (3 steps) → "Built for
  * Your 3D Pipeline" (API Platform / 3D Platform Add-On / Enterprise-grade
  * Control) → "Imagine It. Shape It." CTA band → footer.
+ *
+ * t73 — the reference's second half, recon same day by static-HTML
+ * diff: the landing does NOT end at the CTA band. Four more sections
+ * follow — "Why Choose Hyper3D?" (5 benefit cards), "Built for Every 3D
+ * Workflow" (4 clickable use-case cards with the reference's own href
+ * mapping), "Research-Backed 3D Generation" (Learn More → the research
+ * tab), and "Frequently Asked Questions" (8-question accordion whose
+ * closing "Chat with our team" link targets /workspace/contact-us).
+ * All four are rendered below, between the CTA band and the footer.
  *
  * Copy discipline: section labels and product names are factual and match
  * the reference's structure; every prose claim is this clone's own and is
@@ -507,6 +524,112 @@ export function MarketingHome() {
               Start Creating
             </Link>
           </div>
+        </section>
+
+        {/* ------------------------------------- why choose (t73) */}
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:pb-20">
+          <h2 className="text-2xl font-black tracking-tight sm:text-3xl">Why Choose Hyper3D?</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+            Rodin delivers high reference fidelity, strong silhouette and proportion preservation,
+            and coherent detail across views — and every claim below is anchored to what this
+            codebase really ships.
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {WHY_CHOOSE_CARDS.map((card) => (
+              <div
+                key={card.title}
+                className="flex min-h-44 flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+              >
+                <h3 className="text-sm font-bold text-white">{card.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-white/50">{card.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ------------------------------------- workflows (t73) */}
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:pb-20">
+          <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+            Built for Every 3D Workflow
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+            Use Hyper3D across games, product visualization, e-commerce, architecture, education,
+            and creative prototyping — each card lands on the page that maps it honestly.
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {WORKFLOW_CARDS.map((card) => (
+              <Link
+                key={card.title}
+                href={card.href}
+                className="group flex min-h-32 flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-violet-400/40 hover:bg-violet-400/[0.04]"
+              >
+                <div>
+                  <h3 className="text-base font-bold text-white">{card.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/50">{card.body}</p>
+                </div>
+                <p className="mt-4 text-xs font-bold text-violet-300 transition-colors group-hover:text-violet-200">
+                  Read the workflow →
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ------------------------------------- research (t73) */}
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:pb-20">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] px-6 py-12 sm:px-10">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-10 bg-[radial-gradient(45%_60%_at_80%_20%,rgba(124,88,255,0.12),transparent)]"
+            />
+            <h2 className="max-w-2xl text-2xl font-black tracking-tight sm:text-3xl">
+              Research-Backed 3D Generation
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+              {RESEARCH_INTRO}
+            </p>
+            <Link
+              href={RESEARCH_LEARN_MORE_HREF}
+              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] px-6 text-sm font-bold text-white/80 transition-colors hover:border-violet-400/40 hover:text-white"
+            >
+              Learn More about Hyper3D research
+            </Link>
+          </div>
+        </section>
+
+        {/* ----------------------------------------- FAQ (t73) */}
+        <section className="mx-auto max-w-4xl px-4 pb-20 sm:px-6">
+          <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-white/55 sm:text-base">
+            Got questions? We&apos;ve got answers — and more.
+          </p>
+          <div className="mt-8 divide-y divide-white/8 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+            {HOME_FAQS.map((item) => (
+              <details key={item.question} className="group px-5 py-4">
+                <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-white/85 transition-colors hover:text-white [&::-webkit-details-marker]:hidden">
+                  {item.question}
+                  <span
+                    aria-hidden="true"
+                    className="text-white/35 transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-white/50">{item.answer}</p>
+              </details>
+            ))}
+          </div>
+          <p className="mt-6 text-sm text-white/55">
+            Still have questions?{" "}
+            <Link
+              href={FAQ_STILL_HAVE_QUESTIONS_HREF}
+              className="font-bold text-violet-300 transition-colors hover:text-violet-200"
+            >
+              Chat with our team.
+            </Link>
+          </p>
         </section>
       </main>
 

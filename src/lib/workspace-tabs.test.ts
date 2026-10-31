@@ -139,8 +139,11 @@ describe("t72 workspace route files", () => {
 
   it("the app shell redirects sessions from the login route into the studio", () => {
     const shell = read("../components/hyper3d/app-shell.tsx");
-    expect(shell).toContain('initialView?: "login"');
+    /* t73: the view union grew by \"contact\" — the contact-us route
+       mounts the same shell with the chat dock opened. */
+    expect(shell).toContain('initialView?: "login" | "contact"');
     expect(shell).toContain('router.replace(WORKSPACE_TAB_ROUTES.asset)');
+    expect(shell).toContain('chatInitiallyOpen={initialView === "contact"}');
   });
 
   it("no workspace route leaks into any sitemap (robots-disallowed parity)", () => {
@@ -148,6 +151,33 @@ describe("t72 workspace route files", () => {
     expect(staticEn.includes("/workspace/")).toBe(false);
     const robots = read("../../public/robots.txt");
     expect(robots).toContain("Disallow: /workspace");
+  });
+});
+
+/* ------------------------------- t73: the contact surface route --- */
+
+describe("t73 the contact-us route (the reference's contact surface)", () => {
+  it("serves the studio shell with the chat dock opened", () => {
+    const page = read("../app/workspace/contact-us/page.tsx");
+    expect(page).toContain('initialView="contact"');
+    expect(page).toContain("WORKSPACE_TAB_TITLES.asset");
+    expect(page).toContain("WORKSPACE_MARKER_SCRIPT");
+  });
+
+  it("the studio opens the dock from the route's initial view", () => {
+    const studio = read("../components/hyper3d/studio/studio.tsx");
+    expect(studio).toContain("chatInitiallyOpen = false");
+    expect(studio).toContain("useState(chatInitiallyOpen)");
+  });
+
+  it("the dock carries the reference's Popular Questions list", () => {
+    const studio = read("../components/hyper3d/studio/studio.tsx");
+    expect(studio).toContain("POPULAR_QUESTIONS");
+    expect(studio).toContain("LIVE_CHAT_STATUS");
+    expect(studio).toContain("Start Conversation");
+    expect(studio).toContain("Popular Questions");
+    expect(studio).toContain("Chat with us");
+    expect(studio).toContain("Notifications");
   });
 });
 

@@ -16,7 +16,11 @@ const DEFAULT_SEED: StudioInitial = {
   nonce: 0,
 };
 
-export function Hyper3DApp({ initialView }: { initialView?: "login" } = {}) {
+export function Hyper3DApp({
+  initialView,
+}: {
+  initialView?: "login" | "contact";
+} = {}) {
   const router = useRouter();
   const { user, refresh, signOut } = useSession();
   const [signInOpen, setSignInOpen] = useState(false);
@@ -123,6 +127,10 @@ export function Hyper3DApp({ initialView }: { initialView?: "login" } = {}) {
         onNeedAuth={requestAuth}
         onSessionRefresh={() => void refresh()}
         onSignOut={handleSignOut}
+        /* t73: /workspace/contact-us mounts the same studio with the
+           "Chat with us" dock opened (the reference's own contact
+           surface — probed 2026-10-31, agent-walked). */
+        chatInitiallyOpen={initialView === "contact"}
       />
 
       <SignInDialog

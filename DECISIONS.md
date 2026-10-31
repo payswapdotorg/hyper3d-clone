@@ -1461,3 +1461,72 @@ button, the claim-now honest toast, the demo sign-in → studio redirect,
 the real referral link + copy + /r/<code> 307 chain, and cross-tab
 state preservation all browser-verified. Lint clean; tsc baseline
 unchanged (26 pre-existing errors, none in the new files).
+
+## 53. t73 — the homepage's second half, the contact surface, and the mega-menu's served HTML
+
+Recon 2026-10-31 (fresh pull after the 8th sandbox reset, static-HTML
+diff + agent-walked): the crawler surface stayed at parity (the
+sitemap index diffed identical after host normalization, 90 children),
+so the drift lived where sitemaps never look — and this time it was
+the homepage itself. The reference's landing does NOT end at the
+"Imagine It. Shape It." CTA band: four more sections follow, all
+missing from the t68 landing (found by diffing every internal href of
+both served homepages — reference 71 links, clone 44):
+
+- **Why Choose Hyper3D?** — the five benefit cards (High-Fidelity 3D,
+  One-Click Simplicity, Multiple Export Formats, Lightning-Fast
+  Results, Free to Start), bodies anchored to the real constants
+  (EXPORT_FORMATS ×6, 50 signup credits, 1/10 per-confirm costs).
+- **Built for Every 3D Workflow** — the four clickable cards with the
+  reference's own href mapping (Game Developers → /use-cases/
+  game-development, Product Teams → /use-cases/e-commerce,
+  Architecture & Education → /use-cases/3d-printing, Artists & 3D
+  Printing → /styles/stylized — all probed from its served HTML).
+- **Research-Backed 3D Generation** — the Learn More CTA, which lands
+  on the t72 research tab (/workspace/rodin/tab/research).
+- **Frequently Asked Questions** — the eight-question accordion
+  (topics verbatim, answers clone-written), closing with "Still have
+  questions? Chat with our team." — and that link exposed the second
+  drift: **/workspace/contact-us**, which the reference serves (200,
+  agent-walked) and this clone 404'd.
+
+The contact route: the reference's SPA shell serves the studio chrome
+with the right-hand "Chat with us" dock opened — a Live Chat Support
+iframe ("We are away at the moment"), a scrollable Popular Questions
+list (21 real questions, agent-walked verbatim), and a message form.
+The clone renders the same shell via `initialView="contact"` →
+`chatInitiallyOpen` (the t72 login-route pattern, one prop further),
+with the dock rebuilt to the reference's shape: the away card says
+plainly that no chat backend exists, all 21 questions get honest
+answers each linked to the real help article that covers the topic
+(the whole list validates against HELP_ARTICLE_SLUGS), and the
+Notifications tab is the honest empty state. Title: the reference's
+default workspace title (probed, same as /workspace/login);
+robots-disallowed prefix, zero sitemap change.
+
+The third drift was invisible to users: the reference ships its full
+mega-menu markup in static HTML (Astro), while the clone's dropdown
+panels were React-conditional — closed by default meant NOT IN THE
+SERVED HTML, so crawlers and no-JS browsers saw 44 links where the
+reference serves 71. The panels now render unconditionally and toggle
+a `hidden` class (display:none keeps closed panels out of the a11y
+tree and tab order); click-to-open behavior is unchanged
+(browser-verified: Resources opens with 44 interactive links, panel
+link → /styles/anime navigates with the right title). The clone
+homepage now serves 84 internal links (the reference's 71 plus this
+clone's honest extras: help articles, legal, the features index).
+
+Copy discipline (28 new tests → 546 / 36 suites): the five card
+titles, four href mappings, and eight question topics pinned; the
+export answers pinned to name every real format; the credit anchors
+(50/1/10) pinned where claims appear; the 21-question list pinned
+verbatim-in-topic with every helpHref resolving; the honest-copy
+invariants pinned (no invented support channel, billing questions
+always get the no-payments truth); the section order pinned (CTA band
+→ Why Choose → Workflows → Research → FAQ); the contact route pinned
+(initialView, marker script, default title); and the header pinned to
+render its panels unconditionally with CSS hiding. Local smoke: all
+routes 200, the dock auto-opens with 22 details elements and working
+tab switches, unknown tabs still fall back, sitemap census unchanged.
+Lint clean; tsc baseline unchanged (26 pre-existing errors, none in
+the new files).

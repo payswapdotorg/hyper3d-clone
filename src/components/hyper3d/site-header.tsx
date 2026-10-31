@@ -241,50 +241,63 @@ export function SiteHeader() {
         </button>
       </div>
 
-      {/* dropdown panels (desktop) */}
-      {open === "products" ? (
-        <NavPanel>
-          {PRODUCTS.map((l) => (
-            <NavPanelLink key={l.label} link={l} onNavigate={() => setOpen(null)} big />
+      {/* dropdown panels (desktop) — t73: always in the DOM, hidden by
+          CSS when closed. The reference (Astro static) ships its full
+          mega-menu markup in the served HTML — 71 internal links on the
+          homepage — while this clone's conditional render shipped only
+          44 (the closed-state links); crawlers and no-JS browsers saw
+          the smaller set. Rendering every panel and toggling a `hidden`
+          class restores the reference's shape: same click-to-open
+          behavior, same panels, but the complete link set is now
+          server-rendered (display:none keeps closed panels out of the
+          a11y tree and tab order until opened). */}
+      <NavPanel open={open === "products"}>
+        {PRODUCTS.map((l) => (
+          <NavPanelLink key={l.label} link={l} onNavigate={() => setOpen(null)} big />
+        ))}
+      </NavPanel>
+      <NavPanel open={open === "features"} wide>
+        <div className="grid gap-1.5 sm:grid-cols-2">
+          {FEATURES.slice(0, 5).map((l) => (
+            <NavPanelLink key={l.label} link={l} onNavigate={() => setOpen(null)} card />
           ))}
-        </NavPanel>
-      ) : null}
-      {open === "features" ? (
-        <NavPanel wide>
-          <div className="grid gap-1.5 sm:grid-cols-2">
-            {FEATURES.slice(0, 5).map((l) => (
-              <NavPanelLink key={l.label} link={l} onNavigate={() => setOpen(null)} card />
+        </div>
+        <div className="mt-2 border-t border-white/8 pt-2">
+          <div className="grid gap-0.5 sm:grid-cols-3">
+            {FEATURES.slice(5).map((l) => (
+              <NavPanelLink key={l.label} link={l} onNavigate={() => setOpen(null)} />
             ))}
           </div>
-          <div className="mt-2 border-t border-white/8 pt-2">
-            <div className="grid gap-0.5 sm:grid-cols-3">
-              {FEATURES.slice(5).map((l) => (
-                <NavPanelLink key={l.label} link={l} onNavigate={() => setOpen(null)} />
-              ))}
-            </div>
-          </div>
-        </NavPanel>
-      ) : null}
-      {open === "resources" ? (
-        <NavPanel wide>
-          <div className="grid max-h-[70vh] grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto sm:grid-cols-4">
-            <NavPanelColumn title="Community" links={RESOURCES_HEAD} onNavigate={() => setOpen(null)} />
-            <NavPanelColumn title="Use Cases" links={RESOURCES_USE_CASES} onNavigate={() => setOpen(null)} />
-            <NavPanelColumn title="Plug-ins" links={RESOURCES_PLUGINS} onNavigate={() => setOpen(null)} />
-            <NavPanelColumn title="Styles" links={RESOURCES_STYLES} onNavigate={() => setOpen(null)} />
-          </div>
-        </NavPanel>
-      ) : null}
+        </div>
+      </NavPanel>
+      <NavPanel open={open === "resources"} wide>
+        <div className="grid max-h-[70vh] grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto sm:grid-cols-4">
+          <NavPanelColumn title="Community" links={RESOURCES_HEAD} onNavigate={() => setOpen(null)} />
+          <NavPanelColumn title="Use Cases" links={RESOURCES_USE_CASES} onNavigate={() => setOpen(null)} />
+          <NavPanelColumn title="Plug-ins" links={RESOURCES_PLUGINS} onNavigate={() => setOpen(null)} />
+          <NavPanelColumn title="Styles" links={RESOURCES_STYLES} onNavigate={() => setOpen(null)} />
+        </div>
+      </NavPanel>
     </header>
   );
 }
 
-function NavPanel({ children, wide }: { children: React.ReactNode; wide?: boolean }) {
+function NavPanel({
+  children,
+  wide,
+  open,
+}: {
+  children: React.ReactNode;
+  wide?: boolean;
+  open: boolean;
+}) {
   return (
     <div
+      /* t73: `hidden` (display:none) when closed — the panel markup stays
+         server-rendered in the HTML like the reference's static menu. */
       className={`absolute left-0 right-0 top-full z-30 border-b border-white/10 bg-[#121218]/98 shadow-2xl backdrop-blur-xl ${
         wide ? "" : ""
-      }`}
+      } ${open ? "" : "hidden"}`}
     >
       <div className={`mx-auto px-4 py-4 sm:px-6 ${wide ? "max-w-7xl" : "max-w-7xl"}`}>{children}</div>
     </div>
