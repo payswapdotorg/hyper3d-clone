@@ -18,7 +18,7 @@ const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
 /** The clone's genuinely live OmniCraft tool routes. */
 const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
-  (t) => `/omnicraft/${t.slug}`,
+  (t) => `/workspace/omnicraft/${t.slug}`,
 );
 
 /** Every route a landing page may cross-link to — same resolver family
@@ -29,7 +29,7 @@ function isKnownRoute(href: string): boolean {
   if (
     base === "/help" ||
     base === "/features" ||
-    base === "/omnicraft" ||
+    base === "/workspace/omnicraft" ||
     base === "/legal" ||
     base === "/use-cases" ||
     base === "/styles" ||
@@ -52,7 +52,7 @@ function isKnownRoute(href: string): boolean {
   if (base.startsWith("/help/")) {
     return findHelpCategory(base.slice("/help/".length)) !== undefined;
   }
-  if (base.startsWith("/omnicraft/")) return LIVE_TOOL_ROUTES.includes(base);
+  if (base.startsWith("/workspace/omnicraft/")) return LIVE_TOOL_ROUTES.includes(base);
   if (base.startsWith("/features/")) return featureSlugs().includes(base.slice("/features/".length));
   if (base.startsWith("/legal/")) return legalSlugs().includes(base.slice("/legal/".length));
   if (base.startsWith("/use-cases/")) {
@@ -336,7 +336,9 @@ describe("landing wiring — footer, sitemap, routes, cross-links", () => {
     for (const route of landingRoutes()) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    expect(xml.match(/<url>/g)?.length).toBe(51); // 46 reference + 5 omnicraft additions
+    // 46 reference routes + content-preview ×2 − the five retired omnicraft
+    // locs (t71: the reference removed them and 301s the routes) = 48
+    expect(xml.match(/<url>/g)?.length).toBe(48);
   });
 
   it("the studio footer's PRODUCT column links Pricing to the real page", () => {

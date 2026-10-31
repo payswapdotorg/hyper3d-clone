@@ -173,7 +173,7 @@ export function ConverterIndexView() {
         <CtaBand
           title="Start where it is real"
           body="The Format Convertor is the live tool behind every green pair — your generated tasks, six real formats, previews before export."
-          href="/omnicraft/convertor"
+          href="/workspace/omnicraft/formatcon"
           label="Open the Format Convertor"
         />
       </main>
@@ -242,7 +242,7 @@ export function ViewerIndexView() {
         <CtaBand
           title="Inspect a GLB right now"
           body="The live Model Viewer parses GLB/GLTF in your browser — orbit, material modes, live triangle count. The file never leaves your device."
-          href="/omnicraft/viewer"
+          href="/workspace/omnicraft/viewer"
           label="Open the Model Viewer"
         />
       </main>

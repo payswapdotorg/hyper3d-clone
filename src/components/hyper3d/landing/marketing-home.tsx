@@ -79,7 +79,7 @@ const FEATURE_CARDS: { title: string; body: string; href: string; cta: string }[
   {
     title: "OmniCraft 3D Toolkit",
     body: "Four tools run live in this clone — HDRI generation, vector-to-3D, the model viewer, and the format convertor — plus honest panels for the rest of the toolbag.",
-    href: "/omnicraft",
+    href: "/workspace/omnicraft",
     cta: "Open OmniCraft →",
   },
   {

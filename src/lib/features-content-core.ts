@@ -125,7 +125,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       { label: "ControlNet constraints", href: "/#how-it-works" },
       { label: "API", href: "/features/api" },
       { label: "MCP", href: "/features/mcp" },
-      { label: "Format Convertor", href: "/omnicraft/convertor" },
+      { label: "Format Convertor", href: "/workspace/omnicraft/formatcon" },
     ],
     closingTitle: "Try the Text to 3D Generator Today",
     closingBody:
@@ -235,7 +235,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     crossLinks: [
       { label: "Text to 3D", href: "/features/text-to-3d" },
       { label: "WorldGen", href: "/features/worldgen" },
-      { label: "Model Viewer", href: "/omnicraft/viewer" },
+      { label: "Model Viewer", href: "/workspace/omnicraft/viewer" },
       { label: "MCP", href: "/features/mcp" },
     ],
     closingTitle: "One Image Is Enough",
@@ -340,8 +340,8 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     crossLinks: [
       { label: "Text to 3D", href: "/features/text-to-3d" },
       { label: "Image to 3D", href: "/features/image-to-3d" },
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
-      { label: "Model Viewer", href: "/omnicraft/viewer" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
+      { label: "Model Viewer", href: "/workspace/omnicraft/viewer" },
     ],
     closingTitle: "Single Assets, Done Honestly",
     closingBody:
@@ -450,8 +450,8 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     crossLinks: [
       { label: "MCP", href: "/features/mcp" },
       { label: "Text to 3D", href: "/features/text-to-3d" },
-      { label: "Format Convertor", href: "/omnicraft/convertor" },
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "Format Convertor", href: "/workspace/omnicraft/formatcon" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
     ],
     closingTitle: "The API That Runs This Studio Is Real",
     closingBody:
@@ -553,7 +553,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       { label: "Text to 3D", href: "/features/text-to-3d" },
       { label: "Image to 3D", href: "/features/image-to-3d" },
       { label: "WorldGen", href: "/features/worldgen" },
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
     ],
     closingTitle: "Characters Yes, Avatar Product No",
     closingBody:
@@ -573,7 +573,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     statusNote:
       "The reference's AI Image Generator is a full text-to-image product in its AI Media suite. This clone wires no text-to-image model: the image surfaces that DO exist here are the studio's reference-image upload for image-to-3D, the vision captioning that reads your uploads, and the OmniCraft HDRI generator's real image-palette extraction. A general-purpose prompt-to-image tool is not among them.",
     cta: null,
-    ctaSecondary: { label: "See the HDRI generator", href: "/omnicraft/hdri" },
+    ctaSecondary: { label: "See the HDRI generator", href: "/workspace/omnicraft/hdri" },
     stepsTitle: "What the Reference's Image Generator Does",
     stepsIntro: "The product this page stands in for.",
     steps: [
@@ -652,14 +652,14 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     crossLinksTitle: "What this clone ships instead",
     crossLinksIntro: "Real image-adjacent surfaces here.",
     crossLinks: [
-      { label: "HDRI Generator", href: "/omnicraft/hdri" },
+      { label: "HDRI Generator", href: "/workspace/omnicraft/hdri" },
       { label: "Image to 3D", href: "/features/image-to-3d" },
       { label: "AI Image Enhancer", href: "/features/omnicraft/ai-image-enhancer" },
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
     ],
     closingTitle: "The Real Image Surface Here Is HDRI",
     closingBody: "Prompt a sky, get a 360° environment — locally, deterministically, free.",
-    closingCta: { label: "Open the HDRI Generator", href: "/omnicraft/hdri" },
+    closingCta: { label: "Open the HDRI Generator", href: "/workspace/omnicraft/hdri" },
     group: "ai-media",
     indexBlurb: "Reference-only: prompt-to-image suite; this clone's HDRI engine is the real image surface.",
   },
@@ -754,9 +754,9 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
     crossLinksIntro: "Real surfaces adjacent to motion.",
     crossLinks: [
       { label: "Text to 3D", href: "/features/text-to-3d" },
-      { label: "Model Viewer", href: "/omnicraft/viewer" },
+      { label: "Model Viewer", href: "/workspace/omnicraft/viewer" },
       { label: "AI Image Generator", href: "/features/ai-image-generator" },
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
     ],
     closingTitle: "No Video Here — But Your Model Moves Today",
     closingBody: "Drag, spin, and orbit the real preview, then export into a renderer that makes motion.",

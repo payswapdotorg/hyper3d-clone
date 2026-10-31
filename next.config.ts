@@ -24,10 +24,23 @@ const nextConfig: NextConfig = {
       { source: "/workspace/register", destination: "/workspace/rodin?auth=signup", permanent: false },
       { source: "/r/:code", destination: "/workspace/rodin?auth=signup&referral_code=:code", permanent: false },
       { source: "/a/:code", destination: "/workspace/rodin?auth=signup&referral_code=:code", permanent: false },
-      // t56: the reference's OmniCraft tool routes resolve to the clone's
-      // real toolbag pages (4 live tools + honest not-in-clone panels).
-      { source: "/workspace/omnicraft", destination: "/omnicraft", permanent: false },
-      { source: "/workspace/omnicraft/:tool", destination: "/omnicraft/:tool", permanent: false },
+      // t71: the reference retired its public OmniCraft landing tree —
+      // /omnicraft and three of the four tool URLs 301 to the HDRI feature
+      // page, /omnicraft/viewer to the viewer marketing hub (probed
+      // 2026-10-31, exact targets), and the working tools now live under
+      // /workspace/omnicraft/* like the reference's own. The t56 reverse
+      // redirects (workspace → public landing) are gone with the tree.
+      // statusCode 301 mirrors the reference's own permanent redirects.
+      {
+        source: "/omnicraft/viewer",
+        destination: "/tools/viewer",
+        statusCode: 301,
+      },
+      {
+        source: "/omnicraft/:tool*",
+        destination: "/features/omnicraft/ai-hdri-generator",
+        statusCode: 301,
+      },
     ];
   },
 };

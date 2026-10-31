@@ -31,17 +31,17 @@ const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
 /** The clone's genuinely live OmniCraft tool routes. */
 const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
-  (t) => `/omnicraft/${t.slug}`,
+  (t) => `/workspace/omnicraft/${t.slug}`,
 );
 
 const REAL_FEATURE_SLUGS = new Set(featureSlugs());
-const KNOWN_SINGLETONS = new Set(["/", "/features", "/omnicraft", "/tools/converter"]);
+const KNOWN_SINGLETONS = new Set(["/", "/features", "/workspace/omnicraft", "/tools/converter"]);
 
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
   if (base === STUDIO_PATH) return true; // t68: the studio's real route
   if (KNOWN_SINGLETONS.has(base)) return true;
-  if (base.startsWith("/omnicraft/")) return LIVE_TOOL_ROUTES.includes(base);
+  if (base.startsWith("/workspace/omnicraft/")) return LIVE_TOOL_ROUTES.includes(base);
   if (base.startsWith("/features/")) {
     return REAL_FEATURE_SLUGS.has(base.slice("/features/".length));
   }
@@ -194,7 +194,7 @@ describe("tools content — the honesty contract (all 201 leaf pages)", () => {
     const text = pageText(page);
     expect(text).toContain("Vector to 3D");
     expect(text).toMatch(/locally|in your browser/i);
-    expect(page.cta.href).toBe("/omnicraft/vector");
+    expect(page.cta.href).toBe("/workspace/omnicraft/vecto3d");
   });
 
   it("not-here pages open with the honest reason and never describe a running conversion", () => {
@@ -256,7 +256,7 @@ describe("tools content — the honesty contract (all 201 leaf pages)", () => {
       expect(text, page.route).toContain("never");
       expect(text, page.route).toMatch(/parsed .*(locally|in your browser)|in your browser/i);
       expect(text, page.route).toContain("GLTF");
-      expect(page.cta.href).toBe("/omnicraft/viewer");
+      expect(page.cta.href).toBe("/workspace/omnicraft/viewer");
     }
     for (const page of viewerPages.filter((p) => p.status === "not-here")) {
       const text = pageText(page);
@@ -330,7 +330,7 @@ describe("tools wiring — sitemap, routes", () => {
   });
 
   it("tools routes cannot collide with other trees", () => {
-    const others = ["/features", "/legal", "/omnicraft", "/use-cases", "/styles", "/help", "/pricing", "/3d-prompts", "/switch", "/event", "/sub-categories"];
+    const others = ["/features", "/legal", "/workspace/omnicraft", "/use-cases", "/styles", "/help", "/pricing", "/3d-prompts", "/switch", "/event", "/sub-categories"];
     for (const route of TOOLS_ROUTES) {
       expect(others.some((p) => route.startsWith(p)), route).toBe(false);
     }

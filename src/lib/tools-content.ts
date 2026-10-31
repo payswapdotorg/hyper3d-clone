@@ -47,9 +47,9 @@ function siblingPairLinks(from: string, exclude: string, max = 5): ToolLink[] {
 
 /** "Other 3D Tools" links — the live tools plus the sibling indexes. */
 const OTHER_TOOLS_LINKS: ToolLink[] = [
-  { label: "Format Convertor (live tool)", href: "/omnicraft/convertor" },
-  { label: "Model Viewer (live tool)", href: "/omnicraft/viewer" },
-  { label: "Vector to 3D (live tool)", href: "/omnicraft/vector" },
+  { label: "Format Convertor (live tool)", href: "/workspace/omnicraft/formatcon" },
+  { label: "Model Viewer (live tool)", href: "/workspace/omnicraft/viewer" },
+  { label: "Vector to 3D (live tool)", href: "/workspace/omnicraft/vecto3d" },
   { label: "All converter pairs", href: "/tools/converter" },
   { label: "3D viewer formats", href: "/tools/viewer" },
 ];
@@ -125,8 +125,8 @@ export function buildConverterPairPage(from: string, to: string): ToolPageDef {
       ],
       closingTitle: `Convert your ${FROM} task to ${TO}`,
       closingBody: "Open the live Format Convertor, pick the task, pick the format. That is the whole honest flow.",
-      closingCta: { label: "Open the Format Convertor", href: "/omnicraft/convertor" },
-      cta: { label: "Open the Format Convertor", href: "/omnicraft/convertor" },
+      closingCta: { label: "Open the Format Convertor", href: "/workspace/omnicraft/formatcon" },
+      cta: { label: "Open the Format Convertor", href: "/workspace/omnicraft/formatcon" },
       ctaSecondary: { label: "See all 178 pairs", href: "/tools/converter" },
     };
   }
@@ -215,8 +215,8 @@ export function buildConverterPairPage(from: string, to: string): ToolPageDef {
       crossLinksTitle: "More Converters & Tools",
       crossLinks: isSvgGlb
         ? [
-            { label: "Vector to 3D (live tool)", href: "/omnicraft/vector" },
-            { label: "Model Viewer (live tool)", href: "/omnicraft/viewer" },
+            { label: "Vector to 3D (live tool)", href: "/workspace/omnicraft/vecto3d" },
+            { label: "Model Viewer (live tool)", href: "/workspace/omnicraft/viewer" },
             { label: "All converter pairs", href: "/tools/converter" },
             ...OTHER_TOOLS_LINKS,
           ]
@@ -230,10 +230,10 @@ export function buildConverterPairPage(from: string, to: string): ToolPageDef {
         ? "The live Vector to 3D tool is the whole flow — no account, no upload, GLB out."
         : "The generative path is the only honest route from an image to a 3D file here — and it is a real one.",
       closingCta: isSvgGlb
-        ? { label: "Open Vector to 3D", href: "/omnicraft/vector" }
+        ? { label: "Open Vector to 3D", href: "/workspace/omnicraft/vecto3d" }
         : { label: "Open the studio", href: STUDIO_PATH },
       cta: isSvgGlb
-        ? { label: "Open Vector to 3D", href: "/omnicraft/vector" }
+        ? { label: "Open Vector to 3D", href: "/workspace/omnicraft/vecto3d" }
         : { label: "Open the studio's image mode", href: STUDIO_PATH },
       ctaSecondary: { label: "See all 178 pairs", href: "/tools/converter" },
     };
@@ -257,7 +257,7 @@ export function buildConverterPairPage(from: string, to: string): ToolPageDef {
   works.push("Text-to-3D and image-to-3D generation are live studio features — the start of every real path here.");
 
   const cta: ToolCta = isRealExportFormat(to)
-    ? { label: "Open the Format Convertor", href: "/omnicraft/convertor" }
+    ? { label: "Open the Format Convertor", href: "/workspace/omnicraft/formatcon" }
     : isRealExportFormat(from) || from === "svg"
       ? { label: "Open the studio", href: STUDIO_PATH }
       : { label: "Open the studio", href: STUDIO_PATH };
@@ -378,16 +378,16 @@ export function buildViewerPage(format: string): ToolPageDef {
       ],
       crossLinksTitle: "More Tools & Workflows",
       crossLinks: [
-        { label: "Model Viewer (the live tool)", href: "/omnicraft/viewer" },
-        { label: "Format Convertor (live tool)", href: "/omnicraft/convertor" },
+        { label: "Model Viewer (the live tool)", href: "/workspace/omnicraft/viewer" },
+        { label: "Format Convertor (live tool)", href: "/workspace/omnicraft/formatcon" },
         { label: "All viewer formats", href: "/tools/viewer" },
         { label: "GLB to FBX pair page", href: "/tools/converter/glb/to/fbx" },
         { label: "All converter pairs", href: "/tools/converter" },
       ],
       closingTitle: `Inspect your ${NAME} locally`,
       closingBody: "Drop the file, orbit the model, read the triangle count — the whole thing runs in your browser.",
-      closingCta: { label: "Open the Model Viewer", href: "/omnicraft/viewer" },
-      cta: { label: "Open the Model Viewer", href: "/omnicraft/viewer" },
+      closingCta: { label: "Open the Model Viewer", href: "/workspace/omnicraft/viewer" },
+      cta: { label: "Open the Model Viewer", href: "/workspace/omnicraft/viewer" },
       ctaSecondary: { label: "All viewer formats", href: "/tools/viewer" },
     };
   }
@@ -449,7 +449,7 @@ export function buildViewerPage(format: string): ToolPageDef {
     ],
     crossLinksTitle: "More Tools & Workflows",
     crossLinks: [
-      { label: "Model Viewer (the live tool)", href: "/omnicraft/viewer" },
+      { label: "Model Viewer (the live tool)", href: "/workspace/omnicraft/viewer" },
       { label: "GLB viewer page", href: "/tools/viewer/glb" },
       { label: "GLTF viewer page", href: "/tools/viewer/gltf" },
       { label: "All viewer formats", href: "/tools/viewer" },
@@ -457,8 +457,8 @@ export function buildViewerPage(format: string): ToolPageDef {
     ],
     closingTitle: "The honest version of this page",
     closingBody: `No ${NAME} viewer runs here. The live viewer takes GLB/GLTF — locally, never uploaded — and everything else says so.`,
-    closingCta: { label: "Open the Model Viewer", href: "/omnicraft/viewer" },
-    cta: { label: "Open the Model Viewer (GLB/GLTF)", href: "/omnicraft/viewer" },
+    closingCta: { label: "Open the Model Viewer", href: "/workspace/omnicraft/viewer" },
+    cta: { label: "Open the Model Viewer (GLB/GLTF)", href: "/workspace/omnicraft/viewer" },
     ctaSecondary: { label: "All viewer formats", href: "/tools/viewer" },
   };
 }
@@ -527,7 +527,7 @@ export function buildImageToPage(format: string): ToolPageDef {
       crossLinks: [
         { label: "Image to 3D (the real feature)", href: "/features/image-to-3d" },
         { label: "Text to 3D", href: "/features/text-to-3d" },
-        { label: "Format Convertor (live tool)", href: "/omnicraft/convertor" },
+        { label: "Format Convertor (live tool)", href: "/workspace/omnicraft/formatcon" },
         { label: "All converter pairs", href: "/tools/converter" },
         { label: "All viewer formats", href: "/tools/viewer" },
       ],

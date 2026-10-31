@@ -55,7 +55,7 @@ export const DARK_FANTASY_PAGE: SubCategoryPageDef = {
     "Not here. This clone has no tagged asset grid, no per-model pages and no free-download counts — the reference's \"Featured Free\" row is a marketplace feature, and a fake one here would be a lie. The real equivalents: generate the asset you need, or inspect any GLB you already have in the local Model Viewer.",
   featuredLinks: [
     { label: "Generate one now", href: STUDIO_PATH },
-    { label: "Model Viewer (local GLB inspection)", href: "/omnicraft/viewer" },
+    { label: "Model Viewer (local GLB inspection)", href: "/workspace/omnicraft/viewer" },
     { label: "How text-to-3D works", href: "/features/text-to-3d" },
   ],
   generateTitle: "Generate Custom Dark Fantasy 3D Models",
@@ -238,7 +238,7 @@ export const ROBLOX_PAGE: SubCategoryPageDef = {
   featuredLinks: [
     { label: "Generate one now", href: STUDIO_PATH },
     { label: "Low Poly style guide", href: "/styles/low-poly" },
-    { label: "Model Viewer (local GLB inspection)", href: "/omnicraft/viewer" },
+    { label: "Model Viewer (local GLB inspection)", href: "/workspace/omnicraft/viewer" },
   ],
   generateTitle: "Generate Custom Roblox 3D Models",
   generateBody:
@@ -264,7 +264,7 @@ export const ROBLOX_PAGE: SubCategoryPageDef = {
     { label: "Dark Fantasy 3D Models", href: "/sub-categories/dark-fantasy" },
     { label: "NSFW 3D Model Collection", href: "/sub-categories/nsfw-content" },
     { label: "Cartoon style", href: "/styles/cartoon" },
-    { label: "Format Convertor tool", href: "/omnicraft/convertor" },
+    { label: "Format Convertor tool", href: "/workspace/omnicraft/formatcon" },
     { label: "3D printing use case", href: "/use-cases/3d-printing" },
   ],
   faqTitle: "Free Roblox 3D Models FAQ",

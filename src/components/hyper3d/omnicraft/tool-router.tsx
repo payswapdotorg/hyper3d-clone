@@ -18,9 +18,9 @@ export function OmniCraftToolRouter({ slug }: { slug: string }) {
       return <HdriTool />;
     case "viewer":
       return <ViewerTool />;
-    case "convertor":
+    case "formatcon":
       return <ConvertorTool />;
-    case "vector":
+    case "vecto3d":
       return <VectorTool />;
     default: {
       const tool = omnicraftToolBySlug(slug);

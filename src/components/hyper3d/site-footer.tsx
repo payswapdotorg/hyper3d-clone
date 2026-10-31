@@ -24,7 +24,7 @@ interface FooterLink {
 const PRODUCT: FooterLink[] = [
   { label: "ChatAvatar", href: "/features/chatavatar" },
   { label: "Rodin", href: STUDIO_PATH },
-  { label: "OmniCraft", href: "/omnicraft/hdri" },
+  { label: "OmniCraft", href: "/workspace/omnicraft" },
 ];
 
 const FEATURES: FooterLink[] = [

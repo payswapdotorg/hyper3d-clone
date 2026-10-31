@@ -61,7 +61,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
     related: [
       { label: "Open the studio", href: STUDIO_PATH },
       { label: "Feature pages", href: "/features" },
-      { label: "OmniCraft tools", href: "/omnicraft" },
+      { label: "OmniCraft tools", href: "/workspace/omnicraft" },
       { label: "Credit cost article", href: "/blog/how-many-credits-does-each-hyper3d-generation-cost" },
     ],
   },
@@ -114,7 +114,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
     related: [
       { label: "All feature pages", href: "/features" },
       { label: "MCP feature page", href: "/features/mcp" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
       { label: "Beginner's guide", href: "/blog/how-to-use-hyper3d-beginners-guide" },
     ],
   },
@@ -378,7 +378,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
     ],
     related: [
       { label: "Plans cost article", href: "/blog/how-much-do-hyper3d-plans-cost" },
-      { label: "OmniCraft (free tools)", href: "/omnicraft" },
+      { label: "OmniCraft (free tools)", href: "/workspace/omnicraft" },
       { label: "Pricing page", href: "/pricing" },
     ],
   },

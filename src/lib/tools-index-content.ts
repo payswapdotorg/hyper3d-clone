@@ -99,8 +99,8 @@ export const TOOLS_MATRIX_INDEX = {
 
 /** Shared links for the index pages' cross-link sections. */
 export const TOOLS_INDEX_LINKS: ToolLink[] = [
-  { label: "Format Convertor (live tool)", href: "/omnicraft/convertor" },
-  { label: "Model Viewer (live tool)", href: "/omnicraft/viewer" },
-  { label: "Vector to 3D (live tool)", href: "/omnicraft/vector" },
+  { label: "Format Convertor (live tool)", href: "/workspace/omnicraft/formatcon" },
+  { label: "Model Viewer (live tool)", href: "/workspace/omnicraft/viewer" },
+  { label: "Vector to 3D (live tool)", href: "/workspace/omnicraft/vecto3d" },
   { label: "Image to 3D (the real feature)", href: "/features/image-to-3d" },
 ];

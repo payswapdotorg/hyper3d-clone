@@ -12,7 +12,9 @@
  *
  * Behavior:
  *  1. Composes the EN route set from the registries (single source of
- *     truth) and asserts 1,095 routes with every family present.
+ *     truth) and asserts 1,092 routes with every family present (t71: the
+ *     five retired OmniCraft locs left, the two content-preview locs
+ *     arrived).
  *  2. Composes each locale's route set via localePaths() and asserts the
  *     per-locale counts against LOCALE_ROUTE_COUNTS (5,975 total).
  *  3. Classifies every path into a family; assigns changefreq/priority
@@ -55,12 +57,11 @@ import { legalRoutes } from "../src/lib/legal";
 import { HELP_ROUTES } from "../src/lib/help";
 import { SUBCATEGORY_ROUTES } from "../src/lib/subcategories";
 import { BLOG_SITEMAP_LOCS } from "../src/lib/blog";
-import { liveOmniCraftTools } from "../src/lib/omnicraft";
 
 const ORIGIN = "https://hyper3d-clone.vercel.app";
 const PUBLIC = join(process.cwd(), "public");
 /** Index <lastmod> stamp — bump when the tree itself changes. */
-const LASTMOD = "2026-10-30";
+const LASTMOD = "2026-10-31";
 
 /* ------------------------------------------------------------------ */
 /* Family classification                                              */
@@ -89,7 +90,7 @@ function familyOf(path: string): Family {
     case "blog":
       return first;
     default:
-      return "static"; // 3d-prompts, pricing, switch, event, help, omnicraft
+      return "static"; // 3d-prompts, pricing, switch, event, help, content-preview
   }
 }
 
@@ -104,7 +105,6 @@ const EN_OUTLIERS: Record<string, [string, string]> = {
   "/features/text-to-3d": ["monthly", "0.8"],
   "/features/image-to-3d": ["monthly", "0.8"],
   "/features/mcp": ["monthly", "0.7"],
-  "/omnicraft": ["weekly", "0.8"],
   "/help": ["monthly", "0.7"],
   "/pricing": ["monthly", "0.8"],
   "/3d-prompts": ["weekly", "0.8"],
@@ -129,7 +129,7 @@ const EN_HELP_CATEGORIES = [
 
 function enEntry(path: string): [string, string] {
   if (EN_OUTLIERS[path]) return EN_OUTLIERS[path];
-  if (path.startsWith("/omnicraft/")) return ["weekly", "0.8"]; // the four live tools
+  if (path.startsWith("/content-preview")) return ["monthly", "0.5"]; // the reference's own values
   if (path.startsWith("/features/omnicraft/")) return ["monthly", "0.5"];
   if (path.startsWith("/help/")) {
     // articles monthly 0.5; the six topic hubs monthly 0.6
@@ -201,6 +201,8 @@ interface Alternate {
 /**
  * Family quirks, pinned from the reference's own child sitemaps:
  *  - sub-categories: zero alternates (both EN and localized files);
+ *  - /content-preview (t71): zero alternates — the reference lists the
+ *    preview host + render endpoint in static-en with no hreflang set;
  *  - blog ARTICLES: 12 languages + x-default (13 links); the /blog and
  *    /{loc}/blog hubs carry 12 without x-default;
  *  - /event (EN-only family member): en + x-default;
@@ -266,14 +268,17 @@ function indexXml(children: string[]): string {
 /* ------------------------------------------------------------------ */
 
 function expectedEnglishLocs(): string[] {
-  const live = liveOmniCraftTools().map((t) => `/omnicraft/${t.slug}`);
+  // t71: the OmniCraft landing tree is retired (the reference removed its
+  // five locs and 301s the routes); the content-preview host + render
+  // endpoint take their place in static-en, exactly where the reference
+  // lists them (monthly / 0.5 / no lastmod / zero alternates).
   return [
     "/",
     ...landingRoutes(),
     "/features",
     ...featureRoutes(),
-    "/omnicraft",
-    ...live,
+    "/content-preview",
+    "/content-preview/render",
     ...TOOLS_ROUTES,
     ...USE_CASE_ROUTES,
     ...STYLE_ROUTES,
@@ -293,7 +298,7 @@ async function main(): Promise<void> {
   /* ---- EN routes + guards ---- */
   const enPaths = expectedEnglishLocs();
   if (new Set(enPaths).size !== enPaths.length) fail("duplicate EN locs");
-  if (enPaths.length !== 1095) fail(`EN route count ${enPaths.length} != 1095`);
+  if (enPaths.length !== 1092) fail(`EN route count ${enPaths.length} != 1092`);
 
   /* ---- mirror map: EN path → localized mirrors ---- */
   // mirrors.get(enPath) = [{lang, href}] with the EN entry first, then
@@ -337,9 +342,12 @@ async function main(): Promise<void> {
     const [cf, pr] = enEntry(path);
     const isEvent = path.startsWith("/event/");
     const isBlogHub = path === "/blog";
+    // t71: the content-preview surface carries zero alternates (the
+    // reference's own static-en entries for both URLs).
+    const isPreview = path.startsWith("/content-preview");
     const m = mirrors.get(path) ?? [];
     bucket(family, "en").push(
-      urlXml(`${ORIGIN}${path}`, cf, pr, alternatesFor(family, isEvent, isBlogHub, m)),
+      urlXml(`${ORIGIN}${path}`, cf, pr, isPreview ? [] : alternatesFor(family, isEvent, isBlogHub, m)),
     );
   }
 
@@ -365,7 +373,7 @@ async function main(): Promise<void> {
     writeFileSync(join(PUBLIC, `landing-sitemap-${key}.xml`), childXml(urls), "utf8");
   }
   if (familyFiles.size !== 90) fail(`child count ${familyFiles.size} != 90`);
-  if (totalUrls !== 7070) fail(`total <url> ${totalUrls} != 7070`);
+  if (totalUrls !== 7067) fail(`total <url> ${totalUrls} != 7067`);
 
   /* ---- indexes ---- */
   const children = [...familyFiles.keys()].sort().map((key) => `landing-sitemap-${key}.xml`);

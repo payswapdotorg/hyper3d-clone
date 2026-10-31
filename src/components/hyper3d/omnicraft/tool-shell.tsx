@@ -33,7 +33,7 @@ export function ToolShell({
       {/* top bar */}
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-[#17181c]/80 px-4 py-2.5 backdrop-blur">
         <Link
-          href="/omnicraft"
+          href="/workspace/omnicraft"
           className="flex items-center gap-1.5 text-xs font-bold text-white/60 transition-colors hover:text-white"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />

@@ -7,9 +7,13 @@ import { JsonLd } from "@/components/hyper3d/json-ld";
 import { omnicraftToolBySlug } from "@/lib/omnicraft";
 
 /**
- * Per-tool OmniCraft route — mirrors the reference's /workspace/omnicraft/{tool}
- * pages. The slug decides between a real tool and the honest not-in-clone
- * panel; unknown slugs render the same honesty (never a fake 404 product).
+ * Per-tool OmniCraft route at the reference's own workspace URL
+ * (/workspace/omnicraft/{tool}, probed 2026-10-31: hdri, viewer, formatcon,
+ * vecto3d, mesh, enhancer, remix, search, texture — all 200 on the
+ * reference). The slug decides between a real tool and the honest
+ * not-in-clone panel; unknown slugs render the same honesty (never a fake
+ * product page). t71 moved the toolbag here from the retired public
+ * /omnicraft tree (DECISIONS.md #51).
  */
 
 export async function generateMetadata({
@@ -26,7 +30,8 @@ export async function generateMetadata({
   return {
     title,
     description,
-    ...familyMetadata({ title, description, path: `/omnicraft/${tool}` }),
+    robots: { index: false, follow: false },
+    ...familyMetadata({ title, description, path: `/workspace/omnicraft/${tool}` }),
   };
 }
 
@@ -37,15 +42,15 @@ export default async function OmniCraftToolPage({ params }: { params: Promise<{ 
   const def = omnicraftToolBySlug(tool);
   const crumbs = [
     { name: "Home", path: "/" },
-    { name: "OmniCraft", path: "/omnicraft" },
-    ...(def ? [{ name: def.name, path: `/omnicraft/${def.slug}` }] : []),
+    { name: "OmniCraft", path: "/workspace/omnicraft" },
+    ...(def ? [{ name: def.name, path: `/workspace/omnicraft/${def.slug}` }] : []),
   ];
   const jsonLd: JsonLdObject[] = def
     ? [
         ...(def.status === "live"
-          ? [webApplication(def.name, def.blurb, `/omnicraft/${def.slug}`)]
+          ? [webApplication(def.name, def.blurb, `/workspace/omnicraft/${def.slug}`)]
           : []),
-        ...baselineJsonLd(def.name, def.blurb, `/omnicraft/${def.slug}`, crumbs),
+        ...baselineJsonLd(def.name, def.blurb, `/workspace/omnicraft/${def.slug}`, crumbs),
       ]
     : [];
   return (

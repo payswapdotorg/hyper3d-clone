@@ -28,7 +28,7 @@ const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
 /** The clone's genuinely live OmniCraft tool routes. */
 const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
-  (t) => `/omnicraft/${t.slug}`,
+  (t) => `/workspace/omnicraft/${t.slug}`,
 );
 
 /** Every route a help article may cross-link to, verified against the
@@ -36,7 +36,7 @@ const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
 function isKnownRoute(href: string): boolean {
   const base = href.split(/[?#]/)[0];
   if (base === "/" || base === "" || base === STUDIO_PATH) return true; // studio root
-  if (base === "/help" || base === "/features" || base === "/omnicraft" || base === "/legal")
+  if (base === "/help" || base === "/features" || base === "/workspace/omnicraft" || base === "/legal")
     return true;
   if (base === "/use-cases" || base === "/styles") return true;
   if (base.startsWith("/help/articles/")) {
@@ -45,7 +45,7 @@ function isKnownRoute(href: string): boolean {
   if (base.startsWith("/help/")) {
     return findHelpCategory(base.slice("/help/".length)) !== undefined;
   }
-  if (base.startsWith("/omnicraft/")) return LIVE_TOOL_ROUTES.includes(base);
+  if (base.startsWith("/workspace/omnicraft/")) return LIVE_TOOL_ROUTES.includes(base);
   if (base.startsWith("/features/")) return featureSlugs().includes(base.slice("/features/".length));
   if (base.startsWith("/legal/")) return legalSlugs().includes(base.slice("/legal/".length));
   if (base.startsWith("/use-cases/")) {
@@ -300,7 +300,7 @@ describe("help content — the honesty contract", () => {
   it("OmniCraft cross-links only target LIVE tools (no dead tool pages)", () => {
     for (const article of HELP_ARTICLES) {
       for (const link of article.related) {
-        if (link.href.startsWith("/omnicraft/")) {
+        if (link.href.startsWith("/workspace/omnicraft/")) {
           expect(LIVE_TOOL_ROUTES, `${article.slug} → ${link.href}`).toContain(link.href);
         }
       }
@@ -327,8 +327,8 @@ describe("help wiring — footer, sitemap, routes", () => {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
     // 46 reference routes (home, prompts, event, help ×40, pricing, switch ×2)
-    // + /omnicraft and the four live tools this clone adds = 51
-    expect(xml.match(/<url>/g)?.length).toBe(51);
+    // + content-preview ×2, − the five retired omnicraft locs (t71) = 48
+    expect(xml.match(/<url>/g)?.length).toBe(48);
   });
 
   it("the studio footer's HELP column routes to real pages (no toasts)", () => {
@@ -364,7 +364,7 @@ describe("help wiring — footer, sitemap, routes", () => {
   });
 
   it("help routes cannot collide with the other content trees", () => {
-    const others = ["/features", "/legal", "/omnicraft", "/use-cases", "/styles"];
+    const others = ["/features", "/legal", "/workspace/omnicraft", "/use-cases", "/styles"];
     for (const route of HELP_ROUTES) {
       expect(others.some((p) => route.startsWith(p)), route).toBe(false);
     }

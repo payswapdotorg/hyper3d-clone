@@ -254,7 +254,7 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
     related: [
       { label: "Image to 3D", href: "/blog/image-to-3d" },
       { label: "Prompt guide", href: "/blog/3d-text-prompt-guide" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
     ],
   },
   {

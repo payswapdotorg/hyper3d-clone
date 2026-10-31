@@ -255,7 +255,7 @@ export const STYLE_PAGES_C: StylePageDef[] = [
       { label: "Modern", href: "/styles/modern" },
       { label: "Hand-Painted", href: "/styles/hand-painted" },
       { label: "E-commerce", href: "/use-cases/e-commerce" },
-      { label: "Format Convertor", href: "/omnicraft/convertor" },
+      { label: "Format Convertor", href: "/workspace/omnicraft/formatcon" },
     ],
     closingTitle: "Generate the geometry; earn the photograph",
     closingBody:

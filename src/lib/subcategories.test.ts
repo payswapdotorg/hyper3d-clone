@@ -22,7 +22,7 @@ const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
 /** The clone's genuinely live OmniCraft tool routes. */
 const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
-  (t) => `/omnicraft/${t.slug}`,
+  (t) => `/workspace/omnicraft/${t.slug}`,
 );
 
 /** Deep-link targets that genuinely exist in this clone's registries. */
@@ -40,7 +40,7 @@ const KNOWN_SINGLETON_ROUTES = new Set([
   "/use-cases",
   "/help",
   "/legal",
-  "/omnicraft",
+  "/workspace/omnicraft",
   "/pricing",
   "/3d-prompts",
   "/api/healthz",
@@ -65,7 +65,7 @@ function isKnownRoute(href: string): boolean {
   if (base.startsWith("/features/")) {
     return REAL_FEATURE_SLUGS.has(base.slice("/features/".length));
   }
-  if (base.startsWith("/omnicraft/")) {
+  if (base.startsWith("/workspace/omnicraft/")) {
     return LIVE_TOOL_ROUTES.includes(base);
   }
   if (base.startsWith("/sub-categories/")) {
@@ -287,7 +287,7 @@ describe("sub-categories content — the honesty contract", () => {
   it("OmniCraft cross-links only target LIVE tools", () => {
     for (const page of SUBCATEGORY_PAGES) {
       for (const href of allHrefs(page)) {
-        if (href.startsWith("/omnicraft/")) {
+        if (href.startsWith("/workspace/omnicraft/")) {
           expect(LIVE_TOOL_ROUTES, `${page.slug} → ${href}`).toContain(href);
         }
       }
@@ -333,7 +333,7 @@ describe("sub-categories wiring — sitemap, routes", () => {
   });
 
   it("sub-category routes cannot collide with other trees", () => {
-    const others = ["/features", "/legal", "/omnicraft", "/use-cases", "/styles", "/help", "/pricing", "/3d-prompts", "/switch", "/event"];
+    const others = ["/features", "/legal", "/workspace/omnicraft", "/use-cases", "/styles", "/help", "/pricing", "/3d-prompts", "/switch", "/event"];
     for (const route of SUBCATEGORY_ROUTES) {
       expect(others.some((p) => route.startsWith(p)), route).toBe(false);
     }

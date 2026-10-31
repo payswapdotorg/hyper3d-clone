@@ -253,7 +253,7 @@ export const STYLE_PAGES_B: StylePageDef[] = [
       { label: "Minimalist", href: "/styles/minimalist" },
       { label: "Retro", href: "/styles/retro" },
       { label: "Mechanical Engineering", href: "/use-cases/mechanical-engineering" },
-      { label: "Format Convertor", href: "/omnicraft/convertor" },
+      { label: "Format Convertor", href: "/workspace/omnicraft/formatcon" },
     ],
     closingTitle: "Your next machine blockout starts as one prompt",
     closingBody:
@@ -499,7 +499,7 @@ export const STYLE_PAGES_B: StylePageDef[] = [
       { label: "Pixel Art", href: "/styles/pixel-art" },
       { label: "Isometric", href: "/styles/isometric" },
       { label: "Game Development", href: "/use-cases/game-development" },
-      { label: "Format Convertor", href: "/omnicraft/convertor" },
+      { label: "Format Convertor", href: "/workspace/omnicraft/formatcon" },
     ],
     closingTitle: "Your next chunky model starts as one prompt",
     closingBody:

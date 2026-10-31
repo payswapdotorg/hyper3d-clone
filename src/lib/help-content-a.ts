@@ -163,7 +163,7 @@ export const HELP_ARTICLES_A: HelpArticleDef[] = [
     related: [
       { label: "Feature pages", href: "/features" },
       { label: "Style pages", href: "/styles" },
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
       { label: "Choosing generation settings", href: "/help/articles/choose-rodin-model-and-generation-settings" },
     ],
     updated: "2026-10-30",

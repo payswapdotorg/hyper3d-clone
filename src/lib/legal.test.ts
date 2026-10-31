@@ -158,7 +158,7 @@ describe("legal wiring — footer, sitemap, routes", () => {
 
   it("legal slugs cannot collide with live OmniCraft tool routes", () => {
     const toolRoutes = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
-      (t) => `/omnicraft/${t.slug}`,
+      (t) => `/workspace/omnicraft/${t.slug}`,
     );
     for (const route of legalRoutes()) {
       expect(toolRoutes, route).not.toContain(route);

@@ -311,7 +311,7 @@ export const MCP_FEATURE_PAGES: FeaturePageDef[] = [
       { label: "MCP overview", href: "/features/mcp" },
       { label: "MCP for Claude", href: "/features/mcp/mcp-claude" },
       { label: "MCP for Kimi", href: "/features/mcp/mcp-kimi" },
-      { label: "Format Convertor", href: "/omnicraft/convertor" },
+      { label: "Format Convertor", href: "/workspace/omnicraft/formatcon" },
     ],
     closingTitle: "Generation Without Leaving the Terminal",
     closingBody: "Register the endpoint once; the agent handles the rest of the lifecycle.",

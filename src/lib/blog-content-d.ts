@@ -48,8 +48,8 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     ],
     related: [
       { label: "GLB vs glTF", href: "/blog/glb-vs-gltf" },
-      { label: "Model viewer", href: "/omnicraft/viewer" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Model viewer", href: "/workspace/omnicraft/viewer" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
     ],
   },
   {
@@ -90,7 +90,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     related: [
       { label: "OBJ vs STL", href: "/blog/obj-vs-stl" },
       { label: "STL explainer", href: "/blog/what-is-stl-file" },
-      { label: "Model viewer", href: "/omnicraft/viewer" },
+      { label: "Model viewer", href: "/workspace/omnicraft/viewer" },
     ],
   },
   {
@@ -214,7 +214,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     related: [
       { label: "3MF vs STL", href: "/blog/3mf-vs-stl" },
       { label: "STL explainer", href: "/blog/what-is-stl-file" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
     ],
   },
   {
@@ -254,7 +254,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     ],
     related: [
       { label: "STL vs OBJ vs FBX", href: "/blog/stl-vs-obj-vs-fbx" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
       { label: "Export problems", href: "/blog/fix-common-hyper3d-export-problems" },
     ],
   },
@@ -296,7 +296,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     related: [
       { label: "OBJ explainer", href: "/blog/what-is-obj-file" },
       { label: "Photogrammetry topic", href: "/blog/what-is-photogrammetry" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
     ],
   },
   {
@@ -336,8 +336,8 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     ],
     related: [
       { label: "GLB explainer", href: "/blog/what-is-glb-file" },
-      { label: "Model viewer", href: "/omnicraft/viewer" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Model viewer", href: "/workspace/omnicraft/viewer" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
     ],
   },
   {
@@ -378,7 +378,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     related: [
       { label: "GLB explainer", href: "/blog/what-is-glb-file" },
       { label: "FBX vs GLB", href: "/blog/fbx-vs-glb" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
     ],
   },
   {
@@ -461,7 +461,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
     related: [
       { label: "OBJ vs STL", href: "/blog/obj-vs-stl" },
       { label: "FBX vs GLB", href: "/blog/fbx-vs-glb" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
     ],
   },
   {

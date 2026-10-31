@@ -18,13 +18,13 @@ const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
 /** The clone's genuinely live OmniCraft tool routes. */
 const LIVE_TOOL_ROUTES = OMNICRAFT_TOOLS.filter((t) => t.status === "live").map(
-  (t) => `/omnicraft/${t.slug}`,
+  (t) => `/workspace/omnicraft/${t.slug}`,
 );
 
 /** Routes that genuinely exist in this clone. */
 const KNOWN_ROUTE_PREFIXES = [
   "/features/",
-  "/omnicraft/",
+  "/workspace/omnicraft/",
   "/legal/",
   "/use-cases/",
   "/styles/",
@@ -36,7 +36,7 @@ function isKnownRoute(href: string): boolean {
   if (base === "/" || base === "" || base === STUDIO_PATH) return true; // studio root
   if (
     base === "/features" ||
-    base === "/omnicraft" ||
+    base === "/workspace/omnicraft" ||
     base === "/legal" ||
     base === "/use-cases" ||
     base === "/styles"
@@ -259,7 +259,7 @@ describe("styles content — the honesty contract", () => {
   it("OmniCraft cross-links only target LIVE tools (no dead tool pages)", () => {
     for (const page of STYLE_PAGES) {
       for (const link of page.crossLinks) {
-        if (link.href.startsWith("/omnicraft/")) {
+        if (link.href.startsWith("/workspace/omnicraft/")) {
           expect(LIVE_TOOL_ROUTES, `${page.slug} → ${link.href}`).toContain(link.href);
         }
       }
@@ -305,7 +305,7 @@ describe("styles wiring — footer, sitemap, routes", () => {
   });
 
   it("style routes cannot collide with features, legal, use-case, or tool routes", () => {
-    const others = ["/features", "/legal", "/omnicraft", "/use-cases"];
+    const others = ["/features", "/legal", "/workspace/omnicraft", "/use-cases"];
     for (const route of STYLE_ROUTES) {
       expect(others.some((p) => route.startsWith(p)), route).toBe(false);
     }

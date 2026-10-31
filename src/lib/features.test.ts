@@ -39,13 +39,13 @@ const REFERENCE_FEATURE_SLUGS = [
 ] as const;
 
 /** Routes that genuinely exist in this clone (pages + tool routes + studio). */
-const KNOWN_ROUTE_PREFIXES = ["/features/", "/omnicraft/", "/api/healthz"];
+const KNOWN_ROUTE_PREFIXES = ["/features/", "/workspace/omnicraft/", "/api/healthz"];
 
 function isKnownRoute(href: string): boolean {
   // strip query/hash: "/?mcp=1" and "/#how-it-works" are the studio root
   const base = href.split(/[?#]/)[0];
   if (base === "/" || base === "" || base === STUDIO_PATH) return true;
-  if (base === "/omnicraft") return true;
+  if (base === "/workspace/omnicraft") return true;
   return KNOWN_ROUTE_PREFIXES.some((p) => base.startsWith(p));
 }
 
@@ -148,7 +148,7 @@ describe("features registry — honest routing", () => {
 describe("features registry — OmniCraft consistency (single source of truth)", () => {
   const FEATURE_TO_TOOL: Record<string, string> = {
     "omnicraft/ai-hdri-generator": "hdri",
-    "omnicraft/svg-to-3d-converter": "vector",
+    "omnicraft/svg-to-3d-converter": "vecto3d",
     "omnicraft/ai-texture-generator": "texture",
     "omnicraft/ai-image-enhancer": "enhancer",
     "omnicraft/ai-image-remix": "remix",
@@ -170,7 +170,7 @@ describe("features registry — OmniCraft consistency (single source of truth)",
       if (tool.status === "live") {
         expect(page.status, `${slug}`).toBe("live");
         expect(page.cta?.href, `${slug} must deep-link the real tool`).toBe(
-          `/omnicraft/${toolSlug}`,
+          `/workspace/omnicraft/${toolSlug}`,
         );
       } else {
         expect(page.status, `${slug}`).toBe("reference-only");
@@ -191,11 +191,11 @@ describe("features registry — index and nav wiring", () => {
 
   it("nav hrefs resolve to real registry pages", () => {
     for (const [label, href] of Object.entries(FEATURE_NAV_HREFS)) {
-      expect(href.startsWith("/features/") || href.startsWith("/omnicraft/"), label).toBe(true);
+      expect(href.startsWith("/features/") || href.startsWith("/workspace/omnicraft/"), label).toBe(true);
       if (href.startsWith("/features/")) {
         expect(featureBySlug(href.slice("/features/".length)), label).toBeDefined();
       } else {
-        const toolSlug = href.slice("/omnicraft/".length);
+        const toolSlug = href.slice("/workspace/omnicraft/".length);
         expect(OMNICRAFT_TOOLS.some((t) => t.slug === toolSlug), label).toBe(true);
       }
     }
@@ -227,9 +227,11 @@ describe("features registry — index and nav wiring", () => {
 });
 
 describe("features sitemap", () => {
-  it("public/landing-sitemap-features-en.xml lists every features route; static-en carries the live tools", () => {
+  it("public/landing-sitemap-features-en.xml lists every features route; static-en retired the omnicraft locs", () => {
     // t67: the monolith became a 90-child sitemap index; features own their
-    // child, the live omnicraft tools ride in the static family child.
+    // child. t71: the reference removed the five omnicraft locs from
+    // static-en (the routes 301 away now) and added the two content-preview
+    // locs in their place — the clone's static-en matches line-for-line.
     const xml = readFileSync(
       join(process.cwd(), "public", "landing-sitemap-features-en.xml"),
       "utf8",
@@ -241,11 +243,13 @@ describe("features sitemap", () => {
     for (const route of featureRoutes()) {
       expect(xml.includes(`<loc>${SITE_ORIGIN}${route}</loc>`), route).toBe(true);
     }
-    for (const tool of OMNICRAFT_TOOLS.filter((t) => t.status === "live")) {
+    for (const tool of OMNICRAFT_TOOLS) {
       expect(staticXml.includes(`<loc>${SITE_ORIGIN}/omnicraft/${tool.slug}</loc>`), tool.slug).toBe(
-        true,
+        false,
       );
     }
+    expect(staticXml.includes(`<loc>${SITE_ORIGIN}/content-preview</loc>`)).toBe(true);
+    expect(staticXml.includes(`<loc>${SITE_ORIGIN}/content-preview/render</loc>`)).toBe(true);
     expect(staticXml.includes(`<loc>${SITE_ORIGIN}/</loc>`)).toBe(true);
     expect(xml.includes(`<loc>${SITE_ORIGIN}/features</loc>`)).toBe(true);
   });

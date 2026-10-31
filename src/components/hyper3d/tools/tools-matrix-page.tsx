@@ -148,12 +148,12 @@ export function ToolsMatrixIndexView() {
           <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
-                href: "/omnicraft/convertor",
+                href: "/workspace/omnicraft/formatcon",
                 label: "Format Convertor",
                 note: "Converts your own confirmed tasks between the six real export formats.",
               },
               {
-                href: "/omnicraft/viewer",
+                href: "/workspace/omnicraft/viewer",
                 label: "Model Viewer",
                 note: "Drops a GLB into the local viewer — parsed in the browser, never uploaded.",
               },

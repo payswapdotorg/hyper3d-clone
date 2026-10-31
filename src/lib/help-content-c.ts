@@ -63,7 +63,7 @@ export const HELP_ARTICLES_C: HelpArticleDef[] = [
       },
     ],
     related: [
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
       { label: "Feature overview", href: "/help/articles/what-features-does-hyper3d-have" },
       { label: "Importing into tools", href: "/help/articles/import-models-into-hyper3d-tools" },
     ],
@@ -126,7 +126,7 @@ export const HELP_ARTICLES_C: HelpArticleDef[] = [
       },
     ],
     related: [
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
       { label: "Workspace editing limits", href: "/help/articles/edit-3d-models-in-rodin-workspace" },
       { label: "Fixing export problems", href: "/help/articles/fix-common-hyper3d-export-problems" },
     ],
@@ -190,9 +190,9 @@ export const HELP_ARTICLES_C: HelpArticleDef[] = [
       },
     ],
     related: [
-      { label: "OmniCraft toolbag", href: "/omnicraft" },
+      { label: "OmniCraft toolbag", href: "/workspace/omnicraft" },
       { label: "Fixing export problems", href: "/help/articles/fix-common-hyper3d-export-problems" },
-      { label: "Vector to 3D (SVG is the one import that IS live)", href: "/omnicraft/vector" },
+      { label: "Vector to 3D (SVG is the one import that IS live)", href: "/workspace/omnicraft/vecto3d" },
     ],
     updated: "2026-10-30",
   },

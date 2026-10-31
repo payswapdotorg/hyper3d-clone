@@ -1563,7 +1563,7 @@ export function Studio({
                 </button>
                 {/* OmniCraft grid dropdown (reference nav_show on the menu icon:
                     tool grid + Add-On DCC description). t56: driven by the shared
-                    registry — live tools route to /omnicraft/{slug}, the rest state
+                    registry — live tools route to /workspace/omnicraft/{slug}, the rest state
                     honestly why they are not in this clone. */}
                 <span className="pointer-events-none absolute right-0 top-full z-30 mt-2 w-[300px] rounded-[18px] border border-white/10 bg-[#17181c]/95 p-3.5 opacity-0 shadow-[0_14px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
                   <span className="block text-[11px] font-bold text-white/85">OmniCraft｜Toolbag for 3D</span>
@@ -1572,7 +1572,7 @@ export function Studio({
                       tool.status === "live" ? (
                         <a
                           key={tool.slug}
-                          href={`/omnicraft/${tool.slug}`}
+                          href={`/workspace/omnicraft/${tool.slug}`}
                           title={tool.blurb}
                           className="truncate rounded-lg bg-white/[0.05] px-2 py-1.5 text-[10px] font-semibold text-white/65 transition-colors hover:bg-violet-400/15 hover:text-white"
                         >
@@ -2556,11 +2556,12 @@ export function Studio({
                     ))}
                   </div>
                 </div>
-                {/* t56: the toolbag is now real in this clone (/omnicraft) —
-                    the reference's pricing chips stay as parity chrome, and the
+                {/* t56: the toolbag is now real in this clone; t71 moved it to
+                    /workspace/omnicraft (the reference's own URL) — the
+                    reference's pricing chips stay as parity chrome, and the
                     CTA routes to the honest tool grid instead of a stub toast. */}
                 <a
-                  href="/omnicraft"
+                  href="/workspace/omnicraft"
                   aria-label="Open the OmniCraft toolbag"
                   className="flex h-8 w-full items-center justify-center rounded-full bg-white text-[11px] font-bold text-[#17181c] transition-colors hover:bg-white/90"
                 >
@@ -2696,7 +2697,7 @@ export function Studio({
                       ["Image to 3D", "/features/image-to-3d"],
                       ["AI Video Generator", "/features/ai-video-generator"],
                       ["AI Image Generator", "/features/ai-image-generator"],
-                      ["OmniCraft", "/omnicraft"],
+                      ["OmniCraft", "/workspace/omnicraft"],
                     ],
                   },
                   {

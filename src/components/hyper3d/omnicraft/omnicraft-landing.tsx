@@ -90,7 +90,7 @@ export function OmniCraftLanding() {
               <li key={tool.slug}>
                 {tool.status === "live" ? (
                   <Link
-                    href={`/omnicraft/${tool.slug}`}
+                    href={`/workspace/omnicraft/${tool.slug}`}
                     className="block h-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all hover:-translate-y-0.5 hover:border-violet-400/40 hover:bg-violet-400/[0.06]"
                   >
                     {inner}
@@ -127,7 +127,7 @@ export function NotInClonePanel({ name, note }: { name: string; note: string }) 
         </p>
         <div className="mt-5 flex justify-center gap-2">
           <Link
-            href="/omnicraft"
+            href="/workspace/omnicraft"
             className="rounded-lg border border-white/15 bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
           >
             ← Toolbag

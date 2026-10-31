@@ -58,7 +58,7 @@ export default function FeaturesIndexPage() {
               Start for free
             </Link>
             <Link
-              href="/omnicraft"
+              href="/workspace/omnicraft"
               className="inline-flex min-h-10 items-center justify-center rounded-lg border border-white/15 bg-white/[0.04] px-4 text-sm font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
             >
               Open the toolbag

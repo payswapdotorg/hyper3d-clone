@@ -134,7 +134,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
     related: [
       { label: "WorldGen feature page", href: "/features/worldgen" },
       { label: "Image to 3D", href: "/features/image-to-3d" },
-      { label: "HDRI generator", href: "/omnicraft/hdri" },
+      { label: "HDRI generator", href: "/workspace/omnicraft/hdri" },
     ],
   },
   {
@@ -174,7 +174,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
     related: [
       { label: "ChatAvatar feature page", href: "/features/chatavatar" },
       { label: "Text to 3D", href: "/features/text-to-3d" },
-      { label: "Model viewer", href: "/omnicraft/viewer" },
+      { label: "Model viewer", href: "/workspace/omnicraft/viewer" },
     ],
   },
   {
@@ -213,9 +213,9 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       },
     ],
     related: [
-      { label: "HDRI tool", href: "/omnicraft/hdri" },
+      { label: "HDRI tool", href: "/workspace/omnicraft/hdri" },
       { label: "Help: HDRI article", href: "/help/articles/create-hdri-skyboxes-with-omnicraft" },
-      { label: "OmniCraft grid", href: "/omnicraft" },
+      { label: "OmniCraft grid", href: "/workspace/omnicraft" },
     ],
   },
   {
@@ -254,8 +254,8 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       },
     ],
     related: [
-      { label: "Mesh editor status page", href: "/omnicraft/mesh" },
-      { label: "Model viewer", href: "/omnicraft/viewer" },
+      { label: "Mesh editor status page", href: "/workspace/omnicraft/mesh" },
+      { label: "Model viewer", href: "/workspace/omnicraft/viewer" },
       { label: "Help: mesh editor article", href: "/help/articles/edit-3d-models-with-omnicraft-mesh-editor" },
     ],
   },
@@ -298,7 +298,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
     related: [
       { label: "Mesh editor status", href: "/blog/edit-3d-models-with-omnicraft-mesh-editor" },
       { label: "BANG / Partial Edit", href: "/blog/use-bang-and-partial-edit" },
-      { label: "Model viewer", href: "/omnicraft/viewer" },
+      { label: "Model viewer", href: "/workspace/omnicraft/viewer" },
     ],
   },
   {

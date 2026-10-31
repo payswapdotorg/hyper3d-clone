@@ -96,12 +96,12 @@ describe("omnicraft registry", () => {
   it("slug lookup, hrefs and route guards agree", () => {
     expect(omnicraftToolBySlug("hdri")?.status).toBe("live");
     expect(omnicraftToolBySlug("nope")).toBeUndefined();
-    expect(omnicraftHref("hdri")).toBe("/omnicraft/hdri");
+    expect(omnicraftHref("hdri")).toBe("/workspace/omnicraft/hdri");
     expect(isOmnicraftSlug("hdri")).toBe(true);
     expect(isOmnicraftSlug("bogus")).toBe(false);
   });
 
-  it("this session ships four live tools", () => {
-    expect(liveOmniCraftTools().map((t) => t.slug).sort()).toEqual(["convertor", "hdri", "vector", "viewer"]);
+  it("this session ships four live tools (the reference's workspace slugs)", () => {
+    expect(liveOmniCraftTools().map((t) => t.slug).sort()).toEqual(["formatcon", "hdri", "vecto3d", "viewer"]);
   });
 });

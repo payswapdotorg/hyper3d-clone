@@ -9,12 +9,12 @@
  * real surfaces are different and narrower, and every page in the
  * /tools tree must state them exactly:
  *
- *  - The Format Convertor (live, /omnicraft/convertor) re-exports YOUR
+ *  - The Format Convertor (live, /workspace/omnicraft/formatcon) re-exports YOUR
  *    generated tasks across the six real export formats — it is
  *    auth-gated and task-based; it does not upload arbitrary files.
- *  - The Model Viewer (live, /omnicraft/viewer) accepts GLB/GLTF only,
+ *  - The Model Viewer (live, /workspace/omnicraft/viewer) accepts GLB/GLTF only,
  *    parsed locally in the browser, never uploaded.
- *  - Vector to 3D (live, /omnicraft/vector) extrudes SVG into GLB
+ *  - Vector to 3D (live, /workspace/omnicraft/vecto3d) extrudes SVG into GLB
  *    locally — the one genuinely local file→file conversion here.
  *  - Image-to-3D (real studio feature, /features/image-to-3d) turns a
  *    reference image into a generated 3D model — generation, not

@@ -263,8 +263,8 @@ describe("t67 sitemap split — the 90-child index shape", () => {
         }
       }
     }
-    expect(en).toBe(1095);
-    expect(total).toBe(7070);
+    expect(en).toBe(1092);
+    expect(total).toBe(7067);
   });
 
   it("sub-category children carry zero hreflang alternates (reference quirk)", () => {
@@ -384,8 +384,8 @@ describe("t67 JSON-LD wiring — every family renderer ships its blocks", () => 
       ["components/hyper3d/prompts/prompt-hub.tsx", "promptHubJsonLd"],
       ["components/hyper3d/landing/switch-page.tsx", "baselineJsonLd"],
       ["components/hyper3d/landing/event-page.tsx", "baselineJsonLd"],
-      ["app/omnicraft/page.tsx", "baselineJsonLd"],
-      ["app/omnicraft/[tool]/page.tsx", "webApplication"],
+      ["app/workspace/omnicraft/page.tsx", "baselineJsonLd"],
+      ["app/workspace/omnicraft/[tool]/page.tsx", "webApplication"],
     ];
     for (const [file, symbol] of wiring) {
       const text = src(file);
@@ -429,8 +429,8 @@ describe("t67 metadata wiring — every family route spreads familyMetadata", ()
     "3d-prompts/models/[model]/page.tsx",
     "3d-prompts/models/[model]/[page]/page.tsx",
     "pricing/page.tsx",
-    "omnicraft/page.tsx",
-    "omnicraft/[tool]/page.tsx",
+    "workspace/omnicraft/page.tsx",
+    "workspace/omnicraft/[tool]/page.tsx",
     "tools/[...slug]/page.tsx",
   ];
 

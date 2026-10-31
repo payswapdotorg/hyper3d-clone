@@ -191,8 +191,8 @@ describe("t68 landing chrome — every href resolves to a real route", () => {
       const ok =
         href === "/" ||
         href === STUDIO_PATH ||
-        href === "/omnicraft" ||
-        href.startsWith("/omnicraft/") ||
+        href === "/workspace/omnicraft" ||
+        href.startsWith("/workspace/omnicraft/") ||
         href.startsWith("/features/") ||
         href.startsWith("/legal/") ||
         href === "/tools/viewer" ||
@@ -220,7 +220,7 @@ describe("t68 landing chrome — every href resolves to a real route", () => {
     expect(internal).toContain("/features/text-to-3d");
     expect(internal).toContain("/features/chatavatar");
     expect(internal).toContain("/features/omnicraft/ai-texture-generator");
-    expect(internal).toContain("/omnicraft");
+    expect(internal).toContain("/workspace/omnicraft");
     expect(internal).toContain("/help/articles/use-bang-and-partial-edit");
     expect(internal).toContain("/help/articles/control-topology-polycount-and-lods");
     expect(internal).toContain("/help/articles/how-to-get-hyper3d-enterprise-support");

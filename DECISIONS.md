@@ -1281,3 +1281,80 @@ canonicals to /3d-prompts/2 with the full 13-link hreflang set; EN
 ja index, de community banner, ja hub, ar RTL sub-category, zh tools
 hub) reports clean renders; mobile 375 px has no horizontal scroll on
 all four new page types. Lint clean.
+
+## 51. t71 — the omnicraft retirement and the content-preview surface
+
+The reference's crawler surface moved (recon 2026-10-31, against the
+90-child sitemap index pulled fresh): every child matched byte-for-byte
+except static-en, which exchanged exactly seven lines — five omnicraft
+locs out, two content-preview locs in. Probed live, the two halves of
+that diff are one retirement and one arrival.
+
+**The retirement.** The reference 301s its public OmniCraft landing tree
+to marketing pages — /omnicraft, /omnicraft/hdri, /omnicraft/convertor
+and /omnicraft/vector all land on /features/omnicraft/ai-hdri-generator,
+/omnicraft/viewer on /tools/viewer, deep and unknown paths included —
+and serves the working tools at /workspace/omnicraft/* (nine slugs,
+probed 200: hdri, viewer, formatcon, vecto3d, mesh, enhancer, remix,
+search, texture), under the robots-disallowed /workspace prefix, linked
+from the homepage card and the tools pages. The clone mirrors the whole
+move: next.config redirects with statusCode 301 and the reference's
+exact targets (the t56 reverse redirects workspace → public landing are
+gone with the tree); the toolbag registry keeps its nine-tool honesty
+contract but re-pins the two live slugs the reference's workspace
+actually uses (vecto3d, formatcon — the old vector/convertor were the
+retired landing's own spellings) and omnicraftHref() now returns the
+workspace URL; the toolbag index and per-tool routes moved from
+src/app/omnicraft/* to src/app/workspace/omnicraft/*, noindex like
+everything under the disallowed prefix; every internal link that pointed
+at the public tree (footer, studio ×2, marketing home card, tools index
+CTAs, tools matrix band, style cross-links, help/use-case/blog/
+subcategory/prompts/features cross-links — 47 files) re-points directly
+at the live targets, no redirect chains. The sitemap's five omnicraft
+locs are gone from static-en and from the EN census (1,095 → 1,092
+routes, 7,070 → 7,067 <url>).
+
+**The arrival.** /content-preview is the reference's internal draft
+preview host, and /content-preview/render its renderer — listed in
+static-en (monthly / 0.5 / no lastmod / zero alternates) while the page
+itself carries meta robots noindex, nofollow, the reference's own
+split. The page is one status line plus an inline module implementing
+a frozen postMessage protocol — ready (version 1) to its parent/opener,
+render {id, mode, locale, slug, document} from allowed origins only,
+rendered {id, unknownTypes, width, viewportWidth, height} after the
+fetch, size on resize, error {id, status, message} on failure, refused
+to everyone else — with the draft rendered into a sandboxed srcdoc
+iframe (allow-scripts allow-same-origin allow-popups
+allow-popups-to-escape-sandbox allow-forms) whose links open in new
+tabs. The endpoint GETs 405 ("POST a preview document from
+/content-preview."), POSTs from outside its own page 403 ("Previews
+render only for the /content-preview page of this site." — keyed on
+Sec-Fetch-Site), and flags unknown content types in an
+X-Content-Preview-Unknown header, comma-separated and URL-encoded. The
+clone implements the same observable contract honestly: the host
+component speaks the same six messages against the same endpoint and
+gates on exactly one allowed origin — the site it is served from, since
+this clone has no admin console to allowlist; the render endpoint
+mirrors the 405/403 gates and headers (cache-control private no-store,
+x-robots-tag noindex nofollow, CSP frame-ancestors 'self') and renders
+this clone's own honest block format — six renderable types (heading,
+paragraph, list, quote, code, divider), everything else reported in the
+unknown-types header and rendered as a plainly-marked placeholder,
+malformed known blocks answered 400 rather than silently dropped, all
+text escaped so a draft can never inject markup.
+
+Copy discipline (24 new tests → 491 / 34 suites): the protocol
+constants, gate wording, and render-path header pinned verbatim; the
+six known block types, escaping, unknown-type reporting (unique,
+first-appearance order), and malformed-document errors pinned; the
+endpoint's 405/403/200/400 answers pinned including the
+no-unknown-header-when-fully-known case; static-en pinned at 48 <url>
+with both preview locs monthly/0.5/no-alternates/no-lastmod and zero
+omnicraft locs; the EN census re-pinned 1,092 / 7,067 across 90
+children; the two 301 tables pinned with the t56 reversals absent; the
+registry pinned on vecto3d/formatcon with workspace hrefs. Local smoke:
+all nine workspace tool routes render (four live + honest panels),
+unknown slugs keep the honest panel, the five public URLs 301 to the
+reference's exact targets, /content-preview answers 200 noindex with
+the standalone status, GET /content-preview/render 405, and a curl POST
+hits the 403 gate. Lint clean; the tsc baseline is unchanged.

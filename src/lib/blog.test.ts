@@ -34,7 +34,7 @@ const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 /** Routes that genuinely exist in this clone (for related-link checks).
  * OmniCraft tool routes exist for ALL tools — not-in-clone tools render an
  * honest status page at their route, which is a real page, not a 404. */
-const TOOL_ROUTES = OMNICRAFT_TOOLS.map((t) => `/omnicraft/${t.slug}`);
+const TOOL_ROUTES = OMNICRAFT_TOOLS.map((t) => `/workspace/omnicraft/${t.slug}`);
 const BLOG_ARTICLE_ROUTES = new Set(BLOG_CATALOG.map((e) => `/blog/${e.slug}`));
 const BLOG_CATEGORY_ROUTES = BLOG_CATEGORIES.map((c) => `/blog/category/${c.slug}`);
 
@@ -46,7 +46,7 @@ function isKnownRoute(href: string): boolean {
   if (
     base === "/pricing" ||
     base === "/help" ||
-    base === "/omnicraft" ||
+    base === "/workspace/omnicraft" ||
     ["/help/getting-started", "/help/account-settings", "/help/billing", "/help/credit", "/help/features", "/help/enterprise"].includes(base)
   )
     return true;

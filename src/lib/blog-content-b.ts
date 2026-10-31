@@ -389,8 +389,8 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
     related: [
       { label: "GLB format article", href: "/blog/what-is-glb-file" },
       { label: "STL format article", href: "/blog/what-is-stl-file" },
-      { label: "Format convertor", href: "/omnicraft/convertor" },
-      { label: "Model viewer", href: "/omnicraft/viewer" },
+      { label: "Format convertor", href: "/workspace/omnicraft/formatcon" },
+      { label: "Model viewer", href: "/workspace/omnicraft/viewer" },
     ],
   },
 ];

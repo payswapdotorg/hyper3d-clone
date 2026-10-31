@@ -2,11 +2,15 @@
  * OmniCraft toolbag registry — the reference's nine workspace tools
  * (DOM truth, 2026-10-28 recon of hyper3d.ai/workspace/omnicraft/hdri:
  * Texture Generator, Image Enhancer, Image Remix, HDRI Generation,
- * Rodin Search, Vector to 3D, Mesh Editor, Model Viewer, Format Convertor).
+ * Rodin Search, Vector to 3D, Mesh Editor, Model Viewer, Format Convertor;
+ * slugs re-pinned 2026-10-31 against the live workspace URLs: vecto3d and
+ * formatcon, not the retired public landing's vector/convertor).
  *
- * This registry is the single source of truth shared by the toolbag landing
- * (/omnicraft), the per-tool routes (/omnicraft/[tool]), and the studio's
- * OmniCraft grid dropdown — the same nine names, in the reference's order.
+ * This registry is the single source of truth shared by the toolbag index
+ * (/workspace/omnicraft), the per-tool routes (/workspace/omnicraft/[tool]),
+ * and the studio's OmniCraft grid dropdown — the same nine names, in the
+ * reference's order. The public /omnicraft landing tree is retired exactly
+ * like the reference's own (301s, sitemap removal — DECISIONS.md #51).
  *
  * Honesty contract (same ethos as DECISIONS.md #34): a tool is `live` only
  * when it is actually implemented in this clone; the rest are listed with a
@@ -16,7 +20,7 @@
 export type OmniCraftToolStatus = "live" | "not-in-clone";
 
 export interface OmniCraftTool {
-  /** URL slug under /omnicraft/ (also used by the /workspace/omnicraft redirects). */
+  /** URL slug under /workspace/omnicraft/ (the reference's own workspace slugs). */
   slug: string;
   /** The reference grid's exact label. */
   name: string;
@@ -70,7 +74,7 @@ export const OMNICRAFT_TOOLS: OmniCraftTool[] = [
     note: "A web-wide model index — nothing in this clone honestly reproduces it. The studio's gallery search covers your own tasks.",
   },
   {
-    slug: "vector",
+    slug: "vecto3d",
     name: "Vector to 3D",
     blurb: "SVG in, extruded GLB out — depth, bevel and color, rendered locally.",
     status: "live",
@@ -92,7 +96,7 @@ export const OMNICRAFT_TOOLS: OmniCraftTool[] = [
     local: true,
   },
   {
-    slug: "convertor",
+    slug: "formatcon",
     name: "Format Convertor",
     blurb: "Your generated tasks to GLB, GLTF, FBX, OBJ, STL or USDZ.",
     status: "live",
@@ -110,7 +114,7 @@ export function omnicraftToolBySlug(slug: string): OmniCraftTool | undefined {
 }
 
 export function omnicraftHref(slug: string): string {
-  return `/omnicraft/${slug}`;
+  return `/workspace/omnicraft/${slug}`;
 }
 
 /** Valid dynamic-route slugs — anything else renders the honest unknown-tool panel. */
