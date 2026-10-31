@@ -88,3 +88,21 @@ article/RSS t78, locale blog family t79, hreflang t80) now cover
 every head dimension the census probed. The remaining known gaps are
 body-level: the EN blog article bodies' link structure and the
 og:image asset mirroring decision (t77 notes).
+
+## Deploy outcome (2026-11-01, post-push)
+
+Tried both tokens immediately after pushing `e8c5b56`:
+
+- `vcp_1IhxE…` — `resource_creation_blocked` ("Your Team exceeded
+  our fair use limits and has been blocked") — the same block as at
+  the end of t78/t79.
+- `vcp_3uMgT…` — now `invalidToken` / "Not authorized": this token
+  has gone stale since t78 (it used to authenticate). Credential-list
+  implication: only one Vercel token remains usable.
+
+The live domain itself now answers **402** on every route
+(`curl https://hyper3d-clone.vercel.app/` → 402) — the account-level
+block has disabled serving, not just deploying. Production
+re-verification stays pending until the Vercel account is unblocked;
+the local standalone build (verify-served.py, 14 route classes) is the
+verification of record for t80. Code is pushed to GitHub.
