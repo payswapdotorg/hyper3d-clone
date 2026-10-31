@@ -46,7 +46,7 @@ procedure, kept IN the repo so it survives resets with the code.
 4. **Verify the baseline before starting new work:**
 
    ```bash
-   bun run test   # must be all green (658 tests / 39 suites as of t75)
+   bun run test   # must be all green (736 tests / 41 suites as of t76)
    bun run lint   # must be 0 errors
    ```
 

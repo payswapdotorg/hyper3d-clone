@@ -6,6 +6,7 @@ import { hreflangFor, isLocale } from "@/lib/i18n";
 import { LOCALE_MESSAGES, fillCount } from "@/lib/i18n-messages";
 import { localeStaticParams, resolveLocalePage } from "@/lib/i18n-pages";
 import { PROMPT_CENSUS, PROMPT_PAGE_COUNT } from "@/lib/prompts-registry";
+import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { OG_IMAGE_URL, SITE_ORIGIN } from "@/lib/schema-org";
 
@@ -120,13 +121,18 @@ export async function generateMetadata({
   const enPath = englishPath(locale, slug);
   if (!enPath) return { title: "Page not found" };
   const title = localizedTitle(locale, path);
-  const description = localizedDescription(locale, path)?.slice(0, 180);
   // t75: the reference's locale pages ship full link-preview cards —
   // og:title is the <title> minus the " | Hyper3D" suffix (registry card
-  // title), og:url is the locale page's own URL, and the description is
-  // this clone's honest localized copy. The canonical stays the English
-  // original with the 13-link hreflang set (the t66 contract).
+  // title), og:url is the locale page's own URL. The canonical stays the
+  // English original with the 13-link hreflang set (the t66 contract).
   const localePath = `/${locale}${path === "" ? "" : `/${path}`}`;
+  // t76: a censused locale path serves the reference's own localized
+  // meta description, pinned byte-faithfully (full length — 106 pinned
+  // descriptions run past the 180-char slice this clone's templates
+  // use); every other route keeps the honest localized template copy.
+  const description =
+    referenceDescription(localePath) ??
+    localizedDescription(locale, path)?.slice(0, 180);
   const cardTitle =
     referenceCardTitle(localePath) ?? title ?? `${locale} · Hyper3D`;
   const def = isLocale(locale) ? resolveLocalePage(locale, path) : null;

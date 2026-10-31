@@ -1699,3 +1699,77 @@ censused page's HTML (spot-verified in the build output: /pricing,
 /zh/help, /features/ai-image-generator, /blog/zbrush-alternative,
 /zh/tools, /tools/converter/3ds/to/dae, /de/blog/3d-animation-pipeline-de,
 /zh/use-cases/3d-printing, /help/articles/are-credits-deducted-when-a-generation-fails).
+
+## 56. t76 — the byte-faithful meta-description registry: every censused page serves the reference's real description
+
+Recon 2026-10-31 (`recon/t76/`): the t75 title probe was re-run for
+the description dimension — every URL in the t75 census (7,079 URLs =
+the 90-child landing-sitemap tree minus the reference's own 405, plus
+the twelve served-not-sitemapped `/tools` indexes) was probed for its
+served `<meta name="description">`. 7,077 of 7,079 carry one, so
+descriptions are now pinned verbatim in a generated 7,077-entry
+registry (`src/lib/reference-descriptions.ts`,
+`referenceDescription(path)`), wired through the same 23 route files
+as t75 — the ten static family indexes, the twelve dynamic family
+routes, and the locale catch-all — with the honest template fallback
+everywhere (`referenceDescription(path) ?? template`), exactly the t75
+discipline applied to the description dimension.
+
+Two honest exclusions, pinned by test: `/content-preview` (the
+reference serves HTTP 200 there with NO meta description at all; this
+clone keeps its own honest page description) and `/content-preview/render`
+(the t75 405). The registry boundary is exact and pinned both ways:
+description registry == title registry − `/content-preview`.
+
+Shape of the captured set, verified across the full probe:
+
+- The reference's og:description equals the meta description on every
+  single pinned page (0 mismatches in 7,077) and no page ships a meta
+  description without an og:description — so one pinned string wired
+  through `familyMetadata` and the locale catch-all covers the meta,
+  OG, and twitter surfaces at once (the description twin of t75's
+  card-title derivation).
+- Lengths run 22–296 chars (median 141); 106 pinned descriptions
+  exceed the 180-char slice this clone's own templates use. Pinned
+  strings are served full-length, never sliced — the slice remains a
+  template-fallback convention only (pinned by test on the 296-char
+  `/fr/styles/voxel`, served intact through the locale catch-all).
+- 6,714 of 7,077 are unique strings — real per-page SEO copy with
+  human translations per locale ("Rodin 可为受支持的工作流生成高质量、
+  几乎达到生产就绪状态的 3D 资产。", "Entdecken Sie Hyper3D-Tools für
+  Bild-zu-3D-Formate…"), not derivable from slugs.
+- The reference's own content quirks are pinned byte-for-byte because
+  they are what the reference serves: 19 blog descriptions carry
+  literal undecoded backslash escapes ("UNCHARTED\u2122", "guide\ \
+  to" — verified raw in their served HTML), and some long help-article
+  descriptions are truncated mid-word with a literal "..."
+  ("…Wallet History befor...").
+- The locale catch-all now prefers the pinned localized description
+  over its honest localized template copy; deep served-but-not-
+  sitemapped routes (prompt-library pagination/details/hubs, blog
+  pagination, per-locale sub-category slugs beyond each locale's own
+  sitemap list) keep their templates, pinned by test.
+- The homepage `/` was already pinned inline by t68 and its served
+  string matches the registry entry exactly; it stays as-is. The
+  apostrophe encoding differs cosmetically (the reference serves `'`
+  raw, Next escapes it as `&#x27;`) — the parsed attribute value is
+  identical, the same level of byte-faithfulness t75 applied via
+  html-unescaping on capture.
+
+Copy discipline (78 new tests → 736 / 41 suites green, lint clean,
+tsc baseline unchanged): the census pinned (7,077 entries; the exact
+title-registry-minus-`/content-preview` boundary both ways; the two
+exclusions resolving undefined; 106 over-180 length class; the
+backslash quirks; the mid-word truncations); ~40 spot pins across
+every family and locale including the en-dash range in
+`/switch/makerworld` and the typographic apostrophes of
+`/fr/styles/voxel`; and the wiring pinned by importing each route's
+generateMetadata — static routes, dynamic routes, the written and
+not-written blog branches, the locale catch-all (full-length serving,
+unknown-locale fallback, deep-route template fallback). The production
+build bakes the pinned descriptions into every censused page's HTML
+(spot-verified in the build output: /pricing, /help,
+/features/ai-image-generator, /blog/zbrush-alternative,
+/zh/use-cases/3d-printing, /tools/converter/3ds/to/dae,
+/help/articles/are-credits-deducted-when-a-generation-fails,
+/fr/styles/voxel at full 296 chars, /zh).

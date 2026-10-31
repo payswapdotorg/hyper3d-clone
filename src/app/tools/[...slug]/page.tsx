@@ -18,6 +18,7 @@ import {
 } from "@/lib/tools-content";
 import { CONVERTER_INDEX } from "@/lib/tools-index-content";
 import type { ToolPageDef } from "@/lib/tool-types";
+import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
@@ -92,10 +93,10 @@ export async function generateMetadata({
   if (slug.length === 1 && slug[0] === "converter") {
     return {
       title: referenceTitle("/tools/converter") ?? `${CONVERTER_INDEX.title} — Tools`,
-      description: CONVERTER_INDEX.description.slice(0, 180),
+      description: referenceDescription("/tools/converter") ?? CONVERTER_INDEX.description.slice(0, 180),
       ...familyMetadata({
         title: referenceCardTitle("/tools/converter") ?? CONVERTER_INDEX.title,
-        description: CONVERTER_INDEX.description.slice(0, 180),
+        description: referenceDescription("/tools/converter") ?? CONVERTER_INDEX.description.slice(0, 180),
         path: "/tools/converter",
       }),
     };
@@ -103,10 +104,10 @@ export async function generateMetadata({
   if (slug.length === 1 && slug[0] === "viewer") {
     return {
       title: referenceTitle("/tools/viewer") ?? `${CONVERTER_INDEX.viewerTitle} — Tools`,
-      description: CONVERTER_INDEX.viewerDescription.slice(0, 180),
+      description: referenceDescription("/tools/viewer") ?? CONVERTER_INDEX.viewerDescription.slice(0, 180),
       ...familyMetadata({
         title: referenceCardTitle("/tools/viewer") ?? CONVERTER_INDEX.viewerTitle,
-        description: CONVERTER_INDEX.viewerDescription.slice(0, 180),
+        description: referenceDescription("/tools/viewer") ?? CONVERTER_INDEX.viewerDescription.slice(0, 180),
         path: "/tools/viewer",
       }),
     };
@@ -115,8 +116,8 @@ export async function generateMetadata({
   if (!def) return { title: "Tool not found" };
   return {
     title: referenceTitle(def.route) ?? `${def.title} — Tools`,
-    description: def.description.slice(0, 180),
-    ...familyMetadata({ title: referenceCardTitle(def.route) ?? def.title, description: def.description.slice(0, 180), path: def.route }),
+    description: referenceDescription(def.route) ?? def.description.slice(0, 180),
+    ...familyMetadata({ title: referenceCardTitle(def.route) ?? def.title, description: referenceDescription(def.route) ?? def.description.slice(0, 180), path: def.route }),
   };
 }
 

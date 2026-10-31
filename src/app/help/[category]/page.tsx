@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { HelpCategoryPage } from "@/components/hyper3d/help/help-category-page";
 import { HELP_CATEGORY_SLUGS, findHelpCategory, helpArticlesByCategory } from "@/lib/help";
+import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
@@ -31,8 +32,8 @@ export async function generateMetadata({
   const path = `/help/${def.slug}`;
   return {
     title: referenceTitle(path) ?? `${def.name} — Help Center`,
-    description: def.blurb.slice(0, 180),
-    ...familyMetadata({ title: referenceCardTitle(path) ?? def.name, description: def.blurb.slice(0, 180), path }),
+    description: referenceDescription(path) ?? def.blurb.slice(0, 180),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? def.name, description: referenceDescription(path) ?? def.blurb.slice(0, 180), path }),
   };
 }
 

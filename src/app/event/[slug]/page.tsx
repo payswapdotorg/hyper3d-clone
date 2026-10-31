@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { EventPageView } from "@/components/hyper3d/landing/event-page";
 import { EVENT_PAGES, eventPageBySlug } from "@/lib/landing";
+import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
@@ -28,8 +29,8 @@ export async function generateMetadata({
   const path = `/event/${page.slug}`;
   return {
     title: referenceTitle(path) ?? `${page.title} — Hyper3D`,
-    description: page.description.slice(0, 180),
-    ...familyMetadata({ title: referenceCardTitle(path) ?? page.title, description: page.description.slice(0, 180), path }),
+    description: referenceDescription(path) ?? page.description.slice(0, 180),
+    ...familyMetadata({ title: referenceCardTitle(path) ?? page.title, description: referenceDescription(path) ?? page.description.slice(0, 180), path }),
   };
 }
 

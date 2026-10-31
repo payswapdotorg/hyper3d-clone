@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { HelpCenterPage } from "@/components/hyper3d/help/help-center-page";
+import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { familyMetadata } from "@/lib/seo";
 
@@ -11,9 +12,9 @@ import { familyMetadata } from "@/lib/seo";
  */
 export const metadata: Metadata = {
   title: referenceTitle("/help") ?? "Help Center — honest answers about this Hyper3D workspace",
-  description:
+  description: referenceDescription("/help") ??
     "33 articles across six topics, each stating what genuinely works in this clone, what is partial, and what does not exist here — with the nearest real path named.",
-  ...familyMetadata({ title: referenceCardTitle("/help") ?? "Help Center — honest answers about this Hyper3D workspace", description: "33 articles across six topics, each stating what genuinely works in this clone, what is partial, and what does not exist here — with the nearest real path named.", path: "/help" }),
+  ...familyMetadata({ title: referenceCardTitle("/help") ?? "Help Center — honest answers about this Hyper3D workspace", description: referenceDescription("/help") ?? "33 articles across six topics, each stating what genuinely works in this clone, what is partial, and what does not exist here — with the nearest real path named.", path: "/help" }),
 };
 
 export default function HelpRoute() {

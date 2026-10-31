@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, MinusCircle } from "lucide-react";
 
 import { USE_CASE_GROUPS, USE_CASE_PAGES, findUseCasePage } from "@/lib/use-cases";
+import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
 import { cn } from "@/lib/utils";
 import { familyMetadata } from "@/lib/seo";
@@ -14,9 +15,9 @@ import { familyMetadata } from "@/lib/seo";
  */
 export const metadata: Metadata = {
   title: referenceTitle("/use-cases") ?? "AI 3D Use Cases for Games, Commerce, AR and 3D Printing",
-  description:
+  description: referenceDescription("/use-cases") ??
     "Explore AI 3D use cases for game assets, product models, AR experiences, 3D printing, engineering, animation, and more — each stating plainly what works in this clone.",
-  ...familyMetadata({ title: referenceCardTitle("/use-cases") ?? "AI 3D Use Cases for Games, Commerce, AR and 3D Printing", description: "Explore AI 3D use cases for game assets, product models, AR experiences, 3D printing, engineering, animation, and more — each stating plainly what works in this clone.", path: "/use-cases" }),
+  ...familyMetadata({ title: referenceCardTitle("/use-cases") ?? "AI 3D Use Cases for Games, Commerce, AR and 3D Printing", description: referenceDescription("/use-cases") ?? "Explore AI 3D use cases for game assets, product models, AR experiences, 3D printing, engineering, animation, and more — each stating plainly what works in this clone.", path: "/use-cases" }),
 };
 
 export default function UseCasesIndexPage() {
