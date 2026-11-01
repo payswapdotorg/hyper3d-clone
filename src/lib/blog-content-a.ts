@@ -26,8 +26,8 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       {
         heading: "The short version, anchored in code",
         paragraphs: [
-          "Every claim in this article maps to a module in this codebase. The studio runs two live generation modes — Text to 3D and Image to 3D — over a paced task pipeline (created, queued, processing, then a preview you can inspect before spending anything). Confirming a result costs exactly 1 credit for a standard run, 10 for an agentic run, and a new account starts with 50 credits. The export step is not a mock: it writes real GLB, glTF, ASCII FBX, OBJ, binary STL, and USDZ bytes through the three.js exporter family.",
-          "Around the studio sit the OmniCraft tools — a texture generator, image enhancer and remix, HDRI generator, 3D model search, an SVG-to-3D converter, a local mesh editor, a browser-only model viewer, and a format convertor. Each one states its own contract on its own page, including the ones that honestly say what they do not do.",
+          "Every claim in this article maps to a module in this codebase. The studio runs two live generation modes — [Text to 3D](/features/text-to-3d) and [Image to 3D](/features/image-to-3d) — over a paced task pipeline (created, queued, processing, then a preview you can inspect before spending anything). Confirming a result costs exactly 1 credit for a standard run, 10 for an agentic run, and a new account starts with 50 credits. The export step is not a mock: it writes real GLB, glTF, ASCII FBX, OBJ, binary STL, and USDZ bytes through the three.js exporter family.",
+          "Around the studio sit the [OmniCraft tools](/workspace/omnicraft) — a texture generator, image enhancer and remix, HDRI generator, 3D model search, an SVG-to-3D converter, a local mesh editor, a browser-only model viewer, and a format convertor. Each one states its own contract on its own page, including the ones that honestly say what they do not do.",
         ],
       },
       {
@@ -40,7 +40,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       {
         heading: "Where to check every claim",
         paragraphs: [
-          "The fastest verification path: open the studio, generate from a text prompt, and watch the balance chip. Creating and previewing costs nothing; the Confirm & Export button is the only place a standard charge lands. Then export the same task twice in two formats and open the files in any viewer — the bytes are real, which is the whole point.",
+          "The fastest verification path: [open the studio](/workspace/rodin), generate from a text prompt, and watch the balance chip. Creating and previewing costs nothing; the Confirm & Export button is the only place a standard charge lands. Then export the same task twice in two formats and open the files in any viewer — the bytes are real, which is the whole point.",
         ],
       },
     ],
@@ -79,21 +79,21 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       {
         heading: "Live: generation and the meter around it",
         paragraphs: [
-          "Two generation modes run real pipelines. Text to 3D takes a prompt (with one-click presets and an optional prompt-polish step) and builds a mesh through the server pipeline. Image to 3D accepts one reference image in .png, .jpg, or .webp, runs a vision model to draft a caption you can edit, and proceeds from there. Both share the same paced queue and both respect the ControlNet spatial constraints (bounding box, voxel, pointcloud) if you set them.",
+          "Two generation modes run real pipelines. [Text to 3D](/features/text-to-3d) takes a prompt (with one-click presets and an optional prompt-polish step) and builds a mesh through the server pipeline. [Image to 3D](/features/image-to-3d) accepts one reference image in .png, .jpg, or .webp, runs a vision model to draft a caption you can edit, and proceeds from there. Both share the same paced queue and both respect the ControlNet spatial constraints (bounding box, voxel, pointcloud) if you set them.",
           "The meter around generation is the part most clones fake and this one runs: a ledger with per-entry reasons (free_preview, standard_generation, agentic_generation, confirm_export, cancel_refund), an atomic confirm gate that cannot double-charge, and an insufficient-balance path that returns 402 without touching your balance.",
         ],
       },
       {
         heading: "Live: the toolbag and the formats",
         paragraphs: [
-          "OmniCraft ships four real generators (texture, image enhancer, image remix, HDRI) plus a 3D model search, an SVG-to-3D converter that runs a true local conversion, a mesh editor, a model viewer that parses files in your browser and never uploads them, and a format convertor. The convertor's honest scope: it re-exports tasks you generated here across the six formats — it is not an arbitrary-file upload service, and its pages say so.",
+          "[OmniCraft](/workspace/omnicraft) ships four real generators (texture, image enhancer, image remix, HDRI) plus a 3D model search, an SVG-to-3D converter that runs a true local conversion, a mesh editor, a model viewer that parses files in your browser and never uploads them, and a format convertor. The convertor's honest scope: it re-exports tasks you generated here across the six formats — it is not an arbitrary-file upload service, and its pages say so.",
           "Six export formats are written by real exporters: GLB, glTF, FBX, OBJ, STL, USDZ. There is no CAD support anywhere — no DXF or 3MF writer exists in this codebase, and the format pages for those say exactly that.",
         ],
       },
       {
         heading: "Reference-only: stated, not implied",
         paragraphs: [
-          "The WorldGen tab exists in the studio and answers honestly that it is not implemented. There is no avatar workspace (one general studio instead), no AI video generator, no image generator beyond the remix tool, and none of the DCC plug-ins. The pricing page is a single honest row: $0, 50 credits at signup, 1 credit per standard confirm — because there is no billing code to describe.",
+          "The WorldGen tab exists in the studio and answers honestly that it is not implemented. There is no avatar workspace (one general studio instead), no AI video generator, no image generator beyond the remix tool, and none of the DCC plug-ins. The [pricing page](/pricing) is a single honest row: $0, 50 credits at signup, 1 credit per standard confirm — because there is no billing code to describe.",
         ],
       },
     ],
@@ -133,13 +133,13 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
         heading: "What earns the score",
         paragraphs: [
           "A review usually means someone kicked the tires. This one means someone read the tires' source. The strongest part of this workspace is the metering: the confirm gate runs inside a database transaction with a re-check that makes a double-charge structurally impossible, and the cancel path distinguishes pay-by-result tasks (never charged, nothing to refund) from legacy charged tasks (refunded in full). Most products do not get this right; this clone does, and its tests pin it.",
-          "The second strength is export honesty. Six formats, real bytes, one format (SVG to 3D) running a genuine local conversion. The model viewer parses in the browser, shows a live triangle count, and never uploads your file — a privacy claim backed by the absence of any upload code path.",
+          "The second strength is export honesty. Six formats, real bytes, one format ([SVG to 3D](/workspace/omnicraft/vecto3d)) running a genuine local conversion. The [model viewer](/workspace/omnicraft/viewer) parses in the browser, shows a live triangle count, and never uploads your file — a privacy claim backed by the absence of any upload code path.",
         ],
       },
       {
         heading: "What costs the score",
         paragraphs: [
-          "The unimplemented third is real and must be counted against it: no WorldGen, no avatar workspace, no video or general image generation, no plug-ins, no CAD. The blog — this blog — ships 55 written articles out of 778 catalog routes, which is an honest ratio but still a ratio. And there is no payment rail at all, so anyone needing commercial terms needs the reference, not this.",
+          "The unimplemented third is real and must be counted against it: no WorldGen, no avatar workspace, no video or general image generation, no plug-ins, no CAD. The blog — [this blog](/blog) — ships 55 written articles out of 778 catalog routes, which is an honest ratio but still a ratio. And there is no payment rail at all, so anyone needing commercial terms needs the reference, not this.",
           "The prose style is another deduction for some readers: every page insists on telling you what it cannot do. That is the point of the project, but it makes the marketing copy read like an audit — because it is one.",
         ],
       },
@@ -169,7 +169,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
     date: "2026-10-27",
     status: "live",
     answer:
-      "Sign up (you get 50 credits), pick Text to 3D or Image to 3D, describe or upload, watch the free preview, then Confirm & Export — that is the 1-credit moment — and download in any of six formats. Everything else in the studio is optional.",
+      "Sign up (you get 50 credits), pick [Text to 3D](/features/text-to-3d) or [Image to 3D](/features/image-to-3d), describe or upload, watch the free preview, then Confirm & Export — that is the 1-credit moment — and download in any of six formats. Everything else in the studio is optional.",
     sections: [
       {
         heading: "Minute one: the account",
@@ -180,14 +180,14 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       {
         heading: "Minutes two to four: your first preview",
         paragraphs: [
-          "In Text to 3D, type what you want — 'a low-poly wooden chair, three legs, sanded' beats 'chair' — or click a preset to seed a prompt. In Image to 3D, drop one .png/.jpg/.webp reference; a vision model drafts a caption from it that you can edit before generating. Pick an effort tier if you care about speed versus detail, then generate. The pipeline paces itself; your preview appears when it finishes.",
+          "In [Text to 3D](/features/text-to-3d), type what you want — 'a low-poly wooden chair, three legs, sanded' beats 'chair' — or click a preset to seed a prompt. In [Image to 3D](/features/image-to-3d), drop one .png/.jpg/.webp reference; a vision model drafts a caption from it that you can edit before generating. Pick an effort tier if you care about speed versus detail, then generate. The pipeline paces itself; your preview appears when it finishes.",
           "The preview is free — creating tasks and watching previews never debits, on any account, ever. If you dislike the result, redo it or walk away; the only charge in the whole flow is the next button.",
         ],
       },
       {
         heading: "Minute five: confirm and export",
         paragraphs: [
-          "Confirm & Export is the metered moment: exactly 1 credit for a standard run (10 if you ran the agentic tier). It is idempotent — clicking it twice cannot double-charge; the second click just reports the first outcome. After confirming, export in GLB, glTF, FBX, OBJ, STL, or USDZ. The OmniCraft model viewer will open any of them locally in your browser if you want a second opinion before downloading.",
+          "Confirm & Export is the metered moment: exactly 1 credit for a standard run (10 if you ran the agentic tier). It is idempotent — clicking it twice cannot double-charge; the second click just reports the first outcome. After confirming, export in GLB, glTF, FBX, OBJ, STL, or USDZ. The [OmniCraft model viewer](/workspace/omnicraft/viewer) will open any of them locally in your browser if you want a second opinion before downloading.",
         ],
       },
     ],
@@ -227,7 +227,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
         heading: "The constants, and where each one lives",
         paragraphs: [
           "INITIAL_BALANCE is 50 — the sign-up route imports it and grants it directly, so the balance you see is the constant itself, not a copy of it. STANDARD_COST is 1 and AGENTIC_COST is 10; computeTaskCost returns one of those (or 0 for a first free preview on the legacy path). The pay-by-result gate charges CONFIRM_COST — 1 — inside a single database transaction, with a re-check that makes a second confirm a no-op rather than a second charge.",
-          "That is the entire price list. There is no per-format surcharge, no download fee, no private-task fee (the first ten private tasks are free, like every account's), and no tier where any of these numbers change — because there are no tiers.",
+          "That is the entire [price list](/pricing). There is no per-format surcharge, no download fee, no private-task fee (the first ten private tasks are free, like every account's), and no tier where any of these numbers change — because [there are no tiers](/blog/how-much-do-hyper3d-plans-cost).",
         ],
       },
       {
@@ -274,13 +274,13 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
         heading: "Why the pricing page is one row",
         paragraphs: [
           "The reference sells three tiers with monthly allowances and add-on packs. Reproducing those rows here would mean printing prices for code that does not exist — no checkout, no subscription state, no allowance refresher, no invoice. The honest equivalent is to say what does exist: an account costs nothing to open, arrives with 50 credits, previews are always free, and standard confirms cost 1 credit each. That is the whole commercial surface, and it fits in a sentence because it is the whole truth.",
-          "The event pages here make the same point from another angle: a 'free month of Creator' would be comping a plan this codebase cannot even represent, so those pages say the nearest real thing is the standing 50 credits at signup, which expire never.",
+          "The event pages here make the same point from another angle: a 'free month of Creator' would be comping a plan this codebase cannot even represent, so those pages say the nearest real thing is the standing 50 credits at signup, which [expire never](/blog/do-hyper3d-credits-expire).",
         ],
       },
       {
         heading: "What the money-like objects actually are",
         paragraphs: [
-          "Credits here are a ledger abstraction, not a currency: integers with reasons and timestamps, stored per user, mutable only through four well-defined operations. There is no conversion rate to dollars, no pack to buy, and no way for the balance to go negative. If you need commercial terms, volume, or an SLA, the honest answer is the reference product — this clone states that on its enterprise-support page too.",
+          "Credits here are a ledger abstraction, not a currency: integers with reasons and timestamps, stored per user, mutable only through four well-defined operations. There is no conversion rate to dollars, no pack to buy, and no way for the balance to go negative. If you need commercial terms, volume, or an SLA, the honest answer is the reference product — this clone states that on its [enterprise-support page](/blog/how-to-get-hyper3d-enterprise-support) too.",
           "For completeness, the numbers that do exist: every account starts with 50 credits, a standard confirm costs 1 credit, and an agentic run costs 10 credits. That is the entire price list a plan page would otherwise decorate.",
         ],
       },
@@ -315,7 +315,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       {
         heading: "What you can see right now",
         paragraphs: [
-          "Open the studio: the balance chip in the header is the user row from the database, not a cache — refresh after any charge and it moves in step. After a Confirm & Export, the toast states the charge, your remaining balance, and thanks you; after an insufficient attempt, the error states the required amount and your current balance. Those two moments plus the header cover most of what a history page would tell you.",
+          "[Open the studio](/workspace/rodin): the balance chip in the header is the user row from the database, not a cache — refresh after any charge and it moves in step. After a Confirm & Export, the toast states the charge, your remaining balance, and thanks you; after an insufficient attempt, the error states the required amount and your current balance. Those two moments plus the header cover most of what a history page would tell you.",
         ],
       },
       {
@@ -362,7 +362,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       {
         heading: "What to do instead",
         paragraphs: [
-          "Three real paths. First, previews are always free: you can generate and inspect without a balance at all, and only confirming costs. Second, the OmniCraft toolbag is credit-free: textures, HDRI skies, image enhancement and remix, SVG-to-3D, the mesh editor, the model viewer, and format re-export never touch the ledger. Third, if you need paid volume, the reference product is the honest destination — this clone's commercial surface is deliberately $0.",
+          "Three real paths. First, previews are always free: you can generate and inspect without a balance at all, and only confirming costs. Second, the [OmniCraft toolbag](/workspace/omnicraft) is credit-free: textures, HDRI skies, image enhancement and remix, SVG-to-3D, the mesh editor, the model viewer, and format re-export never touch the ledger. Third, if you need paid volume, the reference product is the honest destination — this clone's commercial surface is deliberately $0.",
         ],
       },
     ],
@@ -403,7 +403,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
       {
         heading: "How to verify it yourself",
         paragraphs: [
-          "The check is the same one the tests run: read a balance, wait any amount of time, read it again — the integer is untouched unless a metered event moved it. Every credit article in this blog quotes the same numbers because they all read the same constants: 50 credits at signup, 1 credit per standard confirm, 10 credits per agentic run, and time nowhere in the formula.",
+          "The check is the same one the tests run: read a balance, wait any amount of time, read it again — the integer is untouched unless a metered event moved it. Every credit article in this blog quotes [the constants](/blog/how-many-credits-does-each-hyper3d-generation-cost) from the same numbers because they all read the same constants: 50 credits at signup, 1 credit per standard confirm, 10 credits per agentic run, and time nowhere in the formula.",
           "That last clause is the entire article, honestly stated: the words 'expire', 'reset', and 'renew' do not appear in the metering code, because the concepts do not exist in it.",
         ],
       },
@@ -443,7 +443,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
         heading: "The two paths, both failure-safe",
         paragraphs: [
           "Path one, pay-by-result: the pipeline creates the task, processes it, and delivers a preview; the meter starts only when you press Confirm & Export on a result you can see. A failure happens before that gate, so there is nothing to deduct — the task row is marked failed with the engine's error message and the ledger never hears about it.",
-          "Path two, legacy creation-charged (still reachable through the API for compatibility): the charge lands at creation. If the pipeline then fails — an invalid spec, an engine error — the cancel/failure handling refunds the full creditsSpent and resets the row's spend to zero, with a cancel_refund entry in the log. The refund is a grant back, so the arithmetic is exact, not approximate.",
+          "Path two, legacy creation-charged (still reachable through the API for compatibility): the charge lands at creation. If the pipeline then fails — an invalid spec, an engine error — the [cancel/failure handling](/blog/are-credits-returned-after-canceling-a-generation) refunds the full creditsSpent and resets the row's spend to zero, with a cancel_refund entry in the log. The refund is a grant back, so the arithmetic is exact, not approximate.",
         ],
       },
       {
@@ -484,7 +484,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
         heading: "What the cancel button actually does",
         paragraphs: [
           "Canceling marks the task failed with 'Canceled by user' as the error string — an honest tombstone rather than a silent delete. It refuses to touch completed tasks (409) and treats already-failed tasks as a no-op success. If the task carries creditsSpent — which on this codebase means the legacy creation-charged path — the route refunds exactly that amount through a ledger grant, resets the row's spend counter to zero, and returns the refunded figure in the JSON.",
-          "For the pay-by-result tasks the studio creates today, creditsSpent is zero until you confirm, and canceling an unconfirmed task refunds nothing because nothing was taken. The studio's cancel toast states it plainly: no credits were used.",
+          "For the pay-by-result tasks [the studio](/workspace/rodin) creates today, creditsSpent is zero until you confirm, and canceling an unconfirmed task refunds nothing because nothing was taken. The studio's cancel toast states it plainly: no credits were used.",
         ],
       },
       {
@@ -526,7 +526,7 @@ export const BLOG_ARTICLES_A: BlogArticleDef[] = [
         heading: "Why this route still exists",
         paragraphs: [
           "The reference sitemap lists this article because their version answers a real question for paying customers. This clone keeps the route — full sitemap parity is the project's rule — and answers it the only honest way: by describing the actual billing surface. One tier, $0, no checkout, no plan column on the user row, no proration math to explain. The most truthful proration story in the world cannot be written about code that does not exist.",
-          "The nearest real question is 'what happens to my credits over time', and that one has a real answer in the expiry article: nothing happens, ever. Credits here are a running total, not a subscription benefit.",
+          "The nearest real question is 'what happens to my credits over time', and that one has a real answer in the [expiry article](/blog/do-hyper3d-credits-expire): nothing happens, ever. Credits here are a running total, not a subscription benefit.",
         ],
       },
       {

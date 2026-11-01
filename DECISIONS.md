@@ -2087,3 +2087,81 @@ duplicate note).
 Production: the Vercel account was fair-use blocked at session start
 per t79's note — re-checked before commit; the deploy attempt and its
 outcome are recorded in recon/t80/notes.md. Code is pushed to GitHub.
+
+## 61. t81 — the written-article body link structure: inline prose links, the six-network share panel, and the two-class related split
+
+The t80 notes queued this as the first body-level dimension after the
+head dimensions closed (t75-t80). Recon probed all 55 counterpart
+pages for the slugs this clone actually wrote: the reference's article
+bodies carry a link anatomy this clone lacked — inline prose hyperlinks
+(2-9 per article on the 24 format/comparison/prompt articles, 0-3 on
+the 31 platform/credits ones), a constant six-network share panel with
+Copy link (55/55), a "Keep reading" related-card section (exactly the
+24 class-A articles, three image cards each, every image the t77
+registry value for the target route), and a TOC whose first entry is
+always "Overview" → `#article-top` on the article header.
+
+The honest mirror, shipped here:
+
+- **Inline prose links**: `BlogSection.paragraphs` strings gained
+  markdown-lite `[label](href)` syntax, parsed by `blog-prose.ts` at
+  render (internal → next/link; external → plain anchor with the
+  reference's `target/rel` set — though the authored content is
+  internal-only). 103 curated placements across all 55 articles
+  (three script-applied authoring passes with exactly-once anchor
+  assertions, in recon/t81). Class A carries ≥2 each (test-floored),
+  proportional to the clone's shorter honest prose against the
+  reference's 7-14 on 2,000-word pages; class B 1-3 where natural,
+  mirroring the reference's own thinness there.
+- **The share panel**: `share-links.ts` builds the six URLs from this
+  clone's own SITE_ORIGIN and its own H1 (the reference builds from its
+  origin and H1) — X intent, LinkedIn share-offsite, Facebook sharer,
+  Reddit submit, WhatsApp send, mailto — plus a real Copy-link client
+  button (clipboard with execCommand fallback and an honest failure
+  state). Formulas pinned byte-exact by tests; wired on every written
+  article after the FAQ.
+- **The related split**: the probed 24-slug set is pinned as
+  `KEEP_READING_SLUGS`; those articles render their blog related links
+  as "Keep reading" image cards — the t77 registry image (fallback
+  banner where the reference serves its own banner, e.g.
+  what-features-does-hyper3d-have), the destination's own on-page H1
+  (the clone's headline for written targets, the derived topic title
+  otherwise), and the destination's head description snippet-shaped at
+  155+"..." (the reference's own snippet length; its cards' two
+  internal inconsistencies — recon what-is-3d-rendering,
+  free-ai-avatar-generator — are the reference's, the clone's rule is
+  self-consistency: the card shows what the destination's own head
+  serves). Non-blog related links stay a compact chip row. The 31
+  class-B articles keep the chip-style "Related" section, mirroring
+  the reference's absence of a related section there.
+- **The TOC**: "Overview" → `#article-top` first entry on every
+  written article, the anchor on the article header — the reference's
+  constant shape (55/55), previously absent.
+
+Honest exclusions, documented: the vote card ("Was this post useful?",
+55/55 on the reference) needs a vote backend — dead buttons would fake
+functionality; the side CTA is 0/55 on these articles and the clone's
+own "Put it to work" CTA stands; external prose links (the reference
+links to blender.org, its docs, its socials) — the clone's honest
+inline destinations are routes it actually serves; the not-written
+filler pages keep their t65 honest design (the dimension is the
+written bodies); the heading-N anchor scheme stays #section-N (same
+structure, different id arithmetic).
+
+Verification: 31 new/updated tests — parser units, content invariants
+(every article ≥1 inline link, class A ≥2, every href a genuinely
+served route via the shared `blog.test-helpers.ts` isKnownRoute now
+covering the tools tree: 15 viewer routes, 178 converter pairs, 8
+image-to routes; blog links resolve to catalog entries), share
+formulas byte-exact, card resolution (registry image parity, snippet
+boundary at 155, undefined for non-blog/dead hrefs). **945 / 51 suites
+green** (was 914/48), lint clean, tsc 26 = baseline. The local
+standalone build verified on served HTML (recon/t81/verify-served.py,
+10 routes): all six share URLs byte-exact against the formulas, TOC
+and anchor present, prose-link floors met, Keep-reading cards carrying
+registry images on class A, chip rows on class B — 0 failures.
+
+Production: Vercel remained account-blocked (t80's note — 402
+account-wide, resource_creation_blocked on the surviving token); the
+local standalone build is the verification of record. Deploy attempted
+after push; outcome in recon/t81/notes.md.

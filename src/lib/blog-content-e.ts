@@ -25,7 +25,7 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
         heading: "The flow, with its honest constraints",
         paragraphs: [
           "The input surface is one image in three formats: png, jpg, webp. The first pipeline step is a vision caption — the model looks at your reference and writes what it sees into the prompt box, and that draft is editable text: correct its reading before generating, because the mesh follows the caption as much as the pixels. Multi-view input (the reference's optional extra images for extra control) is not implemented here, and the drop zone states so rather than implying it.",
-          "After generation, the preview is free and full-featured: rotate it, compare the silhouette to your reference, and either redo (free) or confirm. Confirm & Export is the single charge — 1 credit standard, 10 for the agentic type — atomic and idempotent. Exports and re-exports in GLB, glTF, FBX, OBJ, STL, USDZ cost nothing further.",
+          "After generation, the preview is free and full-featured: rotate it, compare the silhouette to your reference, and either redo (free) or confirm. Confirm & Export is the single charge — 1 credit standard, 10 for [the agentic type](/blog/use-rodin-agentic-mode-for-image-to-3d) — atomic and idempotent. Exports and [re-exports](/workspace/omnicraft/formatcon) in GLB, glTF, FBX, OBJ, STL, USDZ cost nothing further.",
         ],
       },
       {
@@ -65,8 +65,8 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "The input surface and its helpers",
         paragraphs: [
-          "The prompt box accepts up to a couple thousand characters, and structure beats length: object, then material, then modifiers ('a low-poly wooden chair, three legs, sanded'). One-click presets seed a prompt plus a suggested effort tier from known-good shapes, and a prompt-polish step can tidy phrasing before generation if you want the API's help.",
-          "ControlNet constraints are the spatial half of prompting: block a bounding box, voxel volume, or point cloud before generating, and the mesh fills the envelope you drew. It is the honest version of 'make it about this tall' — a constraint the pipeline provably respects, visible in the result.",
+          "The prompt box accepts up to a couple thousand characters, and [structure beats length](/blog/3d-text-prompt-guide): object, then material, then modifiers ('a low-poly wooden chair, three legs, sanded'). One-click presets seed a prompt plus a suggested effort tier from known-good shapes, and a prompt-polish step can tidy phrasing before generation if you want the API's help.",
+          "[ControlNet constraints](/features/text-to-3d) are the spatial half of prompting: block a bounding box, voxel volume, or point cloud before generating, and the mesh fills the envelope you drew. It is the honest version of 'make it about this tall' — a constraint the pipeline provably respects, visible in the result.",
         ],
       },
       {
@@ -106,14 +106,14 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "The actual price structure",
         paragraphs: [
-          "Articles titled 'free text to 3D' usually mean a comparison of freemium tiers. This one can be shorter and stranger: the entire commercial surface is one tier at $0, the grant is 50 credits at signup (it never expires — no aging code exists), and the only debits are 1 per standard confirm and 10 per agentic run. Previews, redos, OmniCraft tools, and post-confirm exports all cost nothing, by construction rather than by promotion.",
+          "Articles titled 'free text to 3D' usually mean a comparison of freemium tiers. This one can be shorter and stranger: the entire commercial surface is [one tier at $0](/pricing), the grant is 50 credits at signup (it never expires — no aging code exists), and the only debits are 1 per standard confirm and 10 per agentic run. Previews, redos, OmniCraft tools, and post-confirm exports all cost nothing, by construction rather than by promotion.",
           "The reference's article compares tools by their free tiers; the honest comparison from here is structural: this pipeline meters at results, not attempts, so the 'free' boundary is exactly where the value boundary is — you pay (in credits) for the mesh you keep.",
         ],
       },
       {
         heading: "What the 50 credits buy, in real units",
         paragraphs: [
-          "Fifty standard confirms — fifty meshes you previewed, liked, and exported. Five agentic runs. Any mix of the two. Every preview that led to those confirms: free, however many it took. The OmniCraft toolbag — HDRI skies, SVG-to-3D, the model viewer, the format convertor — free on top, because local and procedural tools have no marginal cost to meter.",
+          "Fifty standard confirms — fifty meshes you previewed, liked, and exported. [Five agentic runs](/blog/use-rodin-agentic-mode-for-image-to-3d). Any mix of the two. Every preview that led to those confirms: free, however many it took. The OmniCraft toolbag — HDRI skies, SVG-to-3D, the model viewer, the format convertor — free on top, because local and procedural tools have no marginal cost to meter.",
           "When the grant runs out, the boundary stays honest: generation and preview keep working (they were never metered), confirms stop until credits exist again, and nothing expires or resets. There is no 'free trial ended' email because there is no trial and no email — just a running total that reached zero, stated on the pricing page in exactly those terms.",
         ],
       },
@@ -155,7 +155,7 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "The export and what follows",
         paragraphs: [
-          "Confirmed tasks export binary STL directly, and the convertor re-emits STL from any confirmed task later for free. In the slicer: orient for strength (load-bearing surfaces flat), add supports where geometry demands, and slice. For colors or multi-part structure in the file itself, 3MF is the format — this codebase does not write it, and the 3MF articles cover the honest slicer-side path.",
+          "Confirmed tasks export [binary STL](/blog/what-is-stl-file) directly, and the [convertor](/workspace/omnicraft/formatcon) re-emits STL from any confirmed task later for free. In the slicer: orient for strength (load-bearing surfaces flat), add supports where geometry demands, and slice. For colors or multi-part structure in the file itself, 3MF is the format — this codebase does not write it, and the 3MF articles cover the honest slicer-side path.",
         ],
       },
     ],
@@ -189,8 +189,8 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "From photo to caption to mesh",
         paragraphs: [
-          "The vision step is the quality lever: it drafts a description of your reference, and editing that description is how you correct it ('matte ceramic, not glossy plastic') before generation. Photos of single objects on plain backgrounds produce the cleanest captions and the cleanest meshes; a busy scene gets faithfully captioned as a busy scene.",
-          "For print, the same prompt-level rules from text-to-STL apply after the caption: state sturdiness, avoid whisper-thin features, expect the unseen back face to be inferred. Preview is free — use it to check silhouette and obvious mass before the single credit.",
+          "[The vision step](/features/image-to-3d) is the quality lever: it drafts a description of your reference, and editing that description is how you correct it ('matte ceramic, not glossy plastic') before generation. Photos of single objects on plain backgrounds produce the cleanest captions and the cleanest meshes; a busy scene gets faithfully captioned as a busy scene.",
+          "For print, the same prompt-level rules from [text-to-STL](/blog/text-to-stl) apply after the caption: state sturdiness, avoid whisper-thin features, expect the unseen back face to be inferred. Preview is free — use it to check silhouette and obvious mass before the single credit.",
         ],
       },
       {
@@ -237,7 +237,7 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "Steps four and five: preview, then pay",
         paragraphs: [
-          "Generate and look before spending anything — previews are free, every time, and rotation plus silhouette comparison catches most misses. Redo with an adjusted caption if needed (also free). When the preview earns it: Confirm & Export, the single 1-credit moment, then export GLB for the web, OBJ for editing, STL for printing, FBX or USDZ as the destination demands. Re-exports and format changes later cost nothing through the convertor.",
+          "Generate and look before spending anything — previews are free, every time, and rotation plus silhouette comparison catches most misses. Redo with an adjusted caption if needed (also free). When the preview earns it: Confirm & Export, [the single 1-credit moment](/blog/how-many-credits-does-each-hyper3d-generation-cost), then export [GLB for the web](/blog/what-is-glb-file), OBJ for editing, [STL for printing](/blog/what-is-stl-file), FBX or USDZ as the destination demands. Re-exports and format changes later cost nothing through the convertor.",
         ],
       },
     ],
@@ -271,14 +271,14 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "The four slots of a good 3D prompt",
         paragraphs: [
-          "Object: the concrete noun, singular, specific ('a watchtower' not 'a building'). Material: how it looks and feels ('weathered sheet metal', 'sanded oak') — this drives both geometry density and the material pass. Modifiers: count, proportion, wear, era ('three legs', 'tapered', 'mid-century'). Style anchor: the aesthetic frame ('low poly', 'stylized', 'photorealistic') — and note the styles tree here catalogs twenty-one of those anchors as deep-linkable starting points.",
-          "What burns credits without burning quality: stacking adjectives on a vague object ('amazing epic awesome sword') — the pipeline has no idea what makes a sword epic, but it knows exactly what 'a curved scimitar, engraved guard, blued steel' means.",
+          "Object: the concrete noun, singular, specific ('a watchtower' not 'a building'). Material: how it looks and feels ('weathered sheet metal', 'sanded oak') — this drives both geometry density and the material pass. Modifiers: count, proportion, wear, era ('three legs', 'tapered', 'mid-century'). Style anchor: the aesthetic frame ('low poly', 'stylized', 'photorealistic') — with [whole style pages](/styles/low-poly) to anchor the frame — and note the styles tree here catalogs twenty-one of those anchors as deep-linkable starting points.",
+          "What burns [credits](/blog/how-many-credits-does-each-hyper3d-generation-cost) without burning quality: stacking adjectives on a vague object ('amazing epic awesome sword') — the pipeline has no idea what makes a sword epic, but it knows exactly what 'a curved scimitar, engraved guard, blued steel' means.",
         ],
       },
       {
         heading: "Iteration: the free part of the craft",
         paragraphs: [
-          "Draft at low effort (fast, free previews), read what comes back, and adjust one slot at a time — object first (is it the right thing?), then silhouette (ControlNet if wrong), then materials. Redos are free. The single credit should feel like a signature on finished work, not a gamble. When a result is close but text keeps missing it, the reference-image path is the honest alternative: a photo steers harder than prose.",
+          "Draft at low effort (fast, free previews), read what comes back, and adjust one slot at a time — object first (is it the right thing?), then silhouette ([ControlNet](/features/text-to-3d) if wrong), then materials. Redos are free. The single credit should feel like a signature on finished work, not a gamble. When a result is close but text keeps missing it, the reference-image path is the honest alternative: a photo steers harder than prose.",
         ],
       },
     ],
@@ -312,13 +312,13 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "Constraint stacking",
         paragraphs: [
-          "The prompt steers identity and materials; the ControlNet constrains space. Stacked, they answer the two failure modes of pure-prompt generation — right object, wrong proportions (fix: bounding box or voxel envelope) and right object, wrong mass distribution (fix: point-cloud hint). A prompt says 'what', a constraint says 'where and how big', and the pipeline respects both, visibly.",
+          "The prompt steers identity and materials; [the ControlNet](/features/text-to-3d) constrains space. Stacked, they answer the two failure modes of pure-prompt generation — right object, wrong proportions (fix: bounding box or voxel envelope) and right object, wrong mass distribution (fix: point-cloud hint). A prompt says 'what', a constraint says 'where and how big', and the pipeline respects both, visibly.",
         ],
       },
       {
         heading: "Omission, effort budgeting, and reference steering",
         paragraphs: [
-          "Mesh pipelines fill unspecified angles with inference — so omission is a real tool: 'a mug' invites an invented back; 'a mug, cylindrical, plain back' directs it. Budget effort like money: low tiers for the idea phase, one high tier for the keeper — previews are free at every tier, so the expensive pass should be the last pass. And when three prompt revisions still miss, switch modality: drop a reference image and edit the caption — a photo steers silhouette harder than any adjective stack.",
+          "Mesh pipelines fill unspecified angles with inference — so omission is a real tool: 'a mug' invites an invented back; 'a mug, cylindrical, plain back' directs it. Budget effort like money: low tiers for the idea phase, one high tier for the keeper — [previews are free at every tier](/blog/how-many-credits-does-each-hyper3d-generation-cost), so the expensive pass should be the last pass. And when three prompt revisions still miss, switch modality: drop a reference image and edit the caption — a photo steers silhouette harder than any adjective stack.",
           "The honest limit of all of it: prompt engineering here is deterministic steering of a real pipeline, not incantation. Every technique above is verifiable in one free preview loop, which is exactly how you should adopt it.",
         ],
       },
@@ -353,14 +353,14 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "Choosing the input modality",
         paragraphs: [
-          "Text when the object exists only in your head: structure the prompt (object, material, modifiers), constrain the silhouette if proportions matter, and iterate on free previews. Image when the object exists in front of you: one clean photo, an editable caption between the pixels and the mesh, and silhouette-checking in the free preview. Agent when a program should do it: the MCP modal hands an agent the task pipeline, and its generations land in the same history with the same metering.",
+          "Text when the object exists only in your head: [structure the prompt](/blog/3d-text-prompt-guide) (object, material, modifiers), constrain the silhouette if proportions matter, and iterate on free previews. Image when the object exists in front of you: one clean photo, an editable caption between the pixels and the mesh, and silhouette-checking in the free preview. Agent when a program should do it: the MCP modal hands an agent the task pipeline, and its generations land in the same history with the same metering.",
           "The routes share the honest meter: creation and preview free, 1 credit per standard confirm, 10 for the agentic type, six export formats, no hidden surcharges. Whichever door you enter, you pay for results, not attempts.",
         ],
       },
       {
         heading: "What AI mesh-making is not",
         paragraphs: [
-          "It is not CAD: no parametric features, no engineering precision — the DXF article covers that boundary. It is not scanning: no photogrammetry from image sets here — the PLY article covers that world. And it is not a print pipeline: it produces the mesh; orientation, supports, and slicing belong to slicer software. Knowing the boundaries is what makes the tool usable rather than disappointing.",
+          "It is not CAD: no parametric features, no engineering precision — the [DXF article](/blog/what-is-dxf-file) covers that boundary. It is not scanning: no photogrammetry from image sets here — the PLY article covers that world. And it is not a print pipeline: it produces the mesh; orientation, supports, and slicing belong to slicer software. Knowing the boundaries is what makes the tool usable rather than disappointing.",
         ],
       },
     ],
@@ -394,14 +394,14 @@ export const BLOG_ARTICLES_E: BlogArticleDef[] = [
       {
         heading: "What generates well for games",
         paragraphs: [
-          "Props and set dressing: barrels, crates, statues, tools — single objects, definite silhouettes, style-anchored prompts ('low poly', 'stylized', 'hand-painted') that match your art direction. The styles tree catalogs twenty-one aesthetic anchors and deep-links each into the generator, which is the fastest way to hold a consistent look across a batch.",
+          "Props and set dressing: barrels, crates, statues, tools — single objects, definite silhouettes, [style-anchored prompts](/blog/3d-text-prompt-guide) ('low poly', 'stylized', 'hand-painted') that match your art direction. The styles tree catalogs twenty-one aesthetic anchors and deep-links each into the generator, which is the fastest way to hold a consistent look across a batch.",
           "Characters and complex rigged objects are the harder class — this pipeline outputs static meshes with materials, not rigs, so character work means generating the sculpt and rigging in your DCC. Environment kits are best approached as many prop generations rather than one scene generation (WorldGen-style scene reconstruction is reference-only here).",
         ],
       },
       {
         heading: "The engineering notes asset roundups skip",
         paragraphs: [
-          "Topology: game meshes want clean edge flow; generated meshes are mesh-first, so expect to retopologize hero assets in a DCC — the topology topic page in this catalog marks the deep version of this honestly. LODs: this codebase ships no decimator, so LOD chains are built in your DCC or engine tooling from the exported mesh. Formats: GLB is the engine-friendly default (one file, materials included); FBX covers the Autodesk-shaped importers. Batch economics: previews are free, so generating variants and picking winners is the cheap loop; each keeper is 1 credit.",
+          "Topology: game meshes want clean edge flow; generated meshes are mesh-first, so expect to retopologize hero assets in a DCC — the [topology topic page](/blog/mesh-topology-3d) in this catalog marks the deep version of this honestly. LODs: this codebase ships no decimator, so LOD chains are built in your DCC or engine tooling from the exported mesh. Formats: [GLB is the engine-friendly default](/blog/what-is-glb-file) (one file, materials included); FBX covers the Autodesk-shaped importers. Batch economics: previews are free, so generating variants and picking winners is the cheap loop; each keeper is 1 credit.",
         ],
       },
     ],

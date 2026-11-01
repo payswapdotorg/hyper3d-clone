@@ -35,7 +35,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
         heading: "Tiers, previews, and the one charge",
         paragraphs: [
           "Effort tiers trade speed for detail — from the fastest draft tier up through the maximum-fidelity pass — and the queue paces itself across them, so the preview lands when the work is done. Previews are free on every tier: creation and inspection never touch your balance. Confirm & Export is the single metered moment (1 credit standard, 10 if you ran the agentic type), and it is idempotent — a double click cannot double-charge.",
-          "After confirming, export in any of the six real formats and re-export in others for free. A redo is also free: dislike the preview, rerun it, and the meter never moves.",
+          "After confirming, export in any of the six real formats and [re-export in others for free](/workspace/omnicraft/formatcon). A redo is also free: dislike the preview, rerun it, and the meter never moves.",
         ],
       },
     ],
@@ -70,7 +70,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "Why there's an editable caption between your image and the mesh",
         paragraphs: [
-          "Image generation here is reference-driven: the vision model looks at your picture and writes what it sees — object, materials, orientation cues — into the prompt box. That draft is editable text, which is the point: you can correct the model's reading ('that's brushed steel, not chrome') before a single cycle of generation runs. One image is enough for most objects; the reference's optional multi-view input is an affordance this clone does not implement, and the drop zone says so.",
+          "[Image generation](/features/image-to-3d) here is reference-driven: the vision model looks at your picture and writes what it sees — object, materials, orientation cues — into the prompt box. That draft is editable text, which is the point: you can correct the model's reading ('that's brushed steel, not chrome') before a single cycle of generation runs. One image is enough for most objects; the reference's optional multi-view input is an affordance this clone does not implement, and the drop zone says so.",
           "Good inputs are boring inputs: one clear object, plain background, even lighting. The vision step will faithfully caption a cluttered desk too — 'a desk with a mug, cables, and...' — and the mesh will then faithfully contain all of it.",
         ],
       },
@@ -117,7 +117,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "The nearest honest paths today",
         paragraphs: [
-          "Single objects from a scene image: crop the object you care about and use Image to 3D — the vision caption will describe what it sees and the mesh follows. Environments rather than objects: the HDRI generator builds 360° skies from a prompt, fully local, which lights a scene but does not reconstruct one. Both are real today; neither is WorldGen, and no page here will label them as if they were.",
+          "Single objects from a scene image: crop the object you care about and use [Image to 3D](/features/image-to-3d) — the vision caption will describe what it sees and the mesh follows. Environments rather than objects: the HDRI generator builds 360° skies from a prompt, fully local, which lights a scene but does not reconstruct one. Both are real today; neither is WorldGen, and no page here will label them as if they were.",
         ],
       },
     ],
@@ -157,7 +157,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "What you can honestly do today",
         paragraphs: [
-          "Generate avatar-shaped objects: the general studio will happily build 'a stylized character bust, low poly' from text or a reference image — it is object generation, not a rigged avatar. Inspect what you generate: the model viewer, the mesh surface of confirmed tasks, and the six export formats all work on whatever you make. What you cannot do here: auto-rig it, get blendshapes, or claim avatar-specific licensing — those belong to the product that actually implements them.",
+          "Generate avatar-shaped objects: the [general studio](/workspace/rodin) will happily build 'a stylized character bust, low poly' from text or a reference image — it is object generation, not a rigged avatar. Inspect what you generate: the model viewer, the mesh surface of confirmed tasks, and the six export formats all work on whatever you make. What you cannot do here: auto-rig it, get blendshapes, or claim avatar-specific licensing — those belong to the product that actually implements them.",
         ],
       },
     ],
@@ -191,14 +191,14 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "How the sky engine actually works",
         paragraphs: [
-          "Your prompt names axes — time of day, weather, palette hints — and a seeded generator fills in everything you left unsaid. The seeding is the contract: the same prompt produces the same sky forever, which makes HDRI work reproducible in a way 'roll a new sky' buttons never are. Sliders exist for every axis and always win over the prompt, so 'same prompt' never means 'no control'.",
+          "Your prompt names axes — time of day, weather, palette hints — and [a seeded generator](/workspace/omnicraft/hdri) fills in everything you left unsaid. The seeding is the contract: the same prompt produces the same sky forever, which makes HDRI work reproducible in a way 'roll a new sky' buttons never are. Sliders exist for every axis and always win over the prompt, so 'same prompt' never means 'no control'.",
           "The output is a real equirectangular environment map — horizon-crossing gradient, sun disc, cloud structure — the format environment lights ingest. Up to 4K PNG, rendered and exported in your browser. The 360° preview shows the horizon seam before you commit, because a seam you can see is a seam you can fix.",
         ],
       },
       {
         heading: "Where it fits a lighting workflow",
         paragraphs: [
-          "An HDRI is the fastest way to light a scene believably: drop it into any renderer's environment slot and the gradient does the global illumination's work. Pair it with a generated model — export your confirmed task as GLB, load it in your renderer, and light it with your sky — for a two-asset pipeline that costs zero credits here (OmniCraft tools never touch the ledger).",
+          "An HDRI is the fastest way to light a scene believably: drop it into any renderer's environment slot and the gradient does the global illumination's work. Pair it with a generated model — export your confirmed task as [GLB](/blog/what-is-glb-file), load it in your renderer, and light it with your sky — for a two-asset pipeline that costs zero credits here (OmniCraft tools never touch the ledger).",
         ],
       },
     ],
@@ -232,14 +232,14 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "The editing verbs, sorted by where they live",
         paragraphs: [
-          "Retexture: real — the studio's material redo re-paints a generated model's surface in the browser, and the material system (PBR, shaded, both, or none) is part of every generation. Reorient: real — the studio's controls cover the orientation affordances a generated object needs. Constrain shape: real — bounding box, voxel, and point-cloud ControlNets block the silhouette before generation rather than sculpting after it.",
+          "Retexture: real — the [studio](/workspace/rodin) material redo re-paints a generated model's surface in the browser, and the material system (PBR, shaded, both, or none) is part of every generation. Reorient: real — the studio's controls cover the orientation affordances a generated object needs. Constrain shape: real — bounding box, voxel, and point-cloud ControlNets block the silhouette before generation rather than sculpting after it.",
           "Freeform sculpting, topology surgery, vertex-level editing: not here. That is the hosted mesh editor's territory, this clone covers the honest subset and says the rest is out of scope — the same statement the tool page makes, because they read the same registry.",
         ],
       },
       {
         heading: "Inspecting instead of editing",
         paragraphs: [
-          "Sometimes 'editing' is really 'checking': the model viewer opens GLB, GLTF, OBJ, and STL locally — orbit, material modes, live triangle count — without uploading anything. It will not modify the mesh, but it will tell you whether the mesh you have is the mesh you want before you spend anything on the next step.",
+          "Sometimes 'editing' is really 'checking': the [model viewer](/workspace/omnicraft/viewer) opens GLB, GLTF, OBJ, and STL locally — orbit, material modes, live triangle count — without uploading anything. It will not modify the mesh, but it will tell you whether the mesh you have is the mesh you want before you spend anything on the next step.",
         ],
       },
     ],
@@ -280,7 +280,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "The pieces of the tutorial that DO work here",
         paragraphs: [
-          "Credit where due: two steps of the reference's flow have real counterparts. 'Inspect before you commit' — the free preview loop, plus the local model viewer for any GLB/GLTF/OBJ/STL you already have. 'Export in the format the next tool wants' — six real formats off any confirmed task, free re-exports forever. Those two steps carry most of a real workspace's value, which is why they were built first and why the upload-and-edit surface was not faked around them.",
+          "Credit where due: two steps of the reference's flow have real counterparts. 'Inspect before you commit' — the free preview loop, plus the [local model viewer](/workspace/omnicraft/viewer) for any GLB/GLTF/OBJ/STL you already have. 'Export in the format the next tool wants' — six real formats off any confirmed task, free re-exports forever. Those two steps carry most of a real workspace's value, which is why they were built first and why the upload-and-edit surface was not faked around them.",
           "The metering follows the same shape: generation and preview free, Confirm & Export 1 credit standard and 10 credits agentic, from the 50 credits every account starts with. A tutorial that ends at the meter honestly is worth more than one that ends at a button that isn't there.",
         ],
       },
@@ -322,8 +322,8 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "The workflow that gets you 80% of the way",
         paragraphs: [
-          "Decompose-later: generate the whole object here, export OBJ or GLB, and split it into parts in your DCC — one export, one outliner session, the same end state BANG produces, arrived at from a different direction. Region-edit-later: same move — edit in the DCC where region selection is a solved problem, and re-import for viewing here if you want a second opinion. The browser pipeline's job is fast generation and honest exports; the DCC's job is precision surgery.",
-          "Is that as convenient as in-browser parts and partial edit? No — and this article would rather say that than sell you a button that isn't in the tree. Convenience claims are cheap; the 1-credit meter and the six real exporters are the expensive parts, and they are the parts that exist.",
+          "Decompose-later: [generate the whole object here](/workspace/rodin), export OBJ or GLB, and split it into parts in your DCC — one export, one outliner session, the same end state BANG produces, arrived at from a different direction. Region-edit-later: same move — edit in the DCC where region selection is a solved problem, and re-import for viewing here if you want a second opinion. The browser pipeline's job is fast generation and honest exports; the DCC's job is precision surgery.",
+          "Is that as convenient as in-browser parts and partial edit? No — and this article would rather say that than sell you a button that isn't in the tree. Convenience claims are cheap; the [1-credit meter](/blog/how-many-credits-does-each-hyper3d-generation-cost) and the six real exporters are the expensive parts, and they are the parts that exist.",
         ],
       },
     ],
@@ -357,7 +357,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "The settings that exist",
         paragraphs: [
-          "Generation version: the standard pipeline versus the agent-ready tier — the latter is where agentic tasks (the 10-credit type) live, and it exists to give agents the richer task surface the MCP modal advertises. Effort: five tiers from fastest draft to maximum fidelity; the queue paces each differently, so this is your speed/quality dial. Materials: PBR (full pass), shaded (baked color), all, or none — 'none' being the fastest because it skips texturing entirely. ControlNets: bounding box, voxel, or point cloud, set before generation to constrain the silhouette.",
+          "Generation version: the standard pipeline versus [the agent-ready tier](/blog/use-rodin-agentic-mode-for-image-to-3d) — the latter is where agentic tasks (the 10-credit type) live, and it exists to give agents the richer task surface [the MCP modal](/features/mcp) advertises. Effort: five tiers from fastest draft to maximum fidelity; the queue paces each differently, so this is your speed/quality dial. Materials: PBR (full pass), shaded (baked color), all, or none — 'none' being the fastest because it skips texturing entirely. ControlNets: bounding box, voxel, or point cloud, set before generation to constrain the silhouette.",
           "All of that is live UI wired to the real task schema — change a setting and the next task carries it, visibly, on its own card, which is what makes the settings honest: they are not decoration over a fixed pipeline, they are inputs the pipeline provably reads.",
         ],
       },
@@ -398,7 +398,7 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "What the agentic type actually does here",
         paragraphs: [
-          "Create a RodinAgentic task and three things differ from standard: the charge (10 credits rather than 1 — on the pay-by-result flow this lands at confirm), the progress cadence (the queue emits the agentic message set, so the task card narrates more of the pipeline), and the tier's purpose — it exists so the MCP surface can hand agents a task type with a richer contract. Standard and agentic share the pipeline, the preview flow, and the export formats.",
+          "[Create a RodinAgentic task](/workspace/rodin) and three things differ from standard: the charge (10 credits rather than 1 — on the pay-by-result flow this lands at confirm), the progress cadence (the queue emits the agentic message set, so the task card narrates more of the pipeline), and the tier's purpose — it exists so [the MCP surface](/features/mcp) can hand agents a task type with a richer contract. Standard and agentic share the pipeline, the preview flow, and the export formats.",
         ],
       },
       {
@@ -438,14 +438,14 @@ export const BLOG_ARTICLES_C: BlogArticleDef[] = [
       {
         heading: "The three-step connect",
         paragraphs: [
-          "Open the connect modal from the studio (the /?mcp=1 deep link lands there directly). Copy the configuration it presents — it is formatted for agent clients' MCP server lists, not for humans to retype. Point your agent at it: connected agents create tasks, watch the same progress the task cards show, and pull exports in the six formats, landing results in the same task history the studio displays.",
+          "Open the [connect modal](/workspace/rodin) from the studio (the /?mcp=1 deep link lands there directly). Copy the configuration it presents — it is formatted for agent clients' MCP server lists, not for humans to retype. Point your agent at it: connected agents create tasks, watch the same progress the task cards show, and pull exports in the six formats, landing results in the same task history the studio displays.",
           "The architecture point that makes this honest: MCP here is a window onto the one pipeline that exists, not a parallel API invented for agents. An agent's generations are ordinary tasks with ordinary metering — the 50-credit grant, 1-per-standard-confirm, 10-per-agentic — visible in the same history.",
         ],
       },
       {
         heading: "What the reference ships that this doesn't",
         paragraphs: [
-          "Hosted MCP authentication, per-agent marketplace listings, and the fuller docs set — stated as gaps on the feature page, because the modal is the whole story here and it works. An agent with MCP support and a config block is one paste away from driving generation; everything beyond that surface is reference-only and labeled so.",
+          "Hosted MCP authentication, per-agent marketplace listings, and the fuller docs set — stated as gaps on the [feature page](/features/mcp), because the modal is the whole story here and it works. An agent with MCP support and a config block is one paste away from driving generation; everything beyond that surface is reference-only and labeled so.",
         ],
       },
     ],

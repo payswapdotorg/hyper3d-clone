@@ -26,7 +26,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
         heading: "What 'support' can honestly mean here",
         paragraphs: [
           "A support channel is staff plus a queue plus a response promise. This project has none of the three, so instead of a contact form that writes to nowhere, the honest surfaces are self-serve and real: the Help Center answers the thirty-three questions this codebase actually gets asked, with a live/partial/not-in-clone verdict on each; the studio's task panel shows each run's prompt, image, effort, and — if something went wrong — the exact error string the pipeline recorded.",
-          "The most useful 'support' move in a workspace like this is reproducibility: when a task fails, its card keeps everything needed to understand why (see the failure article in this blog). That is deliberate — a demo that hides its errors forces you to trust it; one that surfaces them lets you verify it.",
+          "The most useful 'support' move in a workspace like this is reproducibility: when a task fails, its card keeps everything needed to understand why (see [the failure article](/blog/why-did-my-hyper3d-generation-fail) in this blog). That is deliberate — a demo that hides its errors forces you to trust it; one that surfaces them lets you verify it.",
         ],
       },
       {
@@ -67,7 +67,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
         heading: "The honest boundary",
         paragraphs: [
           "Enterprise support is a commitment: response times, escalation paths, legal entities, invoices. A demo clone offering any of that would be fabricating an operations team, so this page — a route the reference catalog lists — states the absence instead. What can be said truthfully: the task API is documentable, the pipeline is paced and serverless-friendly, and the whole billing story is one $0 tier, so 'enterprise readiness' here means 'run it yourself'.",
-          "The Help Center's enterprise topic makes the same point in question form: the answer to every 'can I get an SLA / volume deal / dedicated support' question is no, with the reasoning attached.",
+          "The [Help Center's enterprise topic](/help/enterprise) makes the same point in question form: the answer to every 'can I get an SLA / volume deal / dedicated support' question is no, with the reasoning attached.",
         ],
       },
       {
@@ -108,7 +108,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
       {
         heading: "Two kinds of 'refund', one of them real",
         paragraphs: [
-          "Money refunds require a charge, and no charge exists: no card is ever taken, no order is ever created, no plan is ever billed. The Fulfillment Policy page in the Legal Center exists precisely to say this in the formal register a policy needs — there is no billing to fulfill.",
+          "Money refunds require a charge, and no charge exists: no card is ever taken, no order is ever created, no plan is ever billed. The [Fulfillment Policy page](/legal/fulfillment) in the Legal Center exists precisely to say this in the formal register a policy needs — there is no billing to fulfill.",
           "Credit refunds are real and automatic. If a legacy charged task is canceled or fails, the route grants back exactly creditsSpent as a cancel_refund ledger entry, in the same request, with no form and no waiting. And on the pay-by-result flow the question cannot arise: unconfirmed tasks were never charged.",
         ],
       },
@@ -157,7 +157,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
       {
         heading: "The honest options",
         paragraphs: [
-          "If you operate a deployment: the user table is yours, and resetting a hash is a one-line database operation. If you are an end user: create a new account — signup is instant, costs nothing, and grants a fresh 50 credits. What you should not expect is a 'check your inbox' screen here; that would be a claim about infrastructure this project does not have.",
+          "If you operate a deployment: the user table is yours, and resetting a hash is a one-line database operation. If you are an end user: create a new account — signup is instant, costs nothing, and grants [a fresh 50 credits](/blog/how-many-credits-does-each-hyper3d-generation-cost). What you should not expect is a 'check your inbox' screen here; that would be a claim about infrastructure this project does not have.",
         ],
       },
     ],
@@ -198,7 +198,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
       {
         heading: "How to know which auth you are looking at",
         paragraphs: [
-          "The tell is infrastructure, not UI: a code-based login needs an outbound mail path (SMTP credentials, templates, rate limits, token TTLs), and none is wired to auth in this codebase — the same absence the password-reset article documents. If a deployment of this project ever shows you a 'we sent you a code' screen, it is running something this repository does not contain.",
+          "The tell is infrastructure, not UI: a code-based login needs an outbound mail path (SMTP credentials, templates, rate limits, token TTLs), and none is wired to auth in this codebase — the same absence [the password-reset article](/blog/how-to-reset-hyper3d-password) documents. If a deployment of this project ever shows you a 'we sent you a code' screen, it is running something this repository does not contain.",
           "Email-plus-scrypt is the entire contract, and it is a good one to be able to read: the hash is salted and slow by construction, the session is an httpOnly cookie, and the flow has exactly two screens. Small, legible, and honest — which is the pattern this project prefers over feature-shaped promises.",
         ],
       },
@@ -233,7 +233,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
       {
         heading: "Why the selector exists but the translations don't",
         paragraphs: [
-          "The reference ships localized sitemaps for a dozen languages, which is how it markets to those markets. A real localization here would mean translating the studio, the help tree, this blog, and every status page — and keeping them in sync. That is a large ongoing commitment this project does not pretend to have made, so the honest state is exactly what you see: the affordance without the payload, and an article saying so instead of implying otherwise.",
+          "The reference ships localized sitemaps for a dozen languages, which is how it markets to those markets. A real localization here would mean translating the studio, [the help tree](/help), this blog, and every status page — and keeping them in sync. That is a large ongoing commitment this project does not pretend to have made, so the honest state is exactly what you see: the affordance without the payload, and an article saying so instead of implying otherwise.",
           "What is true across languages: the generation pipeline is language-agnostic at the prompt level for text input — the pipeline's captioning and prompt handling process what you type — but the interface around it, all documentation, and all support content are English-only today.",
         ],
       },
@@ -281,7 +281,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
       {
         heading: "Practical checks that work here",
         paragraphs: [
-          "Ask any page to prove its claim: generation costs should trace to the 1/10 constants, exports should open in a third-party viewer, the model viewer should parse your file without any network upload, and a 'coming soon' should be labeled as not-implemented rather than implied. A clone that states its gaps is auditable; a clone that hides them is just another pretty page.",
+          "Ask any page to prove its claim: generation costs should trace to [the 1/10 constants](/blog/how-many-credits-does-each-hyper3d-generation-cost), exports should open in a third-party viewer, the [model viewer](/workspace/omnicraft/viewer) should parse your file without any network upload, and a 'coming soon' should be labeled as not-implemented rather than implied. A clone that states its gaps is auditable; a clone that hides them is just another pretty page.",
         ],
       },
     ],
@@ -322,7 +322,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
       {
         heading: "The money truth",
         paragraphs: [
-          "On the pay-by-result flow — what the studio creates — failure and money never meet: the only charge is Confirm & Export, which requires a successful preview first. On the legacy creation-charged path, a failed task is refunded in full (a cancel_refund grant of exactly what was spent). The insufficient-balance case is not a failure of the task but a 402 from the API: generation and preview remain free, and your balance is untouched by the refusal.",
+          "On the pay-by-result flow — what [the studio](/workspace/rodin) creates — failure and money never meet: the only charge is Confirm & Export, which requires a successful preview first. On the legacy creation-charged path, a failed task is refunded in full (a cancel_refund grant of exactly what was spent). The insufficient-balance case is not a failure of the task but a 402 from the API: generation and preview remain free, and your balance is untouched by the refusal.",
         ],
       },
     ],
@@ -368,7 +368,7 @@ export const BLOG_ARTICLES_B: BlogArticleDef[] = [
       {
         heading: "Problem: 'the convertor won't take my file'",
         paragraphs: [
-          "That is by design, not a bug: the Format Convertor re-exports tasks you generated and confirmed here — it is not an arbitrary-file upload service. Give it a task from your history and it will re-emit that mesh in any of the six formats, costing nothing extra. Uploading an external model for conversion is a different product category, and this clone's pages say so rather than accepting files it cannot process.",
+          "That is by design, not a bug: the [Format Convertor](/workspace/omnicraft/formatcon) re-exports tasks you generated and confirmed here — it is not an arbitrary-file upload service. Give it a task from your history and it will re-emit that mesh in any of the six formats, costing nothing extra. Uploading an external model for conversion is a different product category, and this clone's pages say so rather than accepting files it cannot process.",
         ],
       },
     ],

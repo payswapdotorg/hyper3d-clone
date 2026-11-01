@@ -1,12 +1,16 @@
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, FileText, MinusCircle, Rss, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, Mail, MessageCircle, MinusCircle, Rss, Send, Twitter, Linkedin, Facebook, XCircle } from "lucide-react";
 
 import type { BlogArticleDef, BlogEntry, BlogFamily, BlogStatus } from "@/lib/blog-types";
 import { BLOG_CENSUS } from "@/lib/blog-registry";
 import { findBlogCategory } from "@/lib/blog";
 import { cn } from "@/lib/utils";
-import { blogPostJsonLd } from "@/lib/schema-org";
+import { blogPostJsonLd, SITE_ORIGIN } from "@/lib/schema-org";
 import { JsonLd } from "@/components/hyper3d/json-ld";
+import { parseProse } from "@/lib/blog-prose";
+import { shareLinks, type ShareNetwork } from "@/lib/share-links";
+import { KEEP_READING_SLUGS, relatedCard } from "@/lib/blog-related";
+import { CopyLinkButton } from "./copy-link-button";
 
 /**
  * Shared renderer for every /blog/[slug] page — written articles get the
@@ -94,6 +98,174 @@ function BlogTopBar({ category }: { category?: string }) {
   );
 }
 
+/** Render one paragraph string with its inline prose links (t81):
+ * markdown-lite `[label](href)` — internal hrefs as next/link, external
+ * as plain anchors with the reference's own attribute set. */
+function Prose({ paragraph }: { paragraph: string }) {
+  const runs = parseProse(paragraph);
+  return (
+    <>
+      {runs.map((run, i) =>
+        run.kind === "text" ? (
+          <span key={i}>{run.text}</span>
+        ) : run.external ? (
+          <a
+            key={i}
+            href={run.href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="font-bold text-violet-200 underline decoration-violet-400/40 underline-offset-2 transition-colors hover:decoration-violet-300"
+          >
+            {run.text}
+          </a>
+        ) : (
+          <Link
+            key={i}
+            href={run.href}
+            className="font-bold text-violet-200 underline decoration-violet-400/40 underline-offset-2 transition-colors hover:decoration-violet-300"
+          >
+            {run.text}
+          </Link>
+        ),
+      )}
+    </>
+  );
+}
+
+/** The six-network share panel the reference pins on every article
+ * (t81 recon: 55/55) — same formulas, this clone's own origin and H1. */
+const SHARE_ICONS: Record<ShareNetwork, React.ComponentType<{ className?: string }>> = {
+  x: Twitter,
+  linkedin: Linkedin,
+  facebook: Facebook,
+  reddit: MessageCircle,
+  whatsapp: Send,
+  email: Mail,
+};
+
+function SharePanel({ path, title }: { path: string; title: string }) {
+  const links = shareLinks(path, title, SITE_ORIGIN);
+  return (
+    <section
+      aria-label="Share this article"
+      className="mt-12 rounded-2xl border border-white/10 bg-white/[0.02] p-5"
+    >
+      <h3 className="text-[11px] font-bold uppercase tracking-wider text-white/35">Share</h3>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {links.map((link) => {
+          const Icon = SHARE_ICONS[link.network];
+          return (
+            <a
+              key={link.network}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              aria-label={link.ariaLabel}
+              className="inline-flex min-h-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] px-3 text-white/60 transition-colors hover:border-violet-400/40 hover:text-violet-200"
+            >
+              <Icon className="size-4" aria-hidden="true" />
+            </a>
+          );
+        })}
+        <CopyLinkButton url={`${SITE_ORIGIN}${path}`} />
+      </div>
+    </section>
+  );
+}
+
+/** One "Keep reading" card — the reference's card anatomy (image, h3
+ * title, description snippet) over this clone's own honest data. */
+function RelatedCardLink({ href, card }: { href: string; card: NonNullable<ReturnType<typeof relatedCard>> }) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] transition-colors hover:border-violet-400/30"
+    >
+      {/* CDN-hosted reference image, deliberately hotlinked per the t77
+          philosophy — the same URL the destination's own head serves. */}
+      <img
+        src={card.image}
+        alt={card.alt}
+        width={1200}
+        height={675}
+        loading="lazy"
+        decoding="async"
+        className="aspect-[16/9] w-full object-cover"
+      />
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="text-sm font-black leading-snug tracking-tight text-white/85 group-hover:text-violet-200">
+          {card.title}
+        </h3>
+        <p className="mt-2 text-xs leading-relaxed text-white/50">{card.description}</p>
+      </div>
+    </Link>
+  );
+}
+
+/** The chip-style related row (the clone's own link set). */
+function RelatedChips({ def, heading }: { def: BlogArticleDef; heading: string }) {
+  return (
+    <section className="mt-12">
+      <h2 className="text-lg font-black tracking-tight">{heading}</h2>
+      <ul className="mt-4 flex flex-wrap gap-2">
+        {def.related.map((link) => (
+          <li key={link.href + link.label}>
+            <Link
+              href={link.href}
+              className="inline-flex min-h-9 items-center rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-white/70 transition-colors hover:border-violet-400/40 hover:text-violet-200"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** The class-A related area (t81): "Keep reading" — the blog-article
+ * related links as image cards (the reference's card anatomy), with any
+ * non-blog related links kept as a compact chip row after the grid. */
+function RelatedSections({ def }: { def: BlogArticleDef }) {
+  // resolve once, keep the link and its card together
+  const cards = def.related
+    .map((link) => ({ link, card: relatedCard(link.href) }))
+    .filter((x): x is { link: BlogArticleDef["related"][number]; card: NonNullable<ReturnType<typeof relatedCard>> } => x.card !== undefined);
+  if (cards.length === 0) return <RelatedChips def={def} heading="Related" />;
+  return (
+    <>
+      <section className="mt-12" aria-label="Related blog posts">
+        <h2 className="text-lg font-black tracking-tight">Keep reading</h2>
+        <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {cards.map(({ link, card }) => (
+            <li key={link.href}>
+              <RelatedCardLink href={link.href} card={card} />
+            </li>
+          ))}
+        </ul>
+      </section>
+      {cards.length < def.related.length ? (
+        <section className="mt-6">
+          <ul className="flex flex-wrap gap-2">
+            {def.related
+              .filter((link) => !relatedCard(link.href))
+              .map((link) => (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="inline-flex min-h-9 items-center rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-white/70 transition-colors hover:border-violet-400/40 hover:text-violet-200"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+          </ul>
+        </section>
+      ) : null}
+    </>
+  );
+}
+
 /** The written-article page. */
 export function BlogArticlePage({
   def,
@@ -114,8 +286,8 @@ export function BlogArticlePage({
       <BlogTopBar category={def.category} />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6">
-        {/* head */}
-        <section>
+        {/* head — the t81 #article-top anchor the TOC's Overview entry targets */}
+        <section id="article-top">
           <h1 className="text-2xl font-black leading-tight tracking-tight sm:text-3xl">{def.title}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <span className="text-xs font-bold uppercase tracking-wider text-white/30">{def.date}</span>
@@ -137,10 +309,20 @@ export function BlogArticlePage({
           <p className="mt-2 text-sm font-bold leading-relaxed text-white/85">{def.answer}</p>
         </section>
 
-        {/* on this page */}
+        {/* on this page — the reference's shape: Overview → #article-top
+            first, then the sections (t81) */}
         <nav aria-label="On this page" className="mt-8 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
           <p className="text-[11px] font-bold uppercase tracking-wider text-white/35">On this page</p>
           <ol className="mt-2 space-y-1.5">
+            <li className="text-sm">
+              <a
+                href="#article-top"
+                className="text-white/60 transition-colors hover:text-violet-200"
+              >
+                <span className="mr-2 font-mono text-[11px] text-white/30">0.</span>
+                Overview
+              </a>
+            </li>
             {def.sections.map((section, i) => (
               <li key={section.heading} className="text-sm">
                 <a
@@ -162,7 +344,7 @@ export function BlogArticlePage({
             <div className="mt-3 space-y-4">
               {section.paragraphs.map((paragraph, j) => (
                 <p key={j} className="text-sm leading-relaxed text-white/60">
-                  {paragraph}
+                  <Prose paragraph={paragraph} />
                 </p>
               ))}
             </div>
@@ -187,22 +369,18 @@ export function BlogArticlePage({
           </div>
         </section>
 
-        {/* related */}
-        <section className="mt-12">
-          <h2 className="text-lg font-black tracking-tight">Related</h2>
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {def.related.map((link) => (
-              <li key={link.href + link.label}>
-                <Link
-                  href={link.href}
-                  className="inline-flex min-h-9 items-center rounded-full border border-white/10 bg-white/[0.03] px-3 text-xs font-bold text-white/70 transition-colors hover:border-violet-400/40 hover:text-violet-200"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {/* share — the six-network panel + copy link (t81) */}
+        <SharePanel path={`/blog/${def.slug}`} title={def.title} />
+
+        {/* related — the t81 two-class split: the 24 class-A articles
+            (probed KEEP_READING_SLUGS) render their blog-article links as
+            image cards under "Keep reading" like the reference; the rest
+            keep the chip row, mirroring the reference's absence */}
+        {KEEP_READING_SLUGS.has(def.slug) ? (
+          <RelatedSections def={def} />
+        ) : (
+          <RelatedChips def={def} heading="Related" />
+        )}
 
         {/* category CTA */}
         <section className="mt-12 rounded-2xl border border-violet-400/20 bg-violet-400/[0.06] p-6 text-center sm:p-8">

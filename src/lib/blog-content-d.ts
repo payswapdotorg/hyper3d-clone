@@ -25,14 +25,14 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
         heading: "The structure, briefly",
         paragraphs: [
           "A GLB opens with a 12-byte header (magic, version, length), then a JSON chunk describing the scene graph — nodes, meshes, materials — then a binary chunk holding the vertex and index data and embedded images. The magic number is 0x46546C67, which is 'glTF' in ASCII and the first thing any loader checks. Everything the scene needs travels in that one file, which is the whole point: no missing-texture errors, no relative paths to break.",
-          "Contrast with plain .gltf, which is the same JSON referencing external .bin and image files — nicer to hand-edit, worse to share. The comparison article in this blog covers the trade in detail.",
+          "Contrast with plain .gltf, which is the same JSON referencing external .bin and image files — nicer to hand-edit, worse to share. The [comparison article](/blog/glb-vs-gltf) in this blog covers the trade in detail.",
         ],
       },
       {
         heading: "When GLB is the right answer",
         paragraphs: [
           "Web delivery (three.js, model-viewer, most WebXR stacks ingest it natively), AR quick-look-style experiences, and any 'send it to someone' scenario — one file, one request, no assembly. For 3D printing you want STL instead; for CAD round-tripping, neither.",
-          "Here, GLB is the first-class export: every confirmed task emits it, the model viewer parses it locally (orbit, material modes, live triangle count, no upload), and the format convertor will re-emit any confirmed task as GLB for free.",
+          "Here, GLB is the first-class export: every confirmed task emits it, the [model viewer](/workspace/omnicraft/viewer) parses it locally (orbit, material modes, live triangle count, no upload), and the [format convertor](/workspace/omnicraft/formatcon) will re-emit any confirmed task as GLB for free.",
         ],
       },
     ],
@@ -73,7 +73,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "Where OBJ fits here",
         paragraphs: [
-          "Every confirmed task exports as OBJ through the real Wavefront writer, and the model viewer parses OBJ locally for inspection. The classic workflow this supports: generate here, export OBJ, import into Blender or your DCC of choice for further work — the mesh arrives as clean geometry with UVs and normals, ready to edit.",
+          "Every confirmed task exports as OBJ through the real Wavefront writer, and the [model viewer](/workspace/omnicraft/viewer) parses OBJ locally for inspection. The classic workflow this supports: [generate here](/workspace/rodin), export OBJ, import into Blender or your DCC of choice for further work — the mesh arrives as clean geometry with UVs and normals, ready to edit.",
         ],
       },
     ],
@@ -114,7 +114,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "From generation to print",
         paragraphs: [
-          "The pipeline here supports the print-bound workflow directly: generate your object, confirm it (the 1-credit moment), export binary STL, and drop it straight into a slicer. The bytes are standards-compliant — 80-byte header, correct count, 50 bytes a triangle — so a slicer rejecting them is a slicer bug, not a file bug. For image-to-print workflows, see the text-to-STL and image-to-STL articles in this blog.",
+          "The pipeline here supports the print-bound workflow directly: [generate your object](/workspace/rodin), confirm it ([the 1-credit moment](/blog/how-many-credits-does-each-hyper3d-generation-cost)), export binary STL, and drop it straight into a slicer. The bytes are standards-compliant — 80-byte header, correct count, 50 bytes a triangle — so a slicer rejecting them is a slicer bug, not a file bug. For image-to-print workflows, see the text-to-STL and image-to-STL articles in this blog.",
         ],
       },
     ],
@@ -148,8 +148,8 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "Why FBX exists at all",
         paragraphs: [
-          "The DCC world needed a format that could carry a rigged, animated character — bones, skin weights, keyframes — not just static triangles, and FBX became the default despite (or because of) being proprietary. Most game engines and DCCs import it natively, which makes it the pragmatic choice when Blender's place in a pipeline is 'in between two Autodesk tools'.",
-          "The honest caveat for this codebase's export: ASCII FBX 7.3 carries the geometry faithfully — meshes, normals, UVs, vertex colors — but a generated task here has no rig or animation to carry, so the FBX you export is static geometry. Tools that insist on binary FBX may refuse ASCII; the workaround is GLB in, convert in the DCC.",
+          "The DCC world needed a format that could carry a rigged, animated character — bones, skin weights, keyframes — not just static triangles, and FBX became the default despite (or because of) being proprietary. Most game engines and DCCs import it natively, which makes it [the pragmatic choice](/blog/fbx-vs-glb) when Blender's place in a pipeline is 'in between two Autodesk tools'.",
+          "The honest caveat for this codebase's export: ASCII FBX 7.3 carries the geometry faithfully — meshes, normals, UVs, vertex colors — but a generated task here has no rig or animation to carry, so the FBX you export is static geometry. Tools that insist on binary FBX may refuse ASCII; the workaround is [GLB](/blog/what-is-glb-file) in, convert in the DCC.",
         ],
       },
       {
@@ -190,8 +190,8 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "What 3MF fixes about STL",
         paragraphs: [
-          "STL's austerity — triangles, nothing else — means unit ambiguity, single-color parts, and lost orientation and metadata. 3MF solves all of it: millimeter units by specification, per-part colors and materials, component reuse (one bolt geometry, many bolt placements), and production metadata. Slicers increasingly accept it, and multi-material printing essentially requires it.",
-          "None of that changes the export surface here: the six real formats are GLB, glTF, FBX, OBJ, STL, and USDZ. The exporter set has no 3MF writer, and the converter pages say so per pair rather than implying CAD/print extras exist.",
+          "[STL's austerity](/blog/what-is-stl-file) — triangles, nothing else — means unit ambiguity, single-color parts, and lost orientation and metadata. 3MF solves all of it: millimeter units by specification, per-part colors and materials, component reuse (one bolt geometry, many bolt placements), and production metadata. Slicers increasingly accept it, and multi-material printing essentially requires it.",
+          "None of that changes the export surface here: the six real formats are GLB, glTF, FBX, OBJ, STL, and USDZ. The exporter set has no 3MF writer, and the [converter pages](/tools/converter/3mf/to/stl) say so per pair rather than implying CAD/print extras exist.",
         ],
       },
       {
@@ -232,13 +232,13 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
         heading: "The category difference that matters",
         paragraphs: [
           "A mesh format (STL, OBJ, GLB) describes a surface as triangles for rendering and printing. A CAD format (DXF, and its siblings like STEP and DWG) describes geometry as precise, editable entities — lines, arcs, parametric solids — for engineering. Converting mesh to CAD is reconstruction, not export: turning triangles back into parametric features is a hard, lossy, often manual process that no honest page should describe as a save-as.",
-          "This codebase is a mesh pipeline end to end: six export formats, all mesh-or-scene containers, no CAD writer anywhere. The tools tree's converter pages carry the same statement per pair — 'no CAD support anywhere' is the computed reason, not an apology.",
+          "This codebase is a mesh pipeline end to end: six export formats, all mesh-or-scene containers, no CAD writer anywhere. The [tools tree's converter pages](/tools/converter/3mf/to/stl) carry the same statement per pair — 'no CAD support anywhere' is the computed reason, not an apology.",
         ],
       },
       {
         heading: "If you need DXF from geometry you generated here",
         paragraphs: [
-          "The honest path runs through a CAD tool: export OBJ or STL, import into your CAD application's mesh pathway, and trace or reconstruct the entities you need there. For 2D drawings derived from 3D — plans, elevations — the rendering-or-screenshot step also lives outside this codebase. What you should not expect is a DXF button, today or implied.",
+          "The honest path runs through a CAD tool: export [OBJ or STL](/blog/obj-vs-stl), import into your CAD application's mesh pathway, and trace or reconstruct the entities you need there. For 2D drawings derived from 3D — plans, elevations — the rendering-or-screenshot step also lives outside this codebase. What you should not expect is a DXF button, today or implied.",
         ],
       },
     ],
@@ -273,13 +273,13 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
         heading: "Why scanners love PLY",
         paragraphs: [
           "A scan produces points, not surfaces: millions of sampled positions, each often carrying color and a normal estimate. PLY was designed exactly for that — an element/property model where a vertex can carry whatever the scanner measured, before any meshing step turns points into faces. Photogrammetry tools emit PLY at the point-cloud stage, then mesh into OBJ or GLB for delivery.",
-          "This pipeline has no scanning stage: generation here goes prompt-or-image to mesh directly, so the artifact PLY exists to carry never exists here. The ControlNet point-cloud constraint borrows the vocabulary (sparse points as a generation guide) but produces none of the files.",
+          "This pipeline has no scanning stage: generation here goes prompt-or-image to mesh directly, so the artifact PLY exists to carry never exists here. The [ControlNet point-cloud constraint](/features/text-to-3d) borrows the vocabulary (sparse points as a generation guide) but produces none of the files.",
         ],
       },
       {
         heading: "If PLY appears in your workflow",
         paragraphs: [
-          "Then a scanning or reconstruction tool put it there, and the tool that made it is the tool to convert it — this codebase's converter works on your confirmed tasks, not on arbitrary uploads, and its format list is the six real ones. The honest summary: PLY is a fine format doing a job this pipeline does not have.",
+          "Then a scanning or reconstruction tool put it there, and the tool that made it is the tool to convert it — this codebase's [converter](/workspace/omnicraft/formatcon) works on your confirmed tasks, not on arbitrary uploads, and its format list is the six real ones. The honest summary: PLY is a fine format doing a job this pipeline does not have.",
         ],
       },
     ],
@@ -320,7 +320,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "USDZ from this pipeline",
         paragraphs: [
-          "The use case writes itself: generate an object, confirm it, export USDZ, host the file, and an iOS user taps the link to see it in their space. Combined with the six-format convertor, USDZ is also free to produce later from any already-confirmed task. What USDZ is not: a general interchange format for DCC round-tripping — its job is AR delivery, and it does that job well.",
+          "The use case writes itself: [generate an object](/workspace/rodin), confirm it, export USDZ, host the file, and an iOS user taps the link to see it in their space. Combined with the [six-format convertor](/workspace/omnicraft/formatcon), USDZ is also free to produce later from any already-confirmed task. What USDZ is not: a general interchange format for DCC round-tripping — its job is AR delivery, and it does that job well.",
         ],
       },
     ],
@@ -354,14 +354,14 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "The practical trade",
         paragraphs: [
-          "GLB's single-file property is a deployment feature: one URL, one fetch, nothing to misplace — which is why three.js, model-viewer, and AR tooling treat it as the default. glTF's multi-file property is a workflow feature: the scene description is readable text you can diff and edit, textures are separately swappable files, and the binary buffer can be regenerated without touching the JSON.",
+          "[GLB's single-file property](/blog/what-is-glb-file) is a deployment feature: one URL, one fetch, nothing to misplace — which is why three.js, model-viewer, and AR tooling treat it as the default. glTF's multi-file property is a workflow feature: the scene description is readable text you can diff and edit, textures are separately swappable files, and the binary buffer can be regenerated without touching the JSON.",
           "Size-wise they carry the same data; GLB saves a little packaging overhead, glTF can win when textures compress better as separate files than embedded ones. For everything except hand-editing, the ecosystem consensus is GLB-first.",
         ],
       },
       {
         heading: "From this pipeline specifically",
         paragraphs: [
-          "A confirmed task exports as either, from the same exporter family — the GLB path writes the binary container (magic, JSON chunk, BIN chunk), the glTF path writes the JSON with embedded base64 buffer data. The model viewer parses both locally; the convertor re-emits either from any confirmed task for free. The choice is purely downstream: who or what opens the file next.",
+          "A confirmed task exports as either, from the same exporter family — the GLB path writes the binary container (magic, JSON chunk, BIN chunk), the glTF path writes the JSON with embedded base64 buffer data. The [model viewer](/workspace/omnicraft/viewer) parses both locally; the [convertor](/workspace/omnicraft/formatcon) re-emits either from any confirmed task for free. The choice is purely downstream: who or what opens the file next.",
         ],
       },
     ],
@@ -396,13 +396,13 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
         heading: "The capability table",
         paragraphs: [
           "OBJ: vertices, UVs, normals, faces, material references (.mtl), human-readable text, multi-object files, universal DCC import. STL: facet normals and vertex triples, period — but universally sliced, byte-simple, and effectively the print standard for three decades. The information difference is real: an STL of a textured model is the same shape with the texture story amputated.",
-          "When people complain 'STL lost my colors', that is not a bug in their exporter — the format has nowhere to put colors. The modern fix is 3MF (colors plus units for printing), which this codebase does not write; the classic fix is OBJ for everything except the print step itself.",
+          "When people complain 'STL lost my colors', that is not a bug in their exporter — the format has nowhere to put colors. The modern fix is [3MF](/blog/what-is-3mf-file) (colors plus units for printing), which this codebase does not write; the classic fix is OBJ for everything except the print step itself.",
         ],
       },
       {
         heading: "Choosing from this pipeline",
         paragraphs: [
-          "Generated task going to a DCC for more work: OBJ. Going to a slicer: STL (binary, 50 bytes a triangle). Going to the web: neither — GLB. The pipeline exports all three from the same confirmed task, and the convertor re-emits any of them for free later, so the decision can be revisited without regenerating or re-confirming.",
+          "Generated task going to a DCC for more work: OBJ. Going to a slicer: STL (binary, 50 bytes a triangle). Going to the web: neither — [GLB](/blog/what-is-glb-file). The pipeline exports all three from the same confirmed task, and the convertor re-emits any of them for free later, so the decision can be revisited without regenerating or re-confirming.",
         ],
       },
     ],
@@ -437,13 +437,13 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
         heading: "The one-line versions",
         paragraphs: [
           "STL: triangle soup, print-native, zero semantics beyond shape. OBJ: readable geometry with UVs and an MTL materials sidecar — the great interchange format, no scene graph or animation. FBX: Autodesk's proprietary-but-ubiquitous exchange carrying geometry, materials, skeletons, and animation between DCCs and engines; this codebase writes the ASCII 7.3 flavor (geometry, normals, UVs, vertex colors).",
-          "The fourth candidate people forget is GLB, which is the answer whenever the destination is a browser or AR — one binary file, full materials, web-native. For a generated task here the practical set is: GLB for sharing, STL for printing, OBJ for editing, FBX for the Autodesk/engine path.",
+          "The fourth candidate people forget is [GLB](/blog/what-is-glb-file), which is the answer whenever the destination is a browser or AR — one binary file, full materials, web-native. For a generated task here the practical set is: GLB for sharing, STL for printing, OBJ for editing, FBX for the Autodesk/engine path.",
         ],
       },
       {
         heading: "The decision, compressed",
         paragraphs: [
-          "One question decides it: what opens the file next? A slicer — STL, no exceptions worth the risk. A DCC for further modeling — OBJ (interchange everywhere) or FBX (Autodesk-shaped pipelines). A browser, an AR surface, or a colleague's inbox — GLB, the one-file answer with materials included. An Apple ecosystem AR link — USDZ.",
+          "One question decides it: what opens the file next? A slicer — STL, no exceptions worth the risk. A DCC for further modeling — OBJ (interchange everywhere) or [FBX](/blog/what-is-fbx-file) (Autodesk-shaped pipelines). A browser, an AR surface, or a colleague's inbox — GLB, the one-file answer with materials included. An Apple ecosystem AR link — USDZ.",
           "The nice property of the six-format exporter here is that the decision is not permanent: a confirmed task re-exports into any of them at any time, for free, including through the Format Convertor. Choose wrong, and the fix is one click, not one regeneration — the meter (1 credit per standard confirm, 10 per agentic run, from the starting 50 credits) already did its only work at the confirm.",
         ],
       },
@@ -478,8 +478,8 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "Open versus entrenched",
         paragraphs: [
-          "GLB is the open standard (glTF's binary container, Khronos-run, web-native, streamed by three.js and model-viewer). FBX is the entrenched proprietary one (Autodesk's, imported by essentially every DCC and engine, carrying the richest animation semantics in practice). Neither is 'better' — they won different territories: GLB owns delivery and the web runtime; FBX owns authoring interchange inside the DCC world.",
-          "From this pipeline's honest position: what you generated has geometry, materials, and no rig, so the FBX advantage (rig/animation fidelity) does not activate, while GLB's advantages (one file, open, viewer-native, works in the local model viewer) always do. Default to GLB; choose FBX when a specific tool downstream asks for it by name.",
+          "[GLB](/blog/what-is-glb-file) is the open standard (glTF's binary container, Khronos-run, web-native, streamed by three.js and model-viewer). FBX is the entrenched proprietary one (Autodesk's, imported by essentially every DCC and engine, carrying the richest animation semantics in practice). Neither is 'better' — they won different territories: GLB owns delivery and the web runtime; FBX owns authoring interchange inside the DCC world.",
+          "From this pipeline's honest position: what you generated has geometry, materials, and no rig, so the FBX advantage (rig/animation fidelity) does not activate, while GLB's advantages (one file, open, viewer-native, works in the [local model viewer](/workspace/omnicraft/viewer)) always do. Default to GLB; choose FBX when a specific tool downstream asks for it by name.",
         ],
       },
       {
@@ -527,7 +527,7 @@ export const BLOG_ARTICLES_D: BlogArticleDef[] = [
       {
         heading: "The honest export path here",
         paragraphs: [
-          "This pipeline writes binary STL (the six-format boundary is pinned across the exporter, the converter pages, and this blog's format articles). Want 3MF? Export STL, import to your slicer, and save-as 3MF there — the slicer is where print-specific structure (colors, arrangements, settings) gets authored anyway, so nothing honest is lost in the handoff.",
+          "This pipeline writes [binary STL](/blog/what-is-stl-file) (the six-format boundary is pinned across the exporter, the converter pages, and this blog's format articles). Want [3MF](/blog/what-is-3mf-file)? Export STL, import to your slicer, and save-as 3MF there — the slicer is where print-specific structure (colors, arrangements, settings) gets authored anyway, so nothing honest is lost in the handoff.",
         ],
       },
     ],

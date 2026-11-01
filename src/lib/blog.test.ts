@@ -24,39 +24,17 @@ import {
   blogEntriesByCategory,
 } from "./blog";
 import { REFERENCE_BLOG_SLUGS } from "./blog-registry-data";
-import { OMNICRAFT_TOOLS } from "./omnicraft";
-import { USE_CASE_ROUTES } from "./use-cases";
-import { HELP_ARTICLE_SLUGS } from "./help";
-import { STUDIO_PATH } from "./studio-path";
 
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
 
-/** Routes that genuinely exist in this clone (for related-link checks).
- * OmniCraft tool routes exist for ALL tools — not-in-clone tools render an
- * honest status page at their route, which is a real page, not a 404. */
-const TOOL_ROUTES = OMNICRAFT_TOOLS.map((t) => `/workspace/omnicraft/${t.slug}`);
-const BLOG_ARTICLE_ROUTES = new Set(BLOG_CATALOG.map((e) => `/blog/${e.slug}`));
-const BLOG_CATEGORY_ROUTES = BLOG_CATEGORIES.map((c) => `/blog/category/${c.slug}`);
-
-function isKnownRoute(href: string): boolean {
-  const base = href.split(/[?#]/)[0];
-  if (base === "/" || base === "" || base === STUDIO_PATH) return true;
-  if (BLOG_ARTICLE_ROUTES.has(base)) return true;
-  if (BLOG_CATEGORY_ROUTES.includes(base) || base === "/blog") return true;
-  if (
-    base === "/pricing" ||
-    base === "/help" ||
-    base === "/workspace/omnicraft" ||
-    ["/help/getting-started", "/help/account-settings", "/help/billing", "/help/credit", "/help/features", "/help/enterprise"].includes(base)
-  )
-    return true;
-  if (TOOL_ROUTES.includes(base)) return true;
-  if (USE_CASE_ROUTES.includes(base)) return true;
-  if (HELP_ARTICLE_SLUGS.some((s) => `/help/articles/${s}` === base)) return true;
-  if (base.startsWith("/features/") || base === "/features") return true;
-  if (base.startsWith("/styles") || base.startsWith("/use-cases") || base.startsWith("/legal")) return true;
-  return false;
-}
+/* The route vocabulary moved to blog.test-helpers.ts (t81) so the inline
+ * prose-link checks share the exact same isKnownRoute as the chips. */
+import {
+  TOOL_ROUTES,
+  BLOG_ARTICLE_ROUTES,
+  BLOG_CATEGORY_ROUTES,
+  isKnownRoute,
+} from "./blog.test-helpers";
 
 /** Flatten a written article's whole text for content assertions. */
 function articleText(def: (typeof BLOG_ARTICLES)[number]): string {
