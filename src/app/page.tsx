@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { MarketingHome } from "@/components/hyper3d/landing/marketing-home";
 import { JsonLd } from "@/components/hyper3d/json-ld";
+import { AstroChrome } from "@/components/hyper3d/astro-chrome";
 import { homeGraph, FACEBOOK_DOMAIN_VERIFICATION } from "@/lib/schema-org";
 import { referenceAlternateLanguages } from "@/lib/reference-alternate-languages";
 import { WORKSPACE_BOUNCE_SCRIPT } from "@/lib/workspace-visit";
@@ -47,8 +48,13 @@ export const metadata: Metadata = {
     title: "Hyper3D Rodin - Best AI 3D Model Generator",
     description:
       "Rodin generates high-quality 3D assets that are nearly production-ready for supported workflows.",
+    // t83: the reference's own twitter:image:alt (the card title, like
+    // every censused page's og:image:alt).
     images: [
-      "https://storage.deemos.dev/features/agentic/b7faa93dd63010643d74db337da0f2ee03b365ea.webp",
+      {
+        url: "https://storage.deemos.dev/features/agentic/b7faa93dd63010643d74db337da0f2ee03b365ea.webp",
+        alt: "Hyper3D Rodin - Best AI 3D Model Generator",
+      },
     ],
   },
   alternates: {
@@ -63,6 +69,9 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      {/* t83: the reference landing's own Astro chrome — the storage
+          CDN hint pair and the Google-Fonts quartet (recon/t83). */}
+      <AstroChrome />
       {/* The returning-visitor bounce — the reference's own pre-paint
           landing script, reproduced in behavior (see workspace-visit.ts).
           Runs before hydration; ?bypass=true keeps the landing page on

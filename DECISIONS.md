@@ -2282,3 +2282,91 @@ account-wide, resource_creation_blocked on the surviving token); the
 local standalone build + verify-served.py is the verification of
 record here too. Deploy attempted after push — outcome in
 recon/t82/notes.md.
+
+## 63. t83 — the two head shapes: the Astro marketing chrome split from the workspace app chrome
+
+The t75-t82 head series aligned every *content* dimension (title,
+description, og:image, robots, fb token, article namespace, RSS,
+hreflang). The chrome *around* that content — viewport, icons, fonts,
+resource hints — had never been censused as its own dimension, and the
+clone served ONE hybrid shape everywhere because the root layout was
+built from the t53 *workspace* recon. The reference serves two full
+shapes plus a bare variant (recon/t83, 30+ pages full-head dumped):
+
+- **Shape A (Astro marketing)**: plain `width=device-width,
+  initial-scale=1.0` viewport, ONE icon link (a 620-byte
+  `/favicon-32x32.webp`, self-hosted t53-style), NO
+  keywords/theme-color/notranslate/manifest/apple-touch-icon, the
+  storage.deemos.dev preconnect (crossorigin) + dns-prefetch pair, and
+  — on every family EXCEPT the blog — the Google-Fonts quartet (two
+  preconnects + the stylesheet + a noscript fallback). The blog family
+  (every locale: index, pagination, category hubs, articles) ships the
+  storage hints but NO font links at all — the reference's own blog
+  template renders in the CSS fallback stack (no @font-face anywhere
+  in its _astro CSS; the fonts load ONLY via those links).
+- **Shape B (the /workspace SPA shell)**: the locked viewport
+  (user-scalable=no, max/min-scale=1, viewport-fit=cover),
+  theme-color #000000, google-notranslate, the favicon.ico + 32/16 png
+  icon set with apple-touch-icon + manifest links, an og:title-only
+  OpenGraph, the twitter card, and file.hyper3d.com hints — no
+  storage, no fonts, no canonical, no hreflang.
+- **Shape C (content-preview)**: bare — framework-default viewport, no
+  icon link on the reference, robots noindex/nofollow.
+
+Shipped as the honest split: the root layout became the Astro default
+(plain viewport export, the single webp icon, no font mechanism —
+next/font removed, the --font-* vars in globals.css now name the CDN
+families with the reference's own fallback stacks); two server
+components (astro-chrome.tsx: AstroHints + GoogleFontLinks, the font
+URL byte-faithful — IBM Plex Mono 400, Inter 300-600, Poppins 400-800,
+display=swap); per-surface wiring (eleven family layouts render the
+full chrome, blog/layout.tsx renders hints only, the home page and the
+locale catch-all render in-page — the locale tree splitting blog-family
+defs from everything else via isLocaleBlogFamilyDef()); and
+workspace/layout.tsx carrying the shell's own chrome (the t53 recon
+finally home). The 404's own found-in-passing gap wired: canonical
+/404 + the 13-link hreflang set (x-default last, the reference serves
+the same head for EVERY 404 response). The home twitter:image:alt
+added (the reference's own card field).
+
+Two head fields the merge originally leaked, both fixed and pinned:
+the workspace shell inherited the root's homepage canonical —
+`alternates: { canonical: null }` in the workspace layout replaces it
+per-segment (Next 16.1.3's resolver emits nothing for a falsy
+canonical; title/description nulls already worked). Serve-side gotcha
+for the record: next-server retitles its process past
+`pkill -f server.js`, so a stale standalone server can keep answering
+the port while a fresh one silently fails EADDRINUSE — kill by pid
+(ss -tlnp) and re-curl before trusting a "still broken" result.
+
+Framework artifacts documented (recon/t83), not fixable through
+sanctioned APIs: initial-scale=1 vs the reference's hand-set 1.0 (2
+chars; Astro itself serves 1 on content-preview); the print/onload
+deferred-load trick is not emittable through RSC (plain stylesheet +
+noscript, same URL/order); crossorigin serializes as
+crossorigin="anonymous"; React hoists the stylesheet but NOT the
+noscript (body-level fallback, inert for JS clients, applied by no-JS
+parsers); the not-found boundary renders client-side only, so its
+chrome links never reach served bytes — deliberately rendered nowhere,
+because ANY stylesheet in that Flight payload makes React pre-emit a
+font preload into every notFound()-capable page's head, including the
+blog family's deliberately font-free heads (found wiring the 404);
+alternate links serialize with the camelCase hrefLang attribute;
+content-preview inherits the root's webp icon (the reference's bare
+page links none).
+
+Verification: 48 new tests (astro-chrome.test.ts: the font URL's
+byte-faithfulness, both components' exact link shapes and order, the
+root layout's Astro-default pins incl. comment-scoped absence checks,
+the workspace shell's full chrome incl. the null-canonical pin, the
+eleven family layouts + the blog split, the locale catch-all split via
+isLocaleBlogFamilyDef's full matrix, the 404's hreflang key order, the
+CSS font vars, the icon file sizes). **1023 tests / 53 suites green**
+(was 975/52), lint clean, tsc 26 = baseline. The standalone build
+verified on served HTML (recon/t83/verify-served.py): **473/473
+checks** — 16 marketing surfaces, 8 blog surfaces (zero font links
+document-wide), 5 workspace surfaces, the 404 head (13 hrefLang links,
+canonical, cards, no chrome links), the bare content-preview head, the
+icon assets at their well-known paths, and the home card's image:alt.
+Production: Vercel remained account-blocked (the t80/t81/t82 state);
+deploy attempted after push — outcome in recon/t83/notes.md.

@@ -1,28 +1,35 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
-
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
+/**
+ * Root layout — the reference's Astro default chrome (t83).
+ *
+ * Recon 2026-11-01 (recon/t83): the reference serves two head shapes.
+ * Its marketing/content surface (every non-blog, non-workspace page)
+ * ships a plain `width=device-width, initial-scale=1.0` viewport, a
+ * single webp favicon link, NO keywords/theme-color/notranslate/
+ * manifest/apple-touch-icon, and its fonts as Google-Fonts stylesheet
+ * links. Its /workspace SPA shell ships the locked viewport +
+ * theme-color + notranslate + ico/png icon set + manifest + the
+ * file.hyper3d.com hints — the shape this root layout used to serve
+ * app-wide (it was built from the t53 workspace recon, before the
+ * marketing tree existed).
+ *
+ * t83 splits the shapes: THIS layout is the marketing default (plain
+ * viewport, the webp icon, no font mechanism of its own); the font
+ * links + CDN hints are rendered per-surface (family layouts, the home
+ * page, the 404, the locale catch-all) because the blog family
+ * deliberately ships neither; the workspace layout restores the shell's
+ * own chrome for /workspace/*.
+ *
+ * Fonts: next/font is gone — the pages that load fonts at all load the
+ * reference's own Google Fonts stylesheet (the same hot-link stance as
+ * the og:image registry), and the CSS variables (--font-inter/
+ * --font-poppins/--font-plex-mono) are defined in globals.css against
+ * the CDN families. Blog pages, like the reference's own blog template,
+ * render in the fallback stack (no @font-face ships anywhere).
+ */
 
 export const metadata: Metadata = {
   // NOTE (t53 audit): the <title> stays byte-identical to the reference's
@@ -31,18 +38,6 @@ export const metadata: Metadata = {
     "Rodin AI - Free AI 3D Model Generator For Everyone | Instantly Create Stunning 3D Assets, 3D Models, and 3D Objects - Create 3D Designs Powered by AI | Hyper3D",
   description:
     "Rodin generates high-quality 3D assets that are nearly production-ready for supported workflows. Turn text prompts or images into detailed 3D assets in seconds — no 3D experience required.",
-  keywords: [
-    "AI 3D model generator",
-    "text to 3D",
-    "image to 3D",
-    "Rodin",
-    "Hyper3D",
-    "PBR texturing",
-    "GLB export",
-  ],
-  // Link-preview card — matches the reference's served card exactly (t53 G1):
-  // og:title "Hyper3D" (helmet-set on the reference), twitter large-image card
-  // with @DeemosTech attribution and the reference's own og-banner URL.
   // t67: og:url / og:image / og:image:alt / og:site_name added — the
   // reference homepage ships the full card; metadataBase makes every
   // per-page canonical/og:url resolve against the production origin.
@@ -73,31 +68,27 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://hyper3d-clone.vercel.app",
   },
-  // Icon set — self-hosted copies of the reference's files (t53 G2).
+  // t83: the reference's marketing head links ONE icon — the webp
+  // favicon (self-hosted copy of the reference's own 620-byte file).
+  // The ico/png/apple/manifest set belongs to the workspace shell's
+  // head; the files stay in public/ at their well-known paths, where
+  // the reference serves them too. Keywords/theme-color/notranslate/
+  // manifest are gone: the reference's Astro surface serves none of
+  // them (recon/t83 census, 30+ pages).
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png" }],
-  },
-  manifest: "/manifest.json",
-  other: {
-    google: "notranslate",
+    icon: [{ url: "/favicon-32x32.webp", type: "image/webp", sizes: "32x32" }],
   },
 };
 
-// Viewport — mirrors the reference's locked viewport (t53 G5):
-// no pinch-zoom, notch-safe inset. Deliberate reference behavior.
+// t83: the reference's marketing viewport — plain, unlocked (the locked
+// viewport is the workspace shell's own; the Astro pages ship only
+// width + initial-scale). Next renders initial-scale=1 where the
+// reference hand-sets 1.0 — a two-character framework artifact,
+// documented in recon/t83 (Astro itself serves `1` on its own default
+// pages, e.g. /content-preview).
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
-  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -107,15 +98,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      {/* t78: the reference preconnects (and dns-prefetches) the
-          storage.deemos.dev CDN on every page — this clone now hotlinks
-          4,014 og:images from that same host, so its own head carries
-          the same two hints. React hoists both links into <head>. */}
-      <link rel="preconnect" href="https://storage.deemos.dev" />
-      <link rel="dns-prefetch" href="https://storage.deemos.dev" />
-      <body
-        className={`${poppins.variable} ${inter.variable} ${plexMono.variable} antialiased bg-background text-foreground`}
-      >
+      {/* The per-surface chrome (storage/font hints) renders from the
+          family layouts and page components — see astro-chrome.tsx —
+          because the blog family and the workspace ship their own. */}
+      <body className="antialiased bg-background text-foreground">
         {children}
         <Toaster
           theme="dark"

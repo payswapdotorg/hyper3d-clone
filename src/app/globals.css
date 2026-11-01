@@ -60,6 +60,19 @@
 
 :root {
   --radius: 0.75rem;
+  /* t83: the font families, previously injected by next/font's body
+     classes. The pages that load fonts at all load the reference's own
+     Google Fonts stylesheet (astro-chrome.tsx) — these vars now name
+     the CDN families with the fallback stacks the reference's own CSS
+     ships (its --font-body/--font-display are Poppins + the Helvetica
+     stack; blog pages load no fonts and render in the stack, exactly
+     like the reference's own blog template). */
+  --font-inter: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-poppins: "Poppins", "Helvetica Neue", Helvetica, Arial, Roboto,
+    "Segoe UI", Oxygen, Ubuntu, Cantarell, ui-sans-serif, -apple-system,
+    system-ui, sans-serif;
+  --font-plex-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --background: #0f0f12;
   --foreground: #ffffff;
   --card: #1e1b24;

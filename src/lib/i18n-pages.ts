@@ -266,6 +266,20 @@ function familyPath(family: LocaleFamilyKey): string {
 
 /* ---------------------------------------------------------------- resolve */
 
+/** t83: is this def part of the BLOG family — the one locale subtree whose
+ * reference pages ship NO Google-Fonts links (probed on the locale blog
+ * index, pagination, category hubs and articles; recon/t83)? The font
+ * quartet renders on every other localized page; the blog defs render the
+ * storage hint pair only, like the reference's own blog template. */
+export function isLocaleBlogFamilyDef(def: LocalePageDef): boolean {
+  return (
+    def.kind === "blog-category" ||
+    def.kind === "blog-pagination" ||
+    (def.kind === "hub" && def.family === "blog") ||
+    (def.kind === "article" && def.family === "blog")
+  );
+}
+
 /** Resolve a localized path ('' = the locale home) to its page def, or null
  * when the reference serves no such route (→ themed 404). The known set
  * is the t70 SERVING set — the sitemap set plus the unsitemapped deep

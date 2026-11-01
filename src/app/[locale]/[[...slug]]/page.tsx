@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { LocalePageView } from "@/components/hyper3d/i18n/locale-page";
+import { AstroChrome, AstroHints } from "@/components/hyper3d/astro-chrome";
 import { hreflangFor, isLocale } from "@/lib/i18n";
 import { LOCALE_MESSAGES, fillCount } from "@/lib/i18n-messages";
-import { localeStaticParams, resolveLocalePage } from "@/lib/i18n-pages";
+import {
+  isLocaleBlogFamilyDef,
+  localeStaticParams,
+  resolveLocalePage,
+} from "@/lib/i18n-pages";
 import { PROMPT_CENSUS, PROMPT_PAGE_COUNT } from "@/lib/prompts-registry";
 import { referenceDescription } from "@/lib/reference-descriptions";
 import { referenceCardTitle, referenceTitle } from "@/lib/reference-titles";
@@ -281,5 +286,15 @@ export default async function LocaleRoute({
   const path = (slug ?? []).join("/");
   const def = resolveLocalePage(locale, path);
   if (!def) notFound();
-  return <LocalePageView locale={locale} path={path} def={def} />;
+  // t83: the reference's locale pages ship the marketing chrome — the
+  // storage hint pair everywhere, the font quartet everywhere EXCEPT
+  // the blog family (probed per class, recon/t83). Rendered here rather
+  // than in a layout because the split runs through this one catch-all.
+  const chrome = isLocaleBlogFamilyDef(def) ? <AstroHints /> : <AstroChrome />;
+  return (
+    <>
+      {chrome}
+      <LocalePageView locale={locale} path={path} def={def} />
+    </>
+  );
 }
