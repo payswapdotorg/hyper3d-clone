@@ -107,6 +107,20 @@ export interface LocaleMessages {
   meta: {
     homeTitle: string;
   };
+  blogIndex: {
+    /** Sidebar "Categories" heading. */
+    categories: string;
+    /** Sidebar subscribe-block title. */
+    subscribeTitle: string;
+    /** Honest subscribe body — no backend, RSS is the real feed. */
+    subscribeBody: string;
+    /** RSS link label. */
+    rssLabel: string;
+    /** "All Articles" section heading. */
+    allArticles: string;
+    /** The clone's full-catalog honesty layer heading. */
+    fullCatalog: string;
+  };
 }
 
 /** `{count}` substitution for hub intros. */
@@ -194,6 +208,15 @@ const zh: LocaleMessages = {
   meta: {
     homeTitle: "Hyper3D — 中文版",
   },
+  blogIndex: {
+    categories: "分类",
+    subscribeTitle: "订阅更新",
+    subscribeBody:
+      "本克隆站没有邮件订阅后端——这里的订阅表单只会是死按钮。诚实的订阅方式是 RSS：每篇文章发布的当下就会进入该源。",
+    rssLabel: "通过 RSS 订阅",
+    allArticles: "全部文章",
+    fullCatalog: "完整目录",
+  },
 };
 
 const de: LocaleMessages = {
@@ -271,6 +294,15 @@ const de: LocaleMessages = {
   },
   meta: {
     homeTitle: "Hyper3D — Deutsche Ausgabe",
+  },
+  blogIndex: {
+    categories: "Kategorien",
+    subscribeTitle: "Updates abonnieren",
+    subscribeBody:
+      "In diesem Klon läuft kein Newsletter-Backend — ein Formular hier wäre ein toter Knopf. Das ehrliche Abo ist der RSS-Feed: Jeder geschriebene Artikel landet dort, sobald er erscheint.",
+    rssLabel: "Per RSS abonnieren",
+    allArticles: "Alle Artikel",
+    fullCatalog: "Der komplette Katalog",
   },
 };
 
@@ -350,6 +382,15 @@ const ja: LocaleMessages = {
   meta: {
     homeTitle: "Hyper3D — 日本語版",
   },
+  blogIndex: {
+    categories: "カテゴリ",
+    subscribeTitle: "更新を購読",
+    subscribeBody:
+      "このクローンにはニュースレターのバックエンドがありません——ここにあるフォームは動かないボタンにしかなりません。誠実な購読方法は RSS フィードです。記事が公開された瞬間に届きます。",
+    rssLabel: "RSS で購読",
+    allArticles: "すべての記事",
+    fullCatalog: "完全なカタログ",
+  },
 };
 
 const ko: LocaleMessages = {
@@ -427,6 +468,15 @@ const ko: LocaleMessages = {
   },
   meta: {
     homeTitle: "Hyper3D — 한국어판",
+  },
+  blogIndex: {
+    categories: "카테고리",
+    subscribeTitle: "업데이트 구독",
+    subscribeBody:
+      "이 클론에는 뉴스레터 백엔드가 없습니다 — 여기의 구독 폼은 동작하지 않는 버튼일 뿐입니다. 정직한 구독 방법은 RSS 피드입니다. 글이 게시되는 즉시 전달됩니다.",
+    rssLabel: "RSS로 구독",
+    allArticles: "전체 글",
+    fullCatalog: "전체 카탈로그",
   },
 };
 
@@ -506,6 +556,15 @@ const ru: LocaleMessages = {
   meta: {
     homeTitle: "Hyper3D — Русская версия",
   },
+  blogIndex: {
+    categories: "Категории",
+    subscribeTitle: "Подписка на обновления",
+    subscribeBody:
+      "В этом клоне нет сервера рассылки — форма подписки здесь была бы мёртвой кнопкой. Честная подписка — RSS-фид: каждая новая статья попадает в него в момент публикации.",
+    rssLabel: "Подписаться через RSS",
+    allArticles: "Все статьи",
+    fullCatalog: "Полный каталог",
+  },
 };
 
 const pt: LocaleMessages = {
@@ -583,6 +642,15 @@ const pt: LocaleMessages = {
   },
   meta: {
     homeTitle: "Hyper3D — Edição em português",
+  },
+  blogIndex: {
+    categories: "Categorias",
+    subscribeTitle: "Inscreva-se nas atualizações",
+    subscribeBody:
+      "Este clone não tem um backend de newsletter — um formulário aqui seria um botão morto. A inscrição honesta é o feed RSS: todo artigo escrito entra nele no momento em que é publicado.",
+    rssLabel: "Inscrever-se via RSS",
+    allArticles: "Todos os artigos",
+    fullCatalog: "O catálogo completo",
   },
 };
 
@@ -662,6 +730,15 @@ const fr: LocaleMessages = {
   meta: {
     homeTitle: "Hyper3D — Édition française",
   },
+  blogIndex: {
+    categories: "Catégories",
+    subscribeTitle: "S'abonner aux mises à jour",
+    subscribeBody:
+      "Ce clone n'a pas de backend de newsletter — un formulaire ici serait un bouton mort. L'abonnement honnête, c'est le flux RSS : chaque article publié y arrive à l'instant même.",
+    rssLabel: "S'abonner via RSS",
+    allArticles: "Tous les articles",
+    fullCatalog: "Le catalogue complet",
+  },
 };
 
 const es: LocaleMessages = {
@@ -739,6 +816,15 @@ const es: LocaleMessages = {
   },
   meta: {
     homeTitle: "Hyper3D — Edición en español",
+  },
+  blogIndex: {
+    categories: "Categorías",
+    subscribeTitle: "Suscríbete a las novedades",
+    subscribeBody:
+      "Este clon no tiene un backend de boletín — un formulario aquí sería un botón muerto. La suscripción honesta es el feed RSS: cada artículo escrito llega en el momento en que se publica.",
+    rssLabel: "Suscribirse por RSS",
+    allArticles: "Todos los artículos",
+    fullCatalog: "El catálogo completo",
   },
 };
 
@@ -818,6 +904,15 @@ const ar: LocaleMessages = {
   meta: {
     homeTitle: "Hyper3D — النسخة العربية",
   },
+  blogIndex: {
+    categories: "التصنيفات",
+    subscribeTitle: "اشترك في التحديثات",
+    subscribeBody:
+      "لا يوجد خادم نشرة بريدية في هذه النسخة المطابقة — أي نموذج اشتراك هنا سيكون زرًّا معطِّلًا. الاشتراك الصادق هو خلاصة RSS: كل مقال مكتوب يصل إليها لحظة نشره.",
+    rssLabel: "اشترك عبر RSS",
+    allArticles: "كل المقالات",
+    fullCatalog: "الكتالوج الكامل",
+  },
 };
 
 const tr: LocaleMessages = {
@@ -896,6 +991,15 @@ const tr: LocaleMessages = {
   meta: {
     homeTitle: "Hyper3D — Türkçe sürüm",
   },
+  blogIndex: {
+    categories: "Kategoriler",
+    subscribeTitle: "Güncellemelere abone ol",
+    subscribeBody:
+      "Bu klonun bir bülten arka ucu yok — buradaki bir form ölü bir düğme olur. Dürüst abonelik RSS akışıdır: yazılan her makale yayımlandığı anda akışa düşer.",
+    rssLabel: "RSS ile abone ol",
+    allArticles: "Tüm yazılar",
+    fullCatalog: "Tam katalog",
+  },
 };
 
 const it: LocaleMessages = {
@@ -973,6 +1077,15 @@ const it: LocaleMessages = {
   },
   meta: {
     homeTitle: "Hyper3D — Edizione italiana",
+  },
+  blogIndex: {
+    categories: "Categorie",
+    subscribeTitle: "Iscriviti agli aggiornamenti",
+    subscribeBody:
+      "Questo clone non ha un backend di newsletter — un modulo qui sarebbe un pulsante morto. L'iscrizione onesta è il feed RSS: ogni articolo scritto entra nel feed nel momento in cui viene pubblicato.",
+    rssLabel: "Iscriviti via RSS",
+    allArticles: "Tutti gli articoli",
+    fullCatalog: "Il catalogo completo",
   },
 };
 

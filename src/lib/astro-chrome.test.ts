@@ -313,9 +313,9 @@ describe("t83 the locale catch-all splits chrome by family (probed per class)", 
     );
   });
 
-  it("blog-family defs resolve true (hub, article, category, pagination)", () => {
+  it("blog-family defs resolve true (index, article, category, pagination)", () => {
     expect(
-      isLocaleBlogFamilyDef({ kind: "hub", family: "blog", enHref: "/blog", count: 1, links: [] }),
+      isLocaleBlogFamilyDef({ kind: "blog-index", featured: [], sections: [], allArticles: [], count: 1 }),
     ).toBe(true);
     expect(
       isLocaleBlogFamilyDef({ kind: "article", family: "blog", enHref: "/blog/x", title: "x", status: { kind: "blog", family: "written" } }),

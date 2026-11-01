@@ -2370,3 +2370,77 @@ canonical, cards, no chrome links), the bare content-preview head, the
 icon assets at their well-known paths, and the home card's image:alt.
 Production: Vercel remained account-blocked (the t80/t81/t82 state);
 deploy attempted after push — outcome in recon/t83/notes.md.
+
+## 64. t84 — the blog index's reference anatomy and the tools tree's compact converter aliases
+
+The t84 gap analysis opened with a 43-route text-density probe
+(reference vs the local standalone build) that found two gap classes:
+the marketing surfaces run 0.31-0.52 of the reference's visible word
+count — worst and largest on /blog at 0.33 (+1795 words) — and the
+route-class probe found the reference 301-redirects compact converter
+aliases (/tools/stl-to-obj → /tools/converter/stl/to/obj) this clone
+404'd. The og:image-mirror candidate from the t83 handoff was rejected
+by recon first: the reference itself hotlinks storage.deemos.dev for
+essentially all card/hero/og imagery (only logo + a few chrome icons
+are same-origin /_astro/ hashes; the t83 storage preconnect exists
+precisely for this), so hotlinking the same CDN is the faithful shape
+and mirroring 796 images into public/ would change served URLs, add
+repo weight, and reduce fidelity — documented and dropped.
+
+The blog index rebuild gives /blog (and all eleven /{loc}/blog
+indexes) the reference's own anatomy, computed from the registries
+(blog-index-anatomy.ts): four featured h2 cards (the clone's four
+newest written articles — the reference's featured block is its own
+3-4 newest news posts), the Categories sidebar (12 links) plus the
+Subscribe To Updates block, the twelve per-category h2 sections in the
+registry's reference order (News … Animation) with three h3 cards each
+(prompt-guide honestly two — the census for that topic is two routes,
+never padded), and the twelve-row All Articles cap (the reference
+leaves its twenty /blog/page/{n} routes sitemap-only, unlinked from the
+index; this clone keeps its full-catalog pagination section below as
+its own honesty layer — the catalog IS the honesty mechanism). Cards
+carry the t77 og-registry images with the og-banner fallback; written
+cards show their own description snippets, not-written cards the t76
+reference-head snippet or the honest family label — never invented
+prose. The reference's subscribe is a real email form wired to a
+backend this clone does not have: the block renders with the same
+heading and copy shape, says there is no newsletter backend, and links
+the real RSS feed — the t81 vote-card rule, applied in all eleven
+locales with hand-written translations (i18n-messages.ts blogIndex).
+The locale indexes (new blog-index def kind replacing the capped hub)
+render localized section names from the t79 tables, locale-suffixed
+card links carrying the EN titles (the t79 convention — the reference's
+localized titles are its own marketing copy, not reproduced), the
+reference's locale trio shape (3 featured, never EN's 4), and honest
+census coverage of 1-3 cards per topic. Two bugs found and fixed on
+the way: the locale sections initially filtered on entry.category,
+which written rows do not carry (their category lives on
+entry.article.category — the effective-category rule), and the locale
+index title was serving the generic hub em-dash where the reference
+pins the pipe form (博客 | Hyper3D — now pinned, probed zh + de).
+
+The alias class: probed exhaustively — all 178 sitemap pairs checked
+one by one — the reference serves 301 on exactly 167 (Location
+byte-pinned per pair) and 404s the other eleven (blend-dae/glb/gltf/
+usdz, off-glb/stl, x-fbx/glb/gltf/obj/stl) even though those canonical
+pages are live 200s: a hand-maintained redirect table with gaps, and
+this clone mirrors the gaps honestly (no rows where the reference
+404s). The rows come from the registry (REFERENCE_ALIAS_GAPS +
+REFERENCE_CONVERTER_ALIASES) into next.config redirects, alongside the
+one cross-surface alias /tools/image-to-3d → /features/image-to-3d
+(the only one that exists; text-to-3d/worldgen/mcp/api/video-to-3d/
+chatavatar/omnicraft/texture/pbr all 404 on the reference, as do all
+locale-prefixed alias forms).
+
+Verified: 1043/54 suites green (20 new tests: the anatomy counts and
+orders, honest bodies, no-form rule, locale defs, the alias matrix,
+the next.config row set at 177 with every alias at statusCode 301),
+lint clean, tsc 26 = baseline; standalone build verified on served
+HTML (recon/t84/verify-served.py, 108/108: the EN anatomy incl. the
+12-row cap preceding the full-catalog layer, zh + de locale indexes
+with pipe titles and localized sections, ten alias 301s with exact
+Locations, the cross-surface alias, six gap routes 404 with live
+canonicals, and the pagination/category/RSS regressions); /blog
+visible text moved 871 → 1803 words (0.33 → 0.68 of the reference).
+Vercel remained account-blocked (the t80-t83 state); deploy attempted
+after push — outcome in recon/t84/notes.md.

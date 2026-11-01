@@ -4,16 +4,23 @@ import { ChevronLeft, ChevronRight, Rss } from "lucide-react";
 import type { BlogArticleDef, BlogCategory, BlogEntry } from "@/lib/blog-types";
 import { BLOG_CENSUS, BLOG_PAGE_COUNT, BLOG_PAGE_SIZE } from "@/lib/blog-registry";
 import { BLOG_CATEGORIES, findBlogCategory } from "@/lib/blog";
+import {
+  blogIndexAllArticles,
+  blogIndexFeatured,
+  blogIndexSections,
+} from "@/lib/blog-index-anatomy";
 import { cn } from "@/lib/utils";
 import { blogIndexJsonLd, blogPageJsonLd, blogCategoryJsonLd } from "@/lib/schema-org";
 import { JsonLd } from "@/components/hyper3d/json-ld";
 
 /**
  * Renderers for the blog front page, the twenty pagination pages, and the
- * twelve category hubs. The index mirrors the reference's anatomy (category
- * hub strip, featured cards, "All Articles" list with pagination) with the
- * clone's honesty contract on top: the census chips and the per-row status
- * dots say which routes carry articles and which are honestly marked.
+ * twelve category hubs. t84 rebuilt the index to the reference's own
+ * anatomy (recon/t84/notes.md): 4 featured h2 cards, the Categories +
+ * Subscribe sidebar, the 12 per-category h2 sections with 3 h3 cards
+ * each, and the 12-row All Articles cap — with the clone's honesty
+ * contract on top: the census chips, the per-row status dots, and the
+ * full-catalog pagination section the reference leaves sitemap-only.
  */
 
 function FamilyDot({ family }: { family: BlogEntry["family"] }) {
@@ -55,6 +62,63 @@ function ArticleCard({ def }: { def: BlogArticleDef }) {
       </h3>
       <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-white/50">{def.description}</p>
       <p className="mt-auto pt-3 text-[10px] font-bold uppercase tracking-wider text-white/30">{def.date}</p>
+    </Link>
+  );
+}
+
+/** A t84 index card — image + eyebrow + title + honest body + date. */
+function IndexCard({
+  card,
+  heading,
+}: {
+  card: ReturnType<typeof blogIndexFeatured>[number];
+  heading: "h2" | "h3";
+}) {
+  const H = heading;
+  return (
+    <Link
+      href={card.href}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] transition-colors hover:border-violet-400/30"
+    >
+      {/* CDN-hosted reference image, deliberately hotlinked per the t77
+          philosophy — the same URL the destination's own head serves. */}
+      <img
+        src={card.image}
+        alt={card.alt}
+        width={1200}
+        height={675}
+        loading="lazy"
+        decoding="async"
+        className="aspect-[16/9] w-full object-cover"
+      />
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-center gap-2">
+          <FamilyDot family={card.family} />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-white/35">
+            {card.category}
+          </span>
+        </div>
+        <H className="mt-2 text-sm font-black leading-snug tracking-tight text-white/90 transition-colors group-hover:text-violet-200">
+          {card.title}
+        </H>
+        <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-white/50">{card.description}</p>
+        {card.date ? (
+          <p className="mt-auto pt-3 text-[10px] font-bold uppercase tracking-wider text-white/30">{card.date}</p>
+        ) : (
+          <span
+            className="mt-auto pt-3 text-[9px] font-bold uppercase tracking-wider text-white/25"
+            title={familyLabel(card.family)}
+          >
+            {card.family === "game-filler"
+              ? "game SEO"
+              : card.family === "core-filler"
+                ? "not written"
+                : card.family === "reference-news"
+                  ? "their news"
+                  : "off-scope"}
+          </span>
+        )}
+      </div>
     </Link>
   );
 }
@@ -180,16 +244,18 @@ function CensusChips() {
 
 /** The blog front page: /blog (= pagination page 1). */
 export function BlogIndexPage({
-  featured,
   pageEntries,
   page,
 }: {
-  featured: BlogArticleDef[];
   pageEntries: BlogEntry[];
   page: number;
 }) {
   // t67: CollectionPage + BreadcrumbList on the blog front page.
   const jsonLd = blogIndexJsonLd();
+  // t84: the reference's index anatomy, computed from the registries.
+  const featured = blogIndexFeatured();
+  const sections = blogIndexSections();
+  const allArticles = blogIndexAllArticles();
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white">
       {jsonLd.map((block, i) => (
@@ -216,53 +282,109 @@ export function BlogIndexPage({
           </div>
         </section>
 
-        {/* category hubs */}
-        <section className="mt-10">
-          <h2 className="text-lg font-black tracking-tight">Topics</h2>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-            {BLOG_CATEGORIES.map((cat) => (
+        {/* t84: the reference's two-column index body — main sections left,
+            Categories + Subscribe sidebar right (stacked on mobile). */}
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="min-w-0">
+            {/* featured — the reference's four h2 cards */}
+            <section aria-label="Featured articles">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {featured.map((card) => (
+                  <IndexCard key={card.href} card={card} heading="h2" />
+                ))}
+              </div>
+            </section>
+
+            {/* the twelve per-category sections, registry order */}
+            {sections.map((section) => (
+              <section key={section.category} className="mt-12">
+                <h2 className="text-lg font-black tracking-tight">
+                  <Link
+                    href={`/blog/category/${section.category}`}
+                    className="transition-colors hover:text-violet-200"
+                  >
+                    {section.name}
+                  </Link>
+                </h2>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {section.cards.map((card) => (
+                    <IndexCard key={card.href} card={card} heading="h3" />
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            {/* all articles — the reference's 12-row cap */}
+            <section id="all-articles" className="mt-12 scroll-mt-16">
+              <h2 className="text-lg font-black tracking-tight">All articles</h2>
+              <p className="mt-1 text-xs leading-relaxed text-white/40">
+                The reference caps this section at twelve links and leaves its pagination pages
+                sitemap-only. The twelve below are this catalog&apos;s newest; the full {BLOG_CENSUS.total}-route
+                census follows with its status dots.
+              </p>
+              <ul className="mt-4 divide-y divide-white/5">
+                {allArticles.map((entry) => (
+                  <CatalogRow key={entry.slug} entry={entry} />
+                ))}
+              </ul>
+            </section>
+
+            {/* the clone's honesty layer — the full catalog, paginated */}
+            <section id="full-catalog" className="mt-12 scroll-mt-16">
+              <h2 className="text-lg font-black tracking-tight">The full catalog</h2>
+              <p className="mt-1 text-xs leading-relaxed text-white/40">
+                Every route, {BLOG_PAGE_SIZE} per page — written articles first (newest first), then the
+                reference&apos;s news, the unwritten 3D topics, and the game-guide farm. Status dots say which is
+                which.
+              </p>
+              <ul className="mt-4 divide-y divide-white/5">
+                {pageEntries.map((entry) => (
+                  <CatalogRow key={entry.slug} entry={entry} />
+                ))}
+              </ul>
+              <Pagination page={page} />
+            </section>
+          </div>
+
+          {/* the sidebar — Categories + Subscribe To Updates, the reference's
+              own two blocks. The subscribe form is a backend feature this
+              clone does not have, so the block says so and links the real
+              RSS feed instead of a dead input (the t81 vote-card rule). */}
+          <aside className="lg:sticky lg:top-6 lg:self-start">
+            <nav aria-label="Blog categories">
+              <h3 className="text-sm font-black uppercase tracking-wider text-white/60">Categories</h3>
+              <ul className="mt-3 space-y-1">
+                {BLOG_CATEGORIES.map((cat) => (
+                  <li key={cat.slug}>
+                    <Link
+                      href={`/blog/category/${cat.slug}`}
+                      className="flex min-h-9 items-center rounded-lg px-2.5 text-sm font-bold text-white/65 transition-colors hover:bg-white/[0.04] hover:text-white"
+                    >
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+              <h3 className="text-sm font-black uppercase tracking-wider text-white/60">
+                Subscribe To Updates
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-white/45">
+                No newsletter backend runs in this clone — a subscribe form here would be a dead
+                button. The honest subscribe is the RSS feed: it carries every written article the
+                moment it lands.
+              </p>
               <Link
-                key={cat.slug}
-                href={`/blog/category/${cat.slug}`}
-                className="rounded-xl border border-white/10 bg-white/[0.02] p-3 transition-colors hover:border-violet-400/35 hover:bg-white/[0.04]"
+                href="/blog/rss.xml"
+                className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] px-3 text-xs font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
               >
-                <p className="text-xs font-black tracking-tight text-white/85">{cat.name}</p>
-                <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-white/40">{cat.blurb}</p>
+                <Rss className="size-3.5" aria-hidden="true" />
+                Subscribe via RSS
               </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* featured written */}
-        <section className="mt-12">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-black tracking-tight">Latest articles</h2>
-            <Link href="/blog/page/2" className="text-xs font-bold text-violet-300 hover:text-violet-200">
-              View all →
-            </Link>
-          </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((def) => (
-              <ArticleCard key={def.slug} def={def} />
-            ))}
-          </div>
-        </section>
-
-        {/* all articles (paginated) */}
-        <section id="all-articles" className="mt-12 scroll-mt-16">
-          <h2 className="text-lg font-black tracking-tight">All articles</h2>
-          <p className="mt-1 text-xs leading-relaxed text-white/40">
-            The full catalog, {BLOG_PAGE_SIZE} per page — written articles first (newest first), then the
-            reference&apos;s news, the unwritten 3D topics, and the game-guide farm. Status dots say which is
-            which.
-          </p>
-          <ul className="mt-4 divide-y divide-white/5">
-            {pageEntries.map((entry) => (
-              <CatalogRow key={entry.slug} entry={entry} />
-            ))}
-          </ul>
-          <Pagination page={page} />
-        </section>
+            </section>
+          </aside>
+        </div>
       </main>
 
       <footer className="border-t border-white/10 bg-[#17181c]/70 px-4 py-3 text-center text-[11px] leading-relaxed text-white/35">

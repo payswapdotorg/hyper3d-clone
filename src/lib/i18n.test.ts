@@ -363,8 +363,11 @@ describe("i18n resolver — every localized route resolves honestly", () => {
   });
 
   it("capped the hub card lists (big families stay count + EN link)", () => {
+    // t84: /zh/blog is no longer the capped hub — it is the full
+    // blog-index def (featured 3 + 12 sections + All Articles 12), pinned
+    // in blog-index-anatomy.test.ts. The converter hub keeps its cap.
     const blog = resolveLocalePage("zh", "blog");
-    expect(blog && blog.kind === "hub" ? blog.links.length : -1).toBe(0);
+    expect(blog?.kind).toBe("blog-index");
     const converter = resolveLocalePage("zh", "tools/converter");
     expect(converter && converter.kind === "hub" ? converter.links.length : -1).toBe(0);
     const features = resolveLocalePage("zh", "features");

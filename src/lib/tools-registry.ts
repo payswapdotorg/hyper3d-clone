@@ -144,6 +144,28 @@ export const CONVERTER_PAIR_ROUTES: string[] = REFERENCE_CONVERTER_PAIRS.map(
   ([from, to]) => `/tools/converter/${from}/to/${to}`,
 );
 
+/**
+ * t84: the reference's compact converter aliases — /tools/{from}-to-{to}
+ * 301 → /tools/converter/{from}/to/{to}. Probed exhaustively on the live
+ * reference (recon/t84/notes.md, 2026-11-01): 167 of the 178 sitemap
+ * pairs serve the 301; the remaining 11 404 there even though their
+ * canonical pages are live 200s — the reference's alias table is
+ * hand-maintained and has gaps. This clone mirrors the exact same 167
+ * (and 404s the same 11, by simply not having rows for them).
+ */
+export const REFERENCE_ALIAS_GAPS: readonly [string, string][] = [
+  ["blend", "dae"], ["blend", "glb"], ["blend", "gltf"], ["blend", "usdz"],
+  ["off", "glb"], ["off", "stl"],
+  ["x", "fbx"], ["x", "glb"], ["x", "gltf"], ["x", "obj"], ["x", "stl"],
+];
+
+/** The 167 alias → canonical redirect rows, pair order. */
+export const REFERENCE_CONVERTER_ALIASES: { source: string; destination: string }[] =
+  REFERENCE_CONVERTER_PAIRS.flatMap(([from, to]) => {
+    if (REFERENCE_ALIAS_GAPS.some(([f, t]) => f === from && t === to)) return [];
+    return [{ source: `/tools/${from}-to-${to}`, destination: `/tools/converter/${from}/to/${to}` }];
+  });
+
 /** The viewer tree's routes: index + 15 formats. */
 export const VIEWER_ROUTES: string[] = [
   "/tools/viewer",

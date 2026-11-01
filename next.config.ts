@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { REFERENCE_CONVERTER_ALIASES } from "./src/lib/tools-registry";
+
 const nextConfig: NextConfig = {
   output: "standalone",
   /* config options here */
@@ -55,6 +57,21 @@ const nextConfig: NextConfig = {
         destination: "/features/omnicraft/ai-hdri-generator",
         statusCode: 301,
       },
+      // t84: the reference's compact converter aliases — /tools/{from}-to-{to}
+      // 301 → the canonical /tools/converter/{from}/to/{to} pair page. The
+      // rows come from the registry (REFERENCE_CONVERTER_ALIASES, probed
+      // pair-by-pair on the live reference 2026-11-01, recon/t84/notes.md):
+      // 167 of the 178 sitemap pairs alias; the other 11 (blend-dae/glb/
+      // gltf/usdz, off-glb/stl, x-fbx/glb/gltf/obj/stl) 404 on the reference
+      // itself despite live canonical pages, so they get no rows here —
+      // this clone mirrors the reference's own gaps. Locale-prefixed aliases
+      // do not exist on the reference (probed) and get none here. Plus the
+      // one cross-surface alias: /tools/image-to-3d → /features/image-to-3d.
+      ...REFERENCE_CONVERTER_ALIASES.map((row) => ({
+        ...row,
+        statusCode: 301,
+      })),
+      { source: "/tools/image-to-3d", destination: "/features/image-to-3d", statusCode: 301 },
     ];
   },
 };

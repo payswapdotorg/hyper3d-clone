@@ -35,6 +35,7 @@ import { findUseCasePage } from "./use-cases";
 import { legalBySlug } from "./legal";
 import { SUBCATEGORY_PAGES } from "./subcategories";
 import {
+  BLOG_CATALOG,
   BLOG_CATEGORIES,
   BLOG_PAGE_COUNT,
   findBlogEntry,
@@ -113,6 +114,26 @@ export type LocalePageDef =
       category: BlogCategorySlug;
       /** The locale's articles in this topic, in catalog order. */
       links: LocaleLink[];
+    }
+  | {
+      /** t84: the localized blog index — /{loc}/blog. The reference serves
+       * the FULL index anatomy in every locale (probed zh/ja/de/ru): 3
+       * featured cards (the same trio everywhere — the newest posts with
+       * locale versions), the Categories + Subscribe sidebar with
+       * localized headings, the 12 per-category sections with 3 cards
+       * each, and the localized All Articles list capped at 12. Cards link
+       * the locale-suffixed routes and carry the EN titles (the t79
+       * convention — the locale titles are the reference's own marketing
+       * copy, not reproduced). */
+      kind: "blog-index";
+      /** 3 featured cards — the locale's newest catalog entries. */
+      featured: LocaleLink[];
+      /** The 12 sections, registry order, up to 3 cards each. */
+      sections: { category: BlogCategorySlug; links: LocaleLink[] }[];
+      /** The All Articles cap: the locale's first 12 catalog entries. */
+      allArticles: LocaleLink[];
+      /** Total localized blog routes (the hub intro count). */
+      count: number;
     }
   | {
       /** t79: a localized blog pagination page — /{loc}/blog/page/{n} (n in
@@ -275,7 +296,7 @@ export function isLocaleBlogFamilyDef(def: LocalePageDef): boolean {
   return (
     def.kind === "blog-category" ||
     def.kind === "blog-pagination" ||
-    (def.kind === "hub" && def.family === "blog") ||
+    def.kind === "blog-index" ||
     (def.kind === "article" && def.family === "blog")
   );
 }
@@ -685,12 +706,46 @@ function helpHub(locale: LocaleCode): LocalePageDef {
   return hubDef(locale, "help", "/help", links);
 }
 
+/** t84: the locale's own blog entries in CATALOG order (written newest
+ * first, then the census families) — the ordering the reference's locale
+ * index cards follow (its 3 featured are its newest posts with locale
+ * versions). Suffix repair mirrors localeBlogCategoryLinks. The category
+ * is the EFFECTIVE one: written rows file under their article's category,
+ * the census rows under the computed one (same rule as
+ * blogEntriesByCategory). */
+function localeBlogEntries(locale: LocaleCode): { slug: string; entry: NonNullable<ReturnType<typeof findBlogEntry>>; category: BlogCategory | undefined }[] {
+  const out: { slug: string; entry: NonNullable<ReturnType<typeof findBlogEntry>>; category: BlogCategory | undefined }[] = [];
+  for (const slug of LOCALE_BLOG_SLUGS[locale]) {
+    let base = blogBaseSlug(locale, slug);
+    if (!findBlogEntry(base) && base.endsWith("-zh")) base = base.slice(0, -3);
+    const entry = findBlogEntry(base);
+    if (!entry) continue;
+    out.push({ slug, entry, category: entry.family === "written" ? entry.article?.category : entry.category });
+  }
+  // sort into BLOG_CATALOG order
+  const rank = new Map(BLOG_CATALOG.map((e, i) => [e.slug, i]));
+  return out.sort((a, b) => (rank.get(a.entry.slug) ?? 0) - (rank.get(b.entry.slug) ?? 0));
+}
+
+/** t84: the localized blog index — the reference's full anatomy with the
+ * locale's own articles (EN titles, the t79 convention). */
 function blogHub(locale: LocaleCode): LocalePageDef {
+  const entries = localeBlogEntries(locale);
+  const link = (x: { slug: string; entry: NonNullable<ReturnType<typeof findBlogEntry>> }): LocaleLink => ({
+    href: `/${locale}/blog/${x.slug}`,
+    label: x.entry.title,
+  });
   return {
-    kind: "hub",
-    family: "blog",
-    enHref: "/blog",
+    kind: "blog-index",
+    featured: entries.slice(0, 3).map(link),
+    sections: BLOG_CATEGORIES.map((cat) => ({
+      category: cat.slug,
+      links: entries
+        .filter((x) => x.category === cat.slug)
+        .slice(0, 3)
+        .map(link),
+    })),
+    allArticles: entries.slice(0, 12).map(link),
     count: LOCALE_BLOG_SLUGS[locale].length + 1,
-    links: [], // 234-235 articles — over the card cap; the catalog lives on the EN blog
   };
 }

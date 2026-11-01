@@ -183,6 +183,19 @@ export function LocalePageView({
       </div>
     );
   }
+  if (def.kind === "blog-index") {
+    return (
+      <div
+        lang={locale}
+        dir={dir}
+        className="flex min-h-screen w-full flex-col bg-[#0f0f12] text-white"
+      >
+        <LocaleTopBar locale={locale} familyLabel={familyLabelFor(locale, "blog")} familyHref={`/${locale}/blog`} path={path} />
+        <BlogIndexLocaleView locale={locale} def={def} />
+        <LocaleFooter locale={locale} />
+      </div>
+    );
+  }
   if (def.kind === "blog-category") {
     return (
       <div
@@ -346,6 +359,148 @@ function HomeView({ locale }: { locale: LocaleCode }) {
           ))}
         </ul>
       </section>
+    </main>
+  );
+}
+
+/* ------------------------------------------------------ t84 blog index */
+
+/**
+ * /{loc}/blog — the localized blog index, rebuilt to the reference's own
+ * anatomy (t84, recon/t84/notes.md): 3 featured cards, the Categories +
+ * Subscribe sidebar, the 12 per-category sections with 3 cards each, and
+ * the localized All Articles list capped at 12. Cards link the
+ * locale-suffixed routes and carry the EN titles (the t79 convention —
+ * the reference's locale titles are its own marketing copy, not
+ * reproduced). The subscribe block says there is no backend and links the
+ * real RSS feed — never a dead form.
+ */
+function BlogIndexLocaleView({
+  locale,
+  def,
+}: {
+  locale: LocaleCode;
+  def: Extract<LocalePageDef, { kind: "blog-index" }>;
+}) {
+  const messages = LOCALE_MESSAGES[locale];
+  const blogIndex = messages.blogIndex;
+  return (
+    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
+      <section className="max-w-3xl border-b border-white/10 pb-8">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300/80">
+          {messages.home.eyebrow}
+        </p>
+        <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-4xl">
+          {messages.families.blog}
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+          {fillCount(messages.hub.intro, def.count)}
+        </p>
+        <div className="mt-6">
+          <Link
+            href="/blog"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-white/15 bg-white/[0.04] px-4 text-sm font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
+          >
+            {messages.hub.browse}
+          </Link>
+        </div>
+      </section>
+
+      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
+        <div className="min-w-0">
+          {/* featured — the reference's locale trio, h3 cards */}
+          <section aria-label={messages.families.blog}>
+            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {def.featured.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="flex min-h-11 items-center rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm font-bold text-white/75 transition-colors hover:border-violet-400/40 hover:bg-violet-400/[0.04] hover:text-violet-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* the twelve per-category sections, localized names */}
+          {def.sections.map((section) => (
+            <section key={section.category} className="mt-10">
+              <h3 className="text-lg font-black tracking-tight">
+                <Link
+                  href={`/${locale}/blog/category/${section.category}`}
+                  className="transition-colors hover:text-violet-200"
+                >
+                  {LOCALE_CATEGORY_NAMES[locale][section.category]}
+                </Link>
+              </h3>
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {section.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="flex min-h-11 items-center rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm font-bold text-white/75 transition-colors hover:border-violet-400/40 hover:bg-violet-400/[0.04] hover:text-violet-100"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+
+          {/* all articles — the 12-link cap */}
+          <section className="mt-10">
+            <h3 className="text-lg font-black tracking-tight">{blogIndex.allArticles}</h3>
+            <ul className="mt-4 divide-y divide-white/5">
+              {def.allArticles.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-bold text-white/65 transition-colors hover:bg-white/[0.04] hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        {/* sidebar — Categories + the honest subscribe */}
+        <aside className="lg:sticky lg:top-6 lg:self-start">
+          <nav aria-label={blogIndex.categories}>
+            <h4 className="text-sm font-black uppercase tracking-wider text-white/60">
+              {blogIndex.categories}
+            </h4>
+            <ul className="mt-3 space-y-1">
+              {def.sections.map((section) => (
+                <li key={section.category}>
+                  <Link
+                    href={`/${locale}/blog/category/${section.category}`}
+                    className="flex min-h-9 items-center rounded-lg px-2.5 text-sm font-bold text-white/65 transition-colors hover:bg-white/[0.04] hover:text-white"
+                  >
+                    {LOCALE_CATEGORY_NAMES[locale][section.category]}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+            <h4 className="text-sm font-black uppercase tracking-wider text-white/60">
+              {blogIndex.subscribeTitle}
+            </h4>
+            <p className="mt-2 text-xs leading-relaxed text-white/45">{blogIndex.subscribeBody}</p>
+            <Link
+              href="/blog/rss.xml"
+              className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] px-3 text-xs font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
+            >
+              {blogIndex.rssLabel}
+            </Link>
+          </section>
+        </aside>
+      </div>
     </main>
   );
 }

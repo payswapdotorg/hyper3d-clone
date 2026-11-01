@@ -152,6 +152,12 @@ function localizedTitle(locale: string, path: string): string | undefined {
     // reference's exact title on all 209 locale pagination pages.
     return `${LOCALE_BLOG_WORD[locale]} — ${LOCALE_PAGE_WORD[locale]} ${def.page} | Hyper3D`;
   }
+  if (def.kind === "blog-index") {
+    // t84: "{localized Blog} | Hyper3D" — the reference's locale blog
+    // index title (probed: 博客 | Hyper3D, Blog | Hyper3D), the pipe form,
+    // not the generic hub's em-dash.
+    return `${LOCALE_BLOG_WORD[locale]} | Hyper3D`;
+  }
   const familyLabel = messages.families[def.family];
   if (def.kind === "hub") return `${familyLabel} — Hyper3D`;
   return `${def.title} — ${familyLabel} — Hyper3D`;
