@@ -149,3 +149,14 @@ no empty shells). VLM layout check on the three new layout shapes
 
 Vercel deploy attempted post-push; outcome recorded in the commit
 notes (the t80-t84 account block persisted through this task).
+
+## Vercel deploy outcome (2026-11-02, post-push of 589f9e1)
+
+Attempted on both surviving tokens: vcp_1Ihx… → resource_creation_blocked
+("Your Team exceeded our fair use limits and has been blocked" — the same
+t80/t81/t82/t83/t84 state); vcp_3uMg… → forbidden / invalidToken. The live
+domain answers 402 account-wide. Latest production deployment remains
+dpl_E6YXAjhq (commit 0d56c9b, the t77-era deploy). Production
+re-verification impossible — the local standalone build +
+verify-served.py (49/49) is the verification of record for t85, as it was
+for t81-t84.
