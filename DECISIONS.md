@@ -2165,3 +2165,120 @@ Production: Vercel remained account-blocked (t80's note — 402
 account-wide, resource_creation_blocked on the surviving token); the
 local standalone build is the verification of record. Deploy attempted
 after push; outcome in recon/t81/notes.md.
+
+## 62. t82 — the workspace shell's uncensured route classes: root 301 aliases, referral/signup replaces, the OAuth guest surfaces, and the imageto3d entry
+
+The t81 notes left two known gaps: the /workspace app-surface routes
+and the og:image mirroring decision (the standing t77 exclusion). t82
+closed the app-surface gap. The reference's shared SPA shell (11,256
+bytes, byte-identical for EVERY /workspace path — the boundary probe
+hit 53 candidate paths, all 200) runs three path-sensitive boot
+scripts, and its client router adds more behavior; the recon
+(recon/t82, HTTP probes + 18 agent-browser walks) pinned the classes
+this clone 404'd or mis-redirected:
+
+- **Root aliases (server, no JS)**: `/register` and `/login` are
+  PERMANENT 301s into the workspace (the clone had a 302 and a 404);
+  `/imageto3d` 301s to `/features/image-to-3d`; `/imageto3d/{uuid}`
+  (the shell's own `[0-9a-f-]{36}` case-insensitive shape, enforced
+  server-side: invalid → 404, deep → 404) 301s to
+  `/workspace/imageto3d/{uuid}` — a Route Handler, because the
+  redirect table cannot shape-check a segment. `/r|a/{code…}` 301s to
+  `/workspace/r|a/{code…}` at ANY depth ≥1 segment — the reference's
+  own TWO-HOP referral shape; bare `/r` and `/a` 404 (the table uses
+  one-segment and `:code/:rest*` rows, never a zero-segment match).
+  `/signup` 404s on the reference (its shell script never serves
+  there — only `/workspace/signup` does), so the old t53/t68 redirect
+  row is gone.
+- **The pre-paint replaces**: `/workspace` serves 200 and replaces to
+  `/workspace/rodin` (the t68 302 retired — the reference serves 200 +
+  a client replace); `/workspace/signup` replaces to
+  `/workspace/register` preserving search and hash (the shell
+  script's exact-path rule — deeper signup/* renders the studio);
+  `/workspace/r|a/…` replaces to `/workspace/register` with
+  `referral_code` set from the second segment (URLSearchParams `set`
+  merge semantics, deeper segments ignored, hash preserved — the shell
+  script's own rules), bare `/workspace/r` landing on the plain
+  register URL (the router's own replace, probed).
+- **The unknown-path fallback**: `/workspace/{unknown}` serves the
+  DEFAULT STUDIO VIEW at the unknown URL (probed: foobar, settings,
+  logout, xyz/abc — studio view + studio title, URL unchanged). A
+  mandatory `[...rest]` catch-all renders it; the bare root is its own
+  page. The reference serves 200 for every /workspace path, so
+  nothing under it 404s at the HTTP layer — the "404" shapes
+  (non-uuid single rodin segments, invalid imageto3d segments) are
+  pre-paint replaces to the reference's own `/404` route, its exact
+  mechanism.
+- **The OAuth guest surfaces**: `/workspace/oauth/device` and
+  `/workspace/mcp/oauth/consent` render server-side as the probed
+  guest error states (device: "Unable to continue" / "This
+  authorization link is incomplete or invalid. Return to your terminal
+  and start a new login request." / "Only authorize devices and
+  clients you trust."; consent: "Authorization request is invalid" /
+  "Return to your client or terminal and start the connection again."
+  / "Only authorize clients you trust."), with NO `<title>`
+  (`title: null` suppresses the root layout's default — the reference
+  serves none), the shell's `<meta name="referrer"
+  content="no-referrer">` (emitted server-side) plus its
+  `__HYPER3D_PRIVATE_OAUTH__` flag script, the DOM-extracted card
+  design (bg #121317, 560px card, #202024/#36363a/32px radius, the
+  lucide circle-alert in a 40px #ee9188 circle), and the visit
+  markers.
+- **The imageto3d entry**: `/workspace/imageto3d` serves the
+  ChatAvatar view under its own short probed title ("ChatAvatar - AI
+  3D Facial Assets Generator | Hyper3D" — distinct from the long
+  /workspace/chatavatar title); `/workspace/imageto3d/{uuid}` serves
+  the studio view IN PLACE — the reference's own unknown-model
+  fallback (its client looks the uuid up; known models replace to
+  `/workspace/rodin/{uuid}` with an exactly-200-char
+  "AI {prompt} 3D Models | …" title) — plus the reference's own LCP
+  preload script VERBATIM (it stamps `data-initial-imageto3d-detail`
+  and preloads `file.hyper3d.com/{uuid}/preview/render_basic.jpg`;
+  the preload 404s silently for unknown models on the reference too).
+  `/workspace/rodin/{uuid}` keeps the studio view (the honest
+  unknown-uuid behavior — no model database); single non-uuid rodin
+  segments and non-canonical tab shapes (`/tab`, `/tab/a/b`,
+  `/xyz/abc`) became the probed replaces (→ `/404`, →
+  `/workspace/rodin`) instead of silently rendering the studio.
+
+Honest exclusions, documented: the model detail view itself (needs
+the reference's model database — the 200-char title formula is
+recorded in recon/t82/notes.md for the day a model surface exists);
+`/r` vs `/r/` (the reference 404s bare but 301s the trailing-slash
+form — a server quirk; Next's trailing-slash normalization makes
+`/r/` ≡ `/r`, divergence documented); the auth-gated app views
+(settings/history/profile render the studio fallback for guests on
+the reference — probed — which is what the catch-all serves); the
+splash chrome (t72 precedent); og:image mirroring (standing t77).
+
+**Build finding, recorded for the future**: the first implementation
+used ONE optional catch-all (`/workspace/[[...rest]]`) for the bare
+root and children. `next start` served everything correctly, but the
+STANDALONE server mis-resolved exactly two nested static routes
+(`/workspace/oauth/device`, `/workspace/imageto3d`) into the
+`[locale]` tree and ISR-cached the 404 for a year — a Next 16.1.3
+standalone bug with optional catch-alls over static siblings, pinned
+by a no-catch-all rebuild that served both 200. The fix: bare
+`/workspace/page.tsx` + mandatory `/workspace/[...rest]/page.tsx`
+(the omnicraft + `[tool]` sibling pattern). No `[[...rest]]` route
+remains under /workspace.
+
+Verification: 30 new tests (workspace-shell-routes.test.ts: uuid
+shape incl. the regex's own quirks, both classifiers' full matrices,
+the replace scripts' exact semantics, the OAuth copy, every new route
+file's wiring, the redirect table's presence AND absence pins) +
+updated pins in workspace-routes/workspace-tabs/marketing-home (the
+re-probed alias table). **975 tests / 52 suites green** (was 945/51),
+lint clean, tsc 26 = baseline. The standalone build verified on
+served HTML (recon/t82/verify-served.py): **84/84 checks** — the ten
+route classes end to end, including byte-level script pins (the
+signup replace with search+hash, the referral `set` merge, the /404
+and normalize one-liners, the verbatim imageto3d regex and CDN
+preload URL) and both OAuth views' complete probed copy with no
+`<title>` tags in their served heads.
+
+Production: Vercel remained account-blocked (the t80/t81 state — 402
+account-wide, resource_creation_blocked on the surviving token); the
+local standalone build + verify-served.py is the verification of
+record here too. Deploy attempted after push — outcome in
+recon/t82/notes.md.

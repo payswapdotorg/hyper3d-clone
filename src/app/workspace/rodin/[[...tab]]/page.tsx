@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 
 import { Hyper3DApp } from "@/components/hyper3d/app-shell";
+import { ShellRedirect } from "@/components/hyper3d/workspace/shell-redirect";
 import { WORKSPACE_MARKER_SCRIPT } from "@/lib/workspace-visit";
+import { WORKSPACE_TAB_STATIC_PARAMS, WORKSPACE_TAB_TITLES } from "@/lib/workspace-tabs";
 import {
-  WORKSPACE_TAB_STATIC_PARAMS,
-  WORKSPACE_TAB_TITLES,
-  tabFromSegments,
-} from "@/lib/workspace-tabs";
+  NOT_FOUND_REPLACE_SCRIPT,
+  RODIN_NORMALIZE_SCRIPT,
+  classifyRodinChild,
+} from "@/lib/workspace-shell-routes";
 
 /**
  * /workspace/rodin — the studio (t68) and, since t72, its tab routes:
@@ -16,10 +18,23 @@ import {
  * mounted Studio: generation state survives tab switches exactly like
  * the reference's SPA).
  *
- * Unknown /tab/* segments render the default studio view (the reference
- * serves its shell for any /workspace path and its client router falls
- * back to the default view + default title — probed
- * /workspace/rodin/tab/unknownxyz), so nothing 404s under the root.
+ * t82 refines the non-canonical shapes (all re-probed 2026-11-01):
+ *
+ *   /workspace/rodin/{uuid}          the studio view AT THIS URL — the
+ *                                    reference's own unknown-model fallback
+ *                                    (its client looks the uuid up; unknown
+ *                                    renders the studio, URL unchanged). The
+ *                                    clone has no model database, so this is
+ *                                    every uuid — the honest state.
+ *   /workspace/rodin/tab (bare) and  pre-paint replace → /workspace/rodin
+ *   any non-canonical /tab/* depth   (probed /tab and /tab/a/b both land
+ *                                    back on the studio root)
+ *   /workspace/rodin/{single
+ *    non-uuid segment}               pre-paint replace → /404 (the reference's
+ *                                    client 404s these — probed twice — via
+ *                                    its own /404 route)
+ *   /workspace/rodin/{x}/{y} with    pre-paint replace → /workspace/rodin
+ *    first segment ≠ tab
  *
  * The inline marker script reproduces the reference shell's pre-paint
  * <head> script verbatim-in-behavior: every studio visit stamps the
@@ -37,12 +52,24 @@ export async function generateMetadata({
   params: Promise<{ tab?: string[] }>;
 }): Promise<Metadata> {
   const { tab } = await params;
-  const resolved = tabFromSegments(tab);
-  // Byte-identical titles per tab (probed on the reference, 2026-10-31):
-  // the default shell title for the studio root, the two collection
-  // titles for the sub-tabs; unknown tabs fall back to the default view
-  // and the default title, mirroring the reference.
-  return { title: WORKSPACE_TAB_TITLES[resolved] };
+  const view = classifyRodinChild(tab);
+  // Byte-identical titles per class: the default shell title for the
+  // studio root and the uuid fallback (the reference's client sets it
+  // post-boot on both), the two collection titles for the sub-tabs.
+  // The transient replace shells carry no <title> — the reference's
+  // shell serves none pre-replace.
+  switch (view.kind) {
+    case "studio":
+      return { title: WORKSPACE_TAB_TITLES.asset };
+    case "model":
+      return { title: WORKSPACE_TAB_TITLES.asset };
+    case "tab":
+      return { title: WORKSPACE_TAB_TITLES[view.tab] };
+    default:
+      // the transient replace shells — no title (title: null suppresses
+      // the root layout's default <title>)
+      return { title: null };
+  }
 }
 
 export default async function WorkspaceRodinPage({
@@ -50,10 +77,18 @@ export default async function WorkspaceRodinPage({
 }: {
   params: Promise<{ tab?: string[] }>;
 }) {
-  // Consumed for its side effect only (title above); the Studio derives
-  // its tab from the pathname on the client, so unknown segments fall
-  // back to the asset view without a notFound().
-  await params;
+  const { tab } = await params;
+  const view = classifyRodinChild(tab);
+
+  if (view.kind === "normalize-root") {
+    return <ShellRedirect script={RODIN_NORMALIZE_SCRIPT} />;
+  }
+  if (view.kind === "not-found") {
+    return <ShellRedirect script={NOT_FOUND_REPLACE_SCRIPT} />;
+  }
+
+  // studio | model | tab — the mounted Studio in every rendering shape;
+  // the Studio derives its tab from the pathname on the client.
   return (
     <>
       {/* Inline, dependency-free, and deliberately pre-hydration — the

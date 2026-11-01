@@ -1,0 +1,442 @@
+[
+ {
+  "path": "/workspace",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/foobar",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/foobar",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/xyz/abc",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/xyz/abc",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/login",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/login",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/logout",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/logout",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/signup",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/signup",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/register",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/register",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/subscribe",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/subscribe",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/api-dashboard",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/api-dashboard",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/chatavatar",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/chatavatar",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/video",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/video",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/contact-us",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/contact-us",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/rodin",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/rodin",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/rodin/",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/rodin/",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/rodin/xyz",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/rodin/xyz",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/rodin/tab/story",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/rodin/tab/story",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/rodin/tab/asset",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/rodin/tab/asset",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/rodin/tab/a/b",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/rodin/tab/a/b",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/rodin/tab/",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/rodin/tab/",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/omnicraft",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/omnicraft",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/omnicraft/viewer",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/omnicraft/viewer",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/omnicraft/foobar",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/omnicraft/foobar",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/oauth",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/oauth",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/oauth/device",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/oauth/device",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/oauth/device/extra",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/oauth/device/extra",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/mcp",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/mcp",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/mcp/oauth",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/mcp/oauth",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/mcp/oauth/consent",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/mcp/oauth/consent",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/mcp/oauth/consent/extra",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/mcp/oauth/consent/extra",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/imageto3d",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/imageto3d",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/imageto3d/",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/imageto3d/",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/imageto3d/not-a-uuid",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/imageto3d/not-a-uuid",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/imageto3d/0bb1d4a9-e701-4871-ace0-9491e775238e",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/imageto3d/0bb1d4a9-e701-4871-ace0-9491e775238e",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/imageto3d/0bb1d4a9-e701-4871-ace0-9491e775238e/extra",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/imageto3d/0bb1d4a9-e701-4871-ace0-9491e775238e/extra",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/imageto3d/48c8d17d-fb60-4bf6-be06-7388fca55e15",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/imageto3d/48c8d17d-fb60-4bf6-be06-7388fca55e15",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/r",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/r",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/r/",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/r/",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/r/testcode",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/r/testcode",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/r/testcode/extra",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/r/testcode/extra",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/a",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/a",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/a/testcode",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/a/testcode",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/b/testcode",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/b/testcode",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/ref/testcode",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/ref/testcode",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/settings",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/settings",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/user",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/user",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/profile",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/profile",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/history",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/history",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/download",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/download",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/api",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/api",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/worldgen",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/worldgen",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/scene",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/scene",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/hdri",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/hdri",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/terms",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/terms",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ },
+ {
+  "path": "/workspace/privacy",
+  "status": 200,
+  "final": "https://hyper3d.ai/workspace/privacy",
+  "bytes": 11256,
+  "shell": true,
+  "location": ""
+ }
+]

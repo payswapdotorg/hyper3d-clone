@@ -125,9 +125,16 @@ describe("t72 workspace route files", () => {
   it("the optional catch-all serves the studio with per-tab metadata", () => {
     const page = read("../app/workspace/rodin/[[...tab]]/page.tsx");
     expect(page).toContain("WORKSPACE_TAB_STATIC_PARAMS");
-    expect(page).toContain("WORKSPACE_TAB_TITLES[resolved]");
+    /* t82: the page now classifies through classifyRodinChild — the
+       canonical shapes render the studio with their titles, the
+       non-canonical shapes pre-paint replace (re-probed). */
+    expect(page).toContain("classifyRodinChild");
+    expect(page).toContain("WORKSPACE_TAB_TITLES[view.tab]");
+    expect(page).toContain("WORKSPACE_TAB_TITLES.asset");
     expect(page).toContain("WORKSPACE_MARKER_SCRIPT");
     expect(page).toContain("<Hyper3DApp />");
+    expect(page).toContain("RODIN_NORMALIZE_SCRIPT");
+    expect(page).toContain("NOT_FOUND_REPLACE_SCRIPT");
   });
 
   it("the login route opens the shell in login view with the default title", () => {

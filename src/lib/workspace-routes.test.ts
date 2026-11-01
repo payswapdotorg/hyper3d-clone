@@ -105,16 +105,23 @@ describe("t74 workspace entry routes — the reference's five URLs", () => {
     expect(nextConfig).not.toContain(
       '{ source: "/workspace/register", destination: "/workspace/rodin?auth=signup", permanent: false }',
     );
-    // the public alias still lands on the new route
-    expect(nextConfig).toContain(
+    /* t82 re-probed the root aliases: they are the reference's own 301s
+       (was 302), and the referral short links now take the reference's
+       two-hop shape — 301 → /workspace/r|a/:code, where the catch-all's
+       pre-paint replace lands on register with the code. The detailed
+       pins live in workspace-shell-routes.test.ts. */
+    expect(nextConfig).not.toContain(
       '{ source: "/register", destination: "/workspace/register", permanent: false }',
     );
-    // the referral short links land on the register route with their code
+    expect(nextConfig).not.toContain("/workspace/register?referral_code=:code");
     expect(nextConfig).toContain(
-      '{ source: "/r/:code", destination: "/workspace/register?referral_code=:code", permanent: false }',
+      '{ source: "/register", destination: "/workspace/register", statusCode: 301 }',
     );
     expect(nextConfig).toContain(
-      '{ source: "/a/:code", destination: "/workspace/register?referral_code=:code", permanent: false }',
+      '{ source: "/r/:code", destination: "/workspace/r/:code", statusCode: 301 }',
+    );
+    expect(nextConfig).toContain(
+      '{ source: "/a/:code", destination: "/workspace/a/:code", statusCode: 301 }',
     );
   });
 

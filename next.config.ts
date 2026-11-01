@@ -7,26 +7,37 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  // Route parity (t53 audit G6, re-pointed t68): the reference's canonical
-  // product URL, signup rewrite, and referral short links must all resolve
-  // on the clone. t68 moved the studio from / to /workspace/rodin (the
-  // reference's own URL shape), so these redirect into the studio route
-  // with params the app consumes (auth=signup opens the sign-in panel in
-  // sign-up mode; referral_code prefills the referral field). /workspace
-  // itself lands on /workspace/rodin, matching the reference's client-side
-  // router behavior from the landing bounce.
+  // Route parity (t53 audit G6, re-pointed t68/t74, re-probed t82): the
+  // reference's root-level short-form aliases are PERMANENT redirects
+  // into the workspace (probed live 2026-11-01, recon/t82/notes.md):
+  //
+  //   /register            301 → /workspace/register
+  //   /login               301 → /workspace/login
+  //   /imageto3d           301 → /features/image-to-3d   (the marketing page)
+  //   /imageto3d/{uuid}    301 → /workspace/imageto3d/{uuid} — shape-checked,
+  //                         so it is a Route Handler (src/app/imageto3d/[uuid]/
+  //                         route.ts), not a table row
+  //   /r/{code…} /a/{code…} 301 → /workspace/r|a/{code…} — the reference's own
+  //                         two-hop referral shape; the workspace hop is the
+  //                         catch-all's pre-paint replace (register + code)
+  //
+  // Gone in t82, re-probed: /signup 404s on the reference (its shell
+  // script never serves there — only /workspace/signup does, now a real
+  // 200 + replace route), and /workspace itself serves 200 + a client
+  // replace to /workspace/rodin (the catch-all), so neither keeps a
+  // redirect row.
   async redirects() {
     return [
-      { source: "/workspace", destination: "/workspace/rodin", permanent: false },
-      { source: "/signup", destination: "/workspace/rodin?auth=signup", permanent: false },
-      { source: "/workspace/signup", destination: "/workspace/rodin?auth=signup", permanent: false },
-      { source: "/register", destination: "/workspace/register", permanent: false },
-      // t74: /workspace/register is now a real route (the reference serves
-      // 200 there — its register view, probed 2026-10-31), so the old
-      // 307 → /workspace/rodin?auth=signup shortcut is gone; the public
-      // /register alias still lands on the new route.
-      { source: "/r/:code", destination: "/workspace/register?referral_code=:code", permanent: false },
-      { source: "/a/:code", destination: "/workspace/register?referral_code=:code", permanent: false },
+      { source: "/register", destination: "/workspace/register", statusCode: 301 },
+      { source: "/login", destination: "/workspace/login", statusCode: 301 },
+      { source: "/imageto3d", destination: "/features/image-to-3d", statusCode: 301 },
+      // The referral short links at ANY depth ≥1 segment (the reference
+      // 301s /r/testcode/extra with the extra segment intact; bare /r
+      // and /a 404 there, so no zero-segment row exists).
+      { source: "/r/:code", destination: "/workspace/r/:code", statusCode: 301 },
+      { source: "/r/:code/:rest*", destination: "/workspace/r/:code/:rest*", statusCode: 301 },
+      { source: "/a/:code", destination: "/workspace/a/:code", statusCode: 301 },
+      { source: "/a/:code/:rest*", destination: "/workspace/a/:code/:rest*", statusCode: 301 },
       // t71: the reference retired its public OmniCraft landing tree —
       // /omnicraft and three of the four tool URLs 301 to the HDRI feature
       // page, /omnicraft/viewer to the viewer marketing hub (probed

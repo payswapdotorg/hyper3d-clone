@@ -49,8 +49,11 @@ describe("t68 URL shape — landing at /, studio at /workspace/rodin", () => {
     expect(studioPage).toContain("Hyper3DApp");
     expect(studioPage).toContain("WORKSPACE_MARKER_SCRIPT");
     // t72: the title flows from the per-tab table (pinned byte-exact in
-    // workspace-tabs.test.ts — the root still serves the long shell title)
-    expect(studioPage).toContain("WORKSPACE_TAB_TITLES[resolved]");
+    // workspace-tabs.test.ts — the root still serves the long shell title);
+    // t82: the page resolves titles through classifyRodinChild — studio
+    // root and uuid fallback both serve WORKSPACE_TAB_TITLES.asset
+    expect(studioPage).toContain("WORKSPACE_TAB_TITLES[view.tab]");
+    expect(studioPage).toContain("WORKSPACE_TAB_TITLES.asset");
   });
 
   it("the dedicated login route renders the same shell in login view", () => {
@@ -72,19 +75,25 @@ describe("t68 URL shape — landing at /, studio at /workspace/rodin", () => {
   });
 
   it("redirects land on the studio route with the params the app consumes", () => {
+    /* t82 re-probed the whole alias surface (recon/t82): /workspace now
+       serves 200 + a pre-paint replace to /workspace/rodin (the catch-all
+       route, no redirect row), /signup 404s on the reference (row gone),
+       and the referral short links take the reference's two-hop 301
+       shape — detailed pins in workspace-shell-routes.test.ts. */
+    expect(nextConfig).not.toContain('source: "/workspace"');
+    expect(nextConfig).not.toContain('source: "/signup"');
+    expect(nextConfig).not.toContain("/workspace/register?referral_code=:code");
     expect(nextConfig).toContain(
-      '{ source: "/workspace", destination: "/workspace/rodin", permanent: false }',
+      '{ source: "/register", destination: "/workspace/register", statusCode: 301 }',
     );
     expect(nextConfig).toContain(
-      '{ source: "/signup", destination: "/workspace/rodin?auth=signup", permanent: false }',
-    );
-    // t74: the referral short links land on the real register route (the
-    // reference serves 200 at /workspace/register — its register view)
-    expect(nextConfig).toContain(
-      '{ source: "/r/:code", destination: "/workspace/register?referral_code=:code", permanent: false }',
+      '{ source: "/login", destination: "/workspace/login", statusCode: 301 }',
     );
     expect(nextConfig).toContain(
-      '{ source: "/a/:code", destination: "/workspace/register?referral_code=:code", permanent: false }',
+      '{ source: "/r/:code", destination: "/workspace/r/:code", statusCode: 301 }',
+    );
+    expect(nextConfig).toContain(
+      '{ source: "/a/:code", destination: "/workspace/a/:code", statusCode: 301 }',
     );
   });
 });
