@@ -173,3 +173,18 @@ Production: Vercel remained account-blocked at t80 (402 account-wide,
 resource_creation_blocked on the surviving token); the local
 standalone build + verify-served.py is the verification of record
 here too. Deploy attempted after push — outcome in the deploy section.
+
+## Deploy outcome (2026-11-01, post-push)
+
+Tried the surviving token immediately after pushing `f52bdf3`:
+
+- `vcp_1IhxE…` — `resource_creation_blocked` ("Your Team exceeded
+  our fair use limits and has been blocked") — the same account-level
+  block as t78/t79/t80.
+- The live domain still answers **402** account-wide; the second token
+  was already invalid at t80 and was not retried.
+
+Production re-verification stays pending until the Vercel account is
+unblocked; the local standalone build + `verify-served.py` (10 routes,
+0 failures) is the verification of record for t81. Code is pushed to
+GitHub (`f52bdf3`).
