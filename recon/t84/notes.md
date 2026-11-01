@@ -185,3 +185,14 @@ Locale indexes (probed zh/ja/de/ru): the same anatomy, with:
    same section structure, one level shifted, consistent with every
    other localized page here. Documented, deliberate.
 
+
+## Vercel deploy outcome (2026-11-01, post-push of f51e087)
+
+Attempted on both surviving tokens: vcp_1Ihx… → resource_creation_blocked
+("Your Team exceeded our fair use limits and has been blocked" — the
+same t80/t81/t82/t83 state); vcp_3uMg… → forbidden / invalidToken.
+Latest production deployment remains dpl_E6YXAjhq (commit 0d56c9b, the
+t77-era deploy); the live domain answers 402 account-wide. Production
+re-verification impossible — the local standalone build +
+verify-served.py (108/108) is the verification of record for t84, as
+it was for t81/t82/t83.
