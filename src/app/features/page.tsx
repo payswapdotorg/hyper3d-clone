@@ -52,6 +52,18 @@ export default function FeaturesIndexPage() {
             generation, agent access over MCP, and the OmniCraft browser toolbag — every page
             honest about what is live, partial, or reference-only.
           </p>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-white/45">
+            How to read the matrix: a <span className="font-bold text-emerald-300">LIVE</span> chip
+            means the feature works end to end in this codebase today — open the page and the
+            studio link goes to the working surface. <span className="font-bold text-amber-300">PARTIAL</span>
+            means something real but narrower than the reference&apos;s product; the page&apos;s status
+            panel itemizes exactly what exists and what does not. <span className="font-bold text-white/55">REFERENCE-ONLY</span>
+            means the feature is the reference&apos;s — the page documents the gap and points at the
+            nearest real paths here instead of parking a demo that would not be one. No page on
+            this site claims a capability the codebase cannot back, and the test suite pins the
+            load-bearing numbers — credit costs, export formats, endpoint routes — to the real
+            constants.
+          </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <Link
               href="/"
@@ -106,6 +118,31 @@ export default function FeaturesIndexPage() {
             </ul>
           </section>
         ))}
+
+        <section className="mt-12 rounded-2xl border border-violet-400/20 bg-violet-400/[0.06] p-6 text-center sm:p-8">
+          <h3 className="text-lg font-black tracking-tight sm:text-xl">
+            Start with the right AI 3D feature
+          </h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-white/55">
+            Generation, conversion, viewing, or agent access — every tool here either works in
+            this clone or says plainly that it does not. Pick a card above; the status chip tells
+            you which kind of page you are opening before you click.
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-violet-400/40 bg-violet-400/15 px-4 text-sm font-bold text-violet-100 transition-colors hover:bg-violet-400/25"
+            >
+              Start for free
+            </Link>
+            <Link
+              href="/features/api"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-white/15 bg-white/[0.04] px-4 text-sm font-bold text-white/75 transition-colors hover:border-white/30 hover:text-white"
+            >
+              Read the API page
+            </Link>
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-white/10 bg-[#17181c]/70 px-4 py-3 text-center text-[11px] leading-relaxed text-white/35">

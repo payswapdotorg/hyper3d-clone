@@ -63,7 +63,7 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       },
       {
         title: "Free to Start",
-        body: "Sign-up grants a 40-credit wallet; text-to-3D tasks cost real credits through the same confirm-first gate the reference uses.",
+        body: "Sign-up grants a 50-credit wallet; text-to-3D tasks cost real credits through the same confirm-first gate the reference uses.",
       },
     ],
     useCasesTitle: "Who Uses an AI Text to 3D Model Generator?",
@@ -90,6 +90,52 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
         body: "Explore stylized directions quickly — every task stays in your history with its full spec.",
       },
     ],
+    promptExamples: {
+      title: "Text to 3D Prompt Examples",
+      intro:
+        "Copy-paste prompts for this clone's own compiler path — every note says what really happens here. The rules cited are the pipeline's actual constraints, not marketing copy.",
+      cards: [
+        {
+          prompt: "A red fresh apple with a short stem, simple geometry",
+          note: "The compiler's own documented example: the palette rule maps 'red apple' to reds, browns, and greens, and the spec lands as a two-object build (sphere fruit, cylinder stem). If the model output ever fails validation, the deterministic fallback builds a 4-object pedestal scene from the same keyword palette — generation never hard-fails.",
+        },
+        {
+          prompt: "A brass table lamp: cylinder base, slim pole, cone shade",
+          note: "Naming primitives pays off — the spec vocabulary is exactly box, sphere, cylinder, cone, torus, lathe, and extrude, so shape words steer the build directly. Dimensions land in the 0.05–4 range the validator enforces.",
+        },
+        {
+          prompt: "A ceramic mug with a torus handle, glossy teal glaze",
+          note: "Material words ('glossy', 'matte', 'brass', 'glaze') set metalness and roughness on the generated materials; color words feed the palette the whole scene shares.",
+        },
+        {
+          prompt: "A tiny market stall: box table, four crates, striped awning",
+          note: "Multi-object scenes are the point — a spec may carry 2 to 12 objects with their own transforms, composed ground-level so it reads well from the 3/4 camera angle.",
+        },
+      ],
+    },
+    techCards: {
+      title: "AI Technology Behind Text to 3D Model Generation",
+      intro:
+        "The reference reconstructs meshes with a neural generator. This clone's real path is different and fully visible: a language model compiles your prompt into a strict scene spec, and deterministic code builds the mesh. Both are real — only one of them is neural.",
+      cards: [
+        {
+          title: "Prompt → Strict SceneSpec",
+          body: "The text-to-3D provider sends your prompt to a chat model under a strict system contract: output ONLY a SceneSpec JSON document. Whatever comes back is validated against a strict schema — unknown keys or out-of-range numbers are rejected, not guessed at.",
+        },
+        {
+          title: "A Real Primitive Vocabulary",
+          body: "A spec composes 2–12 objects from seven primitive types — box, sphere, cylinder, cone, torus, lathe, extrude — with per-object transforms, materials, and a scene-wide palette. That vocabulary is the whole geometry engine's input language.",
+        },
+        {
+          title: "Keyword Palettes, Deterministic Fallback",
+          body: "Colors come from the prompt's own keywords, and when a model response fails validation the pipeline falls back to a deterministic spec built from the same palette — so a task always produces geometry instead of an error page.",
+        },
+        {
+          title: "From Spec to Six Formats",
+          body: "The mesh builder turns the spec into real geometry, and the exporter serves it in the same six formats the studio offers everywhere: GLB, glTF, FBX, OBJ, STL, and USDZ — generated from the task's stored spec on demand.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions About Text to 3D",
     faqIntro: "Questions the reference answers — answered here for what this clone actually does.",
     faq: [
@@ -111,11 +157,27 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       },
       {
         q: "Is this clone free for text to 3D generation?",
-        a: "Sign-up grants a 40-credit wallet. Tasks charge through the same confirm-first pay-by-result gate the reference uses — you see the cost before you commit.",
+        a: "Sign-up grants a 50-credit wallet. Tasks charge through the same confirm-first pay-by-result gate the reference uses — you see the cost before you commit.",
       },
       {
         q: "Can I export text to 3D models as STL, GLB, OBJ, or FBX?",
         a: "All five export formats (GLB, GLTF, OBJ, FBX, STL, USDZ) are produced from the task's real spec, and the download is byte-checked against the viewer preview.",
+      },
+      {
+        q: "How long can my prompt be?",
+        a: "Prompts are accepted up to 2000 characters. The task card in the studio shows the exact prompt text that was compiled, and the token usage the compilation consumed is recorded on the task's usage block.",
+      },
+      {
+        q: "Can I make the same model twice?",
+        a: "Yes — tasks accept a 0–65535 seed. The same prompt with the same seed reproduces the same result on the deterministic path; a different seed varies it. Both are plain fields on the task you create.",
+      },
+      {
+        q: "What happens if the model returns something invalid?",
+        a: "Nothing catastrophic — the validator rejects it and the pipeline falls back to a deterministic spec built from your prompt's keyword palette. You still get a previewable, exportable model; the task history records what happened.",
+      },
+      {
+        q: "Are my prompts private?",
+        a: "Tasks can be marked private, which excludes them from the featured and public gallery. Your history is yours either way — visible only to your signed-in session.",
       },
     ],
     crossLinksTitle: "Explore related features",
@@ -202,6 +264,33 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
         body: "Photograph a physical object, generate the model, and export STL for reprinting or remixing it.",
       },
     ],
+    researchNote: {
+      title: "Built on award-winning 3D research",
+      body: "That sentence is the reference's story, and it is true of the reference: Hyper3D's Rodin engines come out of published, award-winning 3D reconstruction research, and the company presents that lineage on this very page. It is not this clone's story. This site is a product-surface reimplementation — the page you are reading documents the reference's shape and this codebase's own real behavior, and nothing here descends from the reference's research, inherits its models, or shares its lineage. No awards, no papers — just working code, stated plainly.",
+    },
+    techCards: {
+      title: "The AI Behind Image to 3D Here",
+      intro:
+        "The reference's page lists its neural stages: image understanding, 3D reconstruction, texture generation. This clone's real pipeline is shorter and fully inspectable — these are the stages that actually run when you press generate.",
+      cards: [
+        {
+          title: "Image Understanding — Real Vision Captioning",
+          body: "Your upload goes to a real vision model through the image-analysis endpoint, which returns the editable caption the input card shows. That caption — not a black box — is what drives the rest of the pipeline, so you can correct it before spending anything.",
+        },
+        {
+          title: "Reconstruction — Spec-Driven, Not Neural",
+          body: "The standard path compiles the caption into a strict scene spec and builds mesh from it deterministically. There is no neural reconstruction on this path — that is the reference's stage, not this clone's. The optional neural engine tier exists for organic meshes, pay-by-result at confirm.",
+        },
+        {
+          title: "Shape Control via ControlNet",
+          body: "Draw a bounding box or paint voxels before generating, and the task carries the constraint — aspect, fill, anchors — into the spec planner. Point-cloud mode is part of the same schema. The editors are real and their state is what the API receives.",
+        },
+        {
+          title: "Multiview and the Fast Fallback",
+          body: "Up to four extra view images can refine a neural task — the direction picker exists to choose them. And if the neural tier stalls, a watchdog falls back to the fast in-house path after 75 seconds rather than leaving you on a spinner.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions About Image to 3D",
     faqIntro: "The reference's questions, answered for this clone's real behavior.",
     faq: [
@@ -227,7 +316,31 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       },
       {
         q: "What does it cost?",
-        a: "Standard generation costs credits from your wallet (40 at sign-up); the neural path shows its exact price on a confirm-first gate before charging.",
+        a: "Standard generation costs credits from your wallet (50 at sign-up); the neural path shows its exact price on a confirm-first gate before charging.",
+      },
+      {
+        q: "Is the neural reconstruction the same as the reference's?",
+        a: "No — and the page says so rather than implying it. The reference's image-to-3D is a research-lineage neural reconstructor. This clone's standard path is spec-driven geometry from a caption; the optional neural tier is a different real engine, offered pay-by-result. Fidelity claims beyond that would be fiction.",
+      },
+      {
+        q: "Can I use a drawing or sketch instead of a photo?",
+        a: "Yes — the vision model captions sketches as readily as photographs, and concept-art blocking is one of the page's own use cases. The caption is editable, so you can correct the model's reading of a stylized drawing before generating.",
+      },
+      {
+        q: "What happens if generation stalls?",
+        a: "The pipeline has a real watchdog: a neural task that stalls for 75 seconds falls back to the fast in-house path automatically. The task's history entry shows which engine actually produced the result — nothing is silently retried.",
+      },
+      {
+        q: "How do ControlNet constraints reach the model?",
+        a: "The bbox and voxel editors produce a constraint object — mode, aspect ratio triple, fill, anchor count — that rides on the task itself. The API page documents the exact schema; the editors are just a friendly way to produce it.",
+      },
+      {
+        q: "How large can my uploads be?",
+        a: "A reference image is accepted up to 8 megabytes, as a data URL or bare base64 — the same envelope the task schema enforces on the wire. Multiview images are capped at four extras of 4 megabytes each, which is generous for view shots and deliberately not for photo libraries.",
+      },
+      {
+        q: "Where does my reference image live afterwards?",
+        a: "On the task row itself — the upload is stored with the task record and served back through the task's own input route, so history entries keep their reference images meaningful. The Model Viewer tool is the contrast case: fully local, nothing uploaded.",
       },
     ],
     crossLinksTitle: "Explore related features",
@@ -311,6 +424,33 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
         body: "Fill an AR scene with the objects a single reference photo contains.",
       },
     ],
+    researchNote: {
+      title: "Built on award-winning 3D research",
+      body: "The reference's WorldGen engine, like its object generators, descends from published, award-winning 3D reconstruction research — that is the reference's story and it is true of the reference. This clone shares none of it: no research lineage, no trained world model, no scene-decomposition network. What this codebase actually has is a spec-driven single-asset pipeline, documented plainly on the pages you can click from here. The research sentence stays on the page because the reference has it — attributed to the reference, not borrowed for this clone.",
+    },
+    techCards: {
+      title: "Understands Physics, Ready to Edit — There, Not Here",
+      intro:
+        "The reference's own WorldGen section promises physical understanding and editable objects. Stated as the reference's claims, with this clone's reality next to each one:",
+      cards: [
+        {
+          title: "There: Scene Decomposition",
+          body: "The reference separates a scene photo into independent objects with real physical relationships — a table supports a vase, floors catch shadows. One upload becomes many editable meshes.",
+        },
+        {
+          title: "Here: One Task, One Coherent Asset",
+          body: "This clone's pipeline generates a single asset per task — a spec of 2 to 12 primitives with transforms and materials, composed by the planner from a prompt or caption. Multi-object world decomposition from a photo is not implemented.",
+        },
+        {
+          title: "There: Physics-Aware Placement",
+          body: "The reference's engine reasons about support, occlusion, and contact between the objects it reconstructs, which is what makes its worlds editable rather than a fused blob.",
+        },
+        {
+          title: "Here: Explicit Transforms, No Physics",
+          body: "Objects in this clone's specs carry explicit position, rotation, and scale — ground-level composition is a prompt-level convention the planner follows, not simulated physics. Nothing here pretends otherwise.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions About WorldGen",
     faqIntro: "Answered honestly for this clone.",
     faq: [
@@ -333,6 +473,18 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Does the API cover WorldGen?",
         a: "The reference's API exposes world generation endpoints; this clone's API covers the task pipeline it actually implements (see the API feature page).",
+      },
+      {
+        q: "How many objects can this clone's spec hold?",
+        a: "A scene spec composes 2 to 12 primitives — enough for a prop with parts, a small diorama-scale build, or a display composition. It is an asset vocabulary, not a world vocabulary; the count is the pipeline's real rule.",
+      },
+      {
+        q: "Could I chain tasks to fake a world?",
+        a: "You can generate several assets and arrange them yourself in your DCC — every export is a standard format that imports cleanly. What you cannot get here is the reference's one-shot scene understanding from a single photo, and chaining tasks does not change that.",
+      },
+      {
+        q: "Why keep a page for a feature that is not here?",
+        a: "Because the reference's sitemap has it and the clone's job is honest parity: the route exists, states the gap in the first screen, and points at the nearest real paths instead of parking a fake demo on the URL.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",
@@ -421,6 +573,38 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
         body: "For agentic access to this clone's tools, the MCP connect modal is the supported path — see the MCP feature page.",
       },
     ],
+    codeExamples: {
+      title: "API Examples — Real Calls to This Clone's Own Endpoints",
+      intro:
+        "The reference's page shows example calls against its key-based product. These blocks are the same shape pointed at THIS clone's real session-cookie API — swap the origin for wherever this app is served and they run as written. Every route below exists in the codebase and is asserted by the test suite.",
+      blocks: [
+        {
+          label: "1. Sign in and keep the session cookie",
+          code: "curl -c jar.txt -X POST http://localhost:3000/api/auth/sign-in \\n  -H 'content-type: application/json' \\n  -d '{\"email\":\"you@example.com\",\"password\":\"your-password\"}'\n\n# 200 {\"ok\":true}  — the httpOnly session cookie lands in jar.txt",
+        },
+        {
+          label: "2. Create a generation task",
+          code: "curl -b jar.txt -X POST http://localhost:3000/api/task \\n  -H 'content-type: application/json' \\n  -d '{\n    \"type\": \"RodinStandard\",\n    \"prompt\": \"A red fresh apple, simple geometry\",\n    \"effort\": \"medium\",\n    \"seed\": 4242\n  }'\n\n# 200 {\"task_uuid\":\"…\"}  — type, prompt, effort, seed are the real schema fields",
+        },
+        {
+          label: "3. Poll progress, then fetch the export",
+          code: "curl -b jar.txt http://localhost:3000/api/task/$UUID/progress\n\n# 200 {\"task_uuid\":…, \"user_state\":…, \"progress\":{\"percent\":…, \"stage\":…}}\n\ncurl -b jar.txt -OJ http://localhost:3000/api/task/$UUID/export?format=glb\n\n# also: /api/healthz for the AI + DB reachability probe",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "Supported Outputs — The Real Six",
+      intro:
+        "The reference's page lists its output types. This clone's exporter serves exactly these six formats, generated from the task's stored spec on demand — the same constants the studio's export picker uses, pinned by tests.",
+      formats: [
+        { name: "glb", note: "The default web delivery format — binary glTF with materials and vertex colors in one file. What the in-page viewer previews is what the GLB contains." },
+        { name: "gltf", note: "The JSON twin of GLB — human-readable, diff-friendly, and handy for pipelines that want to post-process the document." },
+        { name: "fbx", note: "Binary FBX for DCC interchange — imports into Unity, Unreal, Maya, and Blender with the scene hierarchy intact." },
+        { name: "obj", note: "The universal geometry exchange — plain mesh data with material references. The safest hand-off to tools of any age." },
+        { name: "stl", note: "Print-ready solid geometry for slicers. No materials in STL — the shape is the product." },
+        { name: "usdz", note: "Apple's AR package — drop the file into a quick-look context on iOS and the model appears in the room." },
+      ],
+    },
     faqTitle: "Frequently Asked Questions About the API",
     faqIntro: "Honest answers about what the endpoints here do and do not offer.",
     faq: [
@@ -443,6 +627,18 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Where do generated files come from?",
         a: "Exports are generated from the task's stored spec on demand and served through the export endpoint — no external CDN in this clone.",
+      },
+      {
+        q: "Do the example calls need an API key?",
+        a: "No — this clone authenticates with the same httpOnly session cookie the browser uses. Sign in once, keep the cookie jar, and every call above works. That is the entire difference from the reference's key-based product, and it is why there is no key issuance here.",
+      },
+      {
+        q: "Which request fields does a task actually accept?",
+        a: "The real schema: type (RodinAgentic or RodinStandard), prompt up to 2000 characters, effort from extreme-low to extreme-high, optional image, settings height, ControlNet constraint, engine (neural or fast), seed 0–65535, up to four multiview images, genVersion, legacyMode, material pass, isPrivate, creationMode, and image labels. Anything else is rejected with the validator's own messages.",
+      },
+      {
+        q: "What do the credit numbers look like on the wire?",
+        a: "A new account is granted 50 credits; standard confirm-and-export costs 1, the agentic tier 10. Creation and preview are free — the charge lands only when you confirm, and the wallet ledger records every grant and spend with a reason.",
       },
     ],
     crossLinksTitle: "Explore related features",
@@ -527,6 +723,29 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
         body: "Brand avatars for storefronts and marketing video.",
       },
     ],
+    techCards: {
+      title: "Built for Complete Avatar Creation — The Reference's Pitch, Mirrored Honestly",
+      intro:
+        "The reference's page sells one-shot complete avatars: parts assembled into a rigged, speaking character. That is the reference's real product. Next to each claim, what this codebase actually has — because a mirror that fakes the pitch would be a lie.",
+      cards: [
+        {
+          title: "There: One Prompt, One Whole Avatar",
+          body: "The reference's ChatAvatar assembles hair, face, clothing, and accessories into a complete character from a prompt or image — positioned as a single-step persona factory.",
+        },
+        {
+          title: "Here: Character Assets, Not Rigged Avatars",
+          body: "This clone's pipeline produces static character assets — a spec-built model with materials and six-format exports. There is no rigging, no blend shapes, no speaking mouth: the t59 status contract says animation is partial with rigging absent, stated.",
+        },
+        {
+          title: "There: Chat-Native Presentation",
+          body: "The reference ships avatars inside a conversational product surface, where the character answers — a different product class from an asset generator.",
+        },
+        {
+          title: "Here: The Nearest Real Paths",
+          body: "For character work today: the text-to-3D compiler with character prompts, the 3D prompt catalog's character section, and any DCC for rigging the exported mesh. Those are the working routes — they are what this page links to.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions About ChatAvatar",
     faqIntro: "Answered honestly for this clone.",
     faq: [
@@ -545,6 +764,26 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Is the face-enhance parameter real here?",
         a: "The image-analysis contract (including the allow_face_enhance field) is faithfully reproduced in this clone's API surface, but no avatar pipeline consumes it.",
+      },
+      {
+        q: "Can I at least get a character mesh to rig myself?",
+        a: "Yes — that is the honest working path. The studio's text-to-3D and image-to-3D produce exportable meshes in all six formats; rigging happens in your DCC afterwards. The exports are standard files that import cleanly into Blender, Maya, or Unity.",
+      },
+      {
+        q: "Does the reference's ChatAvatar licensing apply here?",
+        a: "No. The reference grants explicit commercial avatar licensing for its generated characters. This clone has no avatar product, so no avatar license exists here either — what you generate through the general studio is covered by this site's own terms, not the reference's.",
+      },
+      {
+        q: "Where do the reference's avatar prompts live here?",
+        a: "The 3D prompt catalog's character sections carry real, copy-paste prompts that work with this clone's compiler — style words, material words, and composition guidance, each with honest notes about what the result will and will not be.",
+      },
+      {
+        q: "Will avatars ever ship in this clone?",
+        a: "Only as a real implementation with rigging behind it. Until then this page stays a documented gap with working alternatives — the same rule every reference-only page here follows.",
+      },
+      {
+        q: "What does the reference's avatar output actually include?",
+        a: "Per its own page: assembled avatar parts, rigging for animation, and a licensing posture for commercial use — a complete persona product, not an asset generator. That inventory is the honest yardstick for why this clone's page reads so differently.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",
@@ -629,6 +868,25 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
         body: "The honest equivalent here: prompt-seeded procedural skyboxes for lighting and backdrops.",
       },
     ],
+    promptExamples: {
+      title: "Prompt Examples for Better AI Images — Shaped for the Reference, Honest About Here",
+      intro:
+        "The reference's page teaches image prompting. These cards follow its recipe — subject, style, lighting, composition — because that is what the section is for. Read the notes first: none of these produce a bitmap in this clone, and each card says what the nearest real thing here actually is.",
+      cards: [
+        {
+          prompt: "A weathered brass telescope on an oak desk, warm rim lighting, shallow depth of field, product photography",
+          note: "Subject, material, lighting, medium — the reference's own formula for a clean product shot. Here there is no text-to-image model; the honest path is generating the telescope itself as a 3D asset with exactly those material words, then lighting it in your renderer.",
+        },
+        {
+          prompt: "Isometric fantasy workshop, soft pastel palette, clean vector lines, game UI banner",
+          note: "Style-led prompts like this one belong to a bitmap generator. In this clone the honest neighbors are the styles tree's steerable recipes (prompt-steered geometry, flat parameter materials) and the HDRI generator for the lighting half of the art direction.",
+        },
+        {
+          prompt: "Low-poly island diorama, flat shading, three-tone palette, rotating turnaround reference",
+          note: "A prompt that is really an art direction for 3D. That half is real here: the compiler path builds low-poly geometry with flat palettes, exports it in six formats, and your turnaround is a viewer orbit — no bitmap required.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "Honest answers for this clone.",
     faq: [
@@ -647,6 +905,22 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Is image enhancement available?",
         a: "No — see the Image Enhancer page for that gap; uploads pass through at original fidelity.",
+      },
+      {
+        q: "What is the honest workflow that replaces this feature?",
+        a: "Generate or source imagery elsewhere if you need bitmaps, then use it here: upload as an image-to-3D reference (real captioning, real generation), or extract a palette for the HDRI generator's procedural skies. This clone's image skills are reading and lighting, not painting.",
+      },
+      {
+        q: "Do the prompt recipes on this page work anywhere here?",
+        a: "The material, style, and composition vocabulary transfers to the 3D prompt catalog and the styles recipes — those are real, tested prompts for the compiler path. The bitmap half of each recipe needs an actual image generator, which this clone does not wire.",
+      },
+      {
+        q: "Is the HDRI generator the same as an image generator?",
+        a: "No, and it does not pretend to be: it builds procedural environment maps from a seed and palette in your browser — real images, but of sky, for lighting. Not prompt-to-art. The OmniCraft page documents its exact knobs.",
+      },
+      {
+        q: "Could an image generator be wired into this clone later?",
+        a: "Technically the provider layer could host one — the same wiring the text and vision models use. Until a real model sits behind it, this page stays a documented gap with the working neighbors listed, which is the site-wide rule for reference-only features.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",
@@ -730,6 +1004,25 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
         body: "The honest substitute: your generated model, draggable in the browser right now.",
       },
     ],
+    promptExamples: {
+      title: "Better Prompts for AI Video Generation — The Reference's Craft, Stated Honestly",
+      intro:
+        "The reference's section teaches motion prompting: camera move, subject action, mood. The craft transfers — to wherever you render. In this clone there is no video model to receive it, and every note below says what the real substitute is.",
+      cards: [
+        {
+          prompt: "Slow orbital camera around a matte ceramic vase, studio softbox lighting, seamless backdrop, 10-second loop",
+          note: "Camera move first, then subject, then lighting — the reference's own ordering for a clean product loop. Here that exact shot is the studio's real-time viewer: orbit the generated vase, export GLB, and any renderer turns the same move into footage.",
+        },
+        {
+          prompt: "Turntable rotation of a low-poly game asset, flat three-tone palette, constant speed, transparent background",
+          note: "The turntable is the classic asset reel shot. The honest pipeline here: generate the asset with those palette words, let the viewer spin it at constant speed, and screen-record or re-render from the exported mesh.",
+        },
+        {
+          prompt: "Push-in on a brass desk lamp, shallow focus racking from shade to switch, warm practical glow",
+          note: "Racking focus and push-ins are camera language for a video model — nothing in this clone consumes them. What is real: the lamp itself generates from exactly those material words, and USDZ takes it into AR where your phone's camera does the moving.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "Honest answers for this clone.",
     faq: [
@@ -748,6 +1041,22 @@ export const CORE_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Why keep the page?",
         a: "The footer and nav of the reference link a video generator; this clone resolves that link with the truth instead of a dead toast.",
+      },
+      {
+        q: "What is the fastest real path from prompt to motion here?",
+        a: "Generate the asset, orbit it in the live preview, and screen-record for a scratch clip — or export GLB or FBX into Blender, Unreal, or Unity and render a finished one. USDZ puts the model in AR where the physical camera supplies the motion for free.",
+      },
+      {
+        q: "Does the video prompt vocabulary work at all here?",
+        a: "The subject, material, and palette words feed the 3D compiler directly — they shape what generates. The camera directions orbit, push-in, rack describe shots, not geometry; they are guidance for whatever renders the footage, and this clone has no renderer to guide.",
+      },
+      {
+        q: "Is a video export planned?",
+        a: "Not as a stub. If motion ever ships here it will be a real render path with stated capabilities — the same bar every other feature page on this site is held to.",
+      },
+      {
+        q: "Why does an asset generator keep a video page at all?",
+        a: "Because the reference sells the two side by side — its AI Media suite pairs the image and video generators with the 3D tools, and its footer links them from every page. This clone mirrors the structure and states the difference: the 3D half is real here, the video half is the reference's.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",

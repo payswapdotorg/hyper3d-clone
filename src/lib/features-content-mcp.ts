@@ -78,6 +78,48 @@ export const MCP_FEATURE_PAGES: FeaturePageDef[] = [
         body: "Scripted agents iterate prompt variants and collect exports while you review the history rail.",
       },
     ],
+    techCards: {
+      title: "Integrate 3D Generation into Your Daily Work — What That Means Here",
+      intro:
+        "The reference's section of this name walks its hosted MCP surface. The honest version for this clone separates the three things the modal actually touches:",
+      cards: [
+        {
+          title: "The Modal Is the Feature",
+          body: "A real studio component: copy-ready blocks with clipboard handling, an agent-agnostic shape, and the connection checklist. What you see on this page's code blocks is its exact text, byte-pinned by the test suite.",
+        },
+        {
+          title: "The Endpoint Is the Reference's",
+          body: "api.hyper3d.com is the real Hyper3D service's public MCP server — the modal documents it faithfully, exactly as the reference's own connect sheet does. Nothing in this clone proxies, intercepts, or re-implements that host.",
+        },
+        {
+          title: "This Clone's Programmatic Surface Is REST",
+          body: "For driving THIS site's pipeline with code, the session-cookie task API on the API page is the real surface — create, poll, export. That is what an integration here actually talks to, and it is documented call by call.",
+        },
+        {
+          title: "The Per-Agent Pages Mirror, Honestly",
+          body: "Claude, Codex, and Kimi each get a guide page matching the reference's routes — carrying the reference's connection story attributed to the reference, plus this clone's scope statement. Same rule as every page here.",
+        },
+      ],
+    },
+    codeExamples: {
+      title: "Copy-Ready Connection Config — The Modal's Own Constants",
+      intro:
+        "These are not illustrative snippets: each block below is the exact text the studio's connect modal exposes, pinned by tests against the modal's source. Copy them from either place — they are the same strings.",
+      blocks: [
+        {
+          label: "The endpoint — Streamable HTTP",
+          code: "https://api.hyper3d.com/api/mcp",
+        },
+        {
+          label: "The CLI install",
+          code: "npm install --global @hyper3d/cli",
+        },
+        {
+          label: "The paste-ready agent instruction",
+          code: "Set up Hyper3D MCP in this client: name hyper3d, Streamable HTTP URL https://api.hyper3d.com/api/mcp, OAuth. Preserve my other settings and reuse or update any existing entry. Then guide me through browser authorization, verify the connection, list the available tools, and tell me whether a restart is required.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions About MCP",
     faqIntro: "What the modal here really provides.",
     faq: [
@@ -100,6 +142,22 @@ export const MCP_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Is there hosted authentication?",
         a: "No — the reference's hosted OAuth-style MCP auth is out of scope; the modal carries the config directly, which is the honest scope for this clone.",
+      },
+      {
+        q: "Whose endpoint is that, exactly?",
+        a: "The endpoint in the config is the reference's public MCP server — api.hyper3d.com — exactly as the reference's own connect sheet documents it. This clone's contribution is the modal and the task pipeline behind your account; the MCP host the config points at is the real service, and we say so plainly.",
+      },
+      {
+        q: "What transport does the connection use?",
+        a: "Streamable HTTP — the current MCP transport standard the endpoint advertises. The config names it explicitly because agents ask for transport before URL.",
+      },
+      {
+        q: "Does connecting restart my agent?",
+        a: "That is an agent-client behavior, not a protocol one — which is why the paste-ready instruction explicitly asks the agent to tell you whether a restart is required rather than guessing on its behalf.",
+      },
+      {
+        q: "Can I verify the connection worked?",
+        a: "Yes — the instruction's own checklist ends with exactly that: verify the connection, list the available tools, then report. An agent that completes those steps has confirmed the config end to end.",
       },
     ],
     crossLinksTitle: "Explore related features",

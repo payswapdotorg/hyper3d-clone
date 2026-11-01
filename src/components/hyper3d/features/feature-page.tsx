@@ -174,6 +174,34 @@ export function FeaturePage({ def }: { def: FeaturePageDef }) {
           </ul>
         </section>
 
+        {/* t85: prompt examples — copy-paste cards in bordered mono boxes (t60 recipes shape) */}
+        {def.promptExamples && (
+          <section className="mt-12">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.promptExamples.title}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.promptExamples.intro}
+            </p>
+            <ul className="mt-6 grid gap-3 lg:grid-cols-2">
+              {def.promptExamples.cards.map((card) => (
+                <li
+                  key={card.prompt}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <p className="rounded-xl border border-violet-400/25 bg-black/40 p-3 font-mono text-xs leading-relaxed text-violet-200/90">
+                    {card.prompt}
+                  </p>
+                  <p className="mt-2.5 text-xs leading-relaxed text-white/45">
+                    <span className="font-bold text-white/60">Here: </span>
+                    {card.note}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {/* use cases */}
         <section className="mt-12">
           <h3 className="text-xl font-black tracking-tight sm:text-2xl">{def.useCasesTitle}</h3>
@@ -192,6 +220,88 @@ export function FeaturePage({ def }: { def: FeaturePageDef }) {
             ))}
           </ul>
         </section>
+
+        {/* t85: the reference's research-credentials block, mirrored honestly */}
+        {def.researchNote && (
+          <section className="mt-12 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.researchNote.title}
+            </h3>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.researchNote.body}
+            </p>
+          </section>
+        )}
+
+        {/* t85: "The AI Behind…" pipeline cards */}
+        {def.techCards && (
+          <section className="mt-12">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.techCards.title}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.techCards.intro}
+            </p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+              {def.techCards.cards.map((card) => (
+                <li
+                  key={card.title}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <h4 className="text-sm font-bold text-white">{card.title}</h4>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/45">{card.body}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* t85: real code examples in mono blocks */}
+        {def.codeExamples && (
+          <section className="mt-12">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.codeExamples.title}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.codeExamples.intro}
+            </p>
+            <div className="mt-6 space-y-4">
+              {def.codeExamples.blocks.map((block) => (
+                <div key={block.label}>
+                  <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-white/40">
+                    {block.label}
+                  </p>
+                  <pre className="overflow-x-auto rounded-xl border border-white/10 bg-black/40 p-4 font-mono text-xs leading-relaxed text-emerald-200/85">
+                    {block.code}
+                  </pre>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* t85: export-format cards pinned to EXPORT_FORMATS */}
+        {def.exportTypes && (
+          <section className="mt-12">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.exportTypes.title}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.exportTypes.intro}
+            </p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {def.exportTypes.formats.map((f) => (
+                <li
+                  key={f.name}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <p className="font-mono text-sm font-bold text-violet-200">.{f.name}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/45">{f.note}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* FAQ — native details/summary, SSR-friendly and accessible */}
         <section className="mt-12">

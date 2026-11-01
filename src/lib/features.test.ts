@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   FEATURE_GROUPS,
@@ -11,6 +11,7 @@ import {
 } from "./features";
 import { OMNICRAFT_TOOLS } from "./omnicraft";
 import { STUDIO_PATH } from "./studio-path";
+import { EXPORT_FORMATS } from "./exporters";
 
 /** This clone's production origin (sitemap locs must be absolute, t58). */
 const SITE_ORIGIN = "https://hyper3d-clone.vercel.app";
@@ -263,6 +264,178 @@ describe("features sitemap", () => {
     expect(locs.length).toBeGreaterThan(0);
     for (const loc of locs) {
       expect(loc.startsWith(`${SITE_ORIGIN}/`), loc).toBe(true);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// t85: the features tree's body density — the five new optional sections
+// (recon/t85/notes.md): promptExamples, researchNote, techCards, codeExamples,
+// exportTypes. Every anchor below pins content to real code constants.
+// ---------------------------------------------------------------------------
+
+describe("features registry — t85 section anatomy", () => {
+  it("carries the reference's missing sections on exactly the right pages", () => {
+    const withSection = (sel: (p: (typeof FEATURE_PAGES)[number]) => unknown) =>
+      FEATURE_PAGES.filter(sel).map((p) => p.slug).sort();
+    expect(withSection((p) => p.promptExamples)).toEqual([
+      "ai-image-generator",
+      "ai-video-generator",
+      "text-to-3d",
+    ]);
+    expect(withSection((p) => p.researchNote)).toEqual(["image-to-3d", "worldgen"]);
+    expect(withSection((p) => p.techCards)).toEqual([
+      "chatavatar",
+      "image-to-3d",
+      "mcp",
+      "text-to-3d",
+      "worldgen",
+    ]);
+    expect(withSection((p) => p.codeExamples)).toEqual(["api", "mcp"]);
+    expect(withSection((p) => p.exportTypes)).toEqual(["api"]);
+  });
+
+  it("writes honest prompt cards — a real prompt plus a real note, never bare", () => {
+    for (const p of FEATURE_PAGES) {
+      if (!p.promptExamples) continue;
+      expect(p.promptExamples.cards.length, `${p.slug} cards`).toBeGreaterThanOrEqual(3);
+      for (const card of p.promptExamples.cards) {
+        expect(card.prompt.length, `${p.slug} prompt`).toBeGreaterThanOrEqual(25);
+        // The honest note IS the section — 80+ chars of what really happens here.
+        expect(card.note.length, `${p.slug} note`).toBeGreaterThanOrEqual(80);
+      }
+      // Reference-only pages must say the bitmap/video half is not here.
+      if (p.status === "reference-only") {
+        const joined = p.promptExamples.cards.map((c) => c.note.toLowerCase()).join(" ");
+        expect(/\b(no|not|nothing|never)\b/.test(joined), `${p.slug} gap stated`).toBe(true);
+      }
+    }
+  });
+
+  it("mirrors the reference's research credentials with the clone's disclaimer", () => {
+    for (const p of FEATURE_PAGES) {
+      if (!p.researchNote) continue;
+      const body = p.researchNote.body.toLowerCase();
+      // The reference's story, attributed — and the clone's plain statement.
+      expect(body.includes("reference"), `${p.slug} attributes the research`).toBe(true);
+      expect(body.includes("clone"), `${p.slug} speaks for itself`).toBe(true);
+      expect(
+        body.includes("no ") && body.includes("research"),
+        `${p.slug} disclaims the lineage`,
+      ).toBe(true);
+      expect(p.researchNote.body.length, `${p.slug} substance`).toBeGreaterThanOrEqual(200);
+    }
+  });
+
+  it("writes substantive tech cards", () => {
+    for (const p of FEATURE_PAGES) {
+      if (!p.techCards) continue;
+      expect(p.techCards.cards.length, `${p.slug} tech cards`).toBeGreaterThanOrEqual(4);
+      for (const card of p.techCards.cards) {
+        expect(card.body.length, `${p.slug}: ${card.title}`).toBeGreaterThanOrEqual(80);
+      }
+    }
+  });
+
+  it("lifted the FAQ floor on every touched page (t85 density contract)", () => {
+    const TOUCHED: Record<string, number> = {
+      "text-to-3d": 8,
+      "image-to-3d": 8,
+      api: 8,
+      mcp: 8,
+      worldgen: 8,
+      chatavatar: 8,
+      "ai-image-generator": 8,
+      "ai-video-generator": 8,
+    };
+    for (const [slug, floor] of Object.entries(TOUCHED)) {
+      expect(featureBySlug(slug)!.faq.length, `${slug} faq floor`).toBeGreaterThanOrEqual(floor);
+    }
+  });
+
+  it("never claims a 40-credit wallet — the real signup grant is 50", () => {
+    for (const p of FEATURE_PAGES) {
+      const text = JSON.stringify(p);
+      expect(text.includes("40-credit"), `${p.slug}`).toBe(false);
+      expect(text.includes("40 credits"), `${p.slug}`).toBe(false);
+      expect(text.includes("40 at sign-up"), `${p.slug}`).toBe(false);
+    }
+  });
+});
+
+describe("features registry — t85 code examples anchor to real routes", () => {
+  /** Extract every /api/… path meant as THIS clone's route, normalized.
+   *  External URLs (https://api.hyper3d.com/… — the reference's own endpoint,
+   *  documented as a fact) are stripped first: only local-origin paths and
+   *  bare /api/ routes are this clone's surface. */
+  function apiPathsIn(code: string): string[] {
+    const local = code.replace(/https?:\/\/[^\s'"]+/g, " ");
+    return [...local.matchAll(/\/api\/[A-Za-z0-9\-_/$.{}]+/g)].map((m) =>
+      m[0].replace(/[.?]+$/, ""),
+    );
+  }
+
+  it("every /api/ path in every code block exists under src/app/api", () => {
+    expect.assertions(1);
+    const apiRoot = join(process.cwd(), "src", "app", "api");
+    for (const p of FEATURE_PAGES) {
+      if (!p.codeExamples) continue;
+      for (const block of p.codeExamples.blocks) {
+        for (const raw of apiPathsIn(block.code)) {
+          // $UUID → [uuid] (the real dynamic segment name in the route tree);
+          // slice(1) drops the leading "api" — apiRoot already covers it.
+          const segs = raw
+            .replace("$UUID", "[uuid]")
+            .split("?")[0]
+            .split("/")
+            .filter(Boolean)
+            .slice(1);
+          const routeFile = join(apiRoot, ...segs, "route.ts");
+          expect(
+            existsSync(routeFile),
+            `${p.slug}: ${raw} must exist (${routeFile})`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("the api page documents the real request fields the schema accepts", () => {
+    const api = featureBySlug("api")!;
+    const taskBlock = api
+      .codeExamples!.blocks.find((b) => b.label.includes("Create a generation task"))!;
+    for (const field of ['"type"', '"prompt"', '"effort"', '"seed"']) {
+      expect(taskBlock.code.includes(field), field).toBe(true);
+    }
+    // The poll block exercises the real progress + export endpoints.
+    const pollBlock = api.codeExamples!.blocks.find((b) => b.label.includes("Poll progress"))!;
+    expect(pollBlock.code.includes("/api/task/$UUID/progress")).toBe(true);
+    expect(pollBlock.code.includes("/api/task/$UUID/export")).toBe(true);
+  });
+
+  it("the mcp code blocks are the modal's own constants, pinned to its source", () => {
+    const modal = readFileSync(
+      join(process.cwd(), "src", "components", "hyper3d", "studio", "mcp-connect-modal.tsx"),
+      "utf8",
+    );
+    const endpoint = modal.match(/MCP_ENDPOINT = "([^"]+)"/)![1];
+    const cli = modal.match(/CLI_INSTALL = "([^"]+)"/)![1];
+    const mcp = featureBySlug("mcp")!;
+    const codes = mcp.codeExamples!.blocks.map((b) => b.code);
+    expect(codes).toContain(endpoint);
+    expect(codes).toContain(cli);
+    // The paste-ready agent instruction is the modal's own text, verbatim-ish:
+    // same setup sentence, same closing checklist clause.
+    const instruction = codes.find((c) => c.includes("Set up Hyper3D MCP"))!;
+    expect(instruction.includes(endpoint)).toBe(true);
+    expect(instruction.includes("restart is required")).toBe(true);
+  });
+
+  it("exportTypes pins the format list to EXPORT_FORMATS exactly", () => {
+    const api = featureBySlug("api")!;
+    expect(api.exportTypes!.formats.map((f) => f.name)).toEqual(EXPORT_FORMATS);
+    for (const f of api.exportTypes!.formats) {
+      expect(f.note.length, `.${f.name} note`).toBeGreaterThanOrEqual(40);
     }
   });
 });
