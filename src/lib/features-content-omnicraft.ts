@@ -88,6 +88,29 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "Explore lighting moods in minutes, regenerate variations on the same prompt, and keep seeds for the directions you like.",
       },
     ],
+    techCards: {
+      title: "The Engine Behind the Skies — What Actually Runs Here",
+      intro:
+        "No AI image model is involved: this generator is a deterministic procedural engine (src/lib/hdri.ts), and these are its real stages — the same facts the status panel above states, card by card.",
+      cards: [
+        {
+          title: "Prompt → Parameters, by Keyword",
+          body: "The prompt is parsed for time-of-day, weather, and palette keywords that pin real engine parameters — a time word sets the sun's elevation, a weather word moves cloud density and sharpness, palette words swap the sky's three gradient colors. Unmatched dimensions fall back to seeded values, never random ones.",
+        },
+        {
+          title: "Seeded, Reproducible Skies",
+          body: "The prompt string hashes through FNV-1a into a mulberry32 PRNG that fills every unpinned parameter — so the same prompt has produced the identical sky on every run since the tool shipped, and always will. Versioned scenes can pin an environment by words alone.",
+        },
+        {
+          title: "Seam-Free Periodic Noise Clouds",
+          body: "Clouds come from periodic value noise summed in fractal octaves (fBm) that wraps exactly at the panorama seam — no visible stitch line at the 360° joint, verified rather than hoped. Density and sharpness respond to both the prompt's weather words and the sliders.",
+        },
+        {
+          title: "Physical Night and Image Palettes",
+          body: "As the sun drops below the horizon the gradient genuinely deepens — zenith more than horizon, so twilight keeps its glow band — and a size-varied star field appears. Dropped reference images get real in-browser analysis: colors are bucketed at 4 bits per channel and assigned to zenith, horizon, and sun tint by luma. Image analysis, not AI.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "About this clone's generator, honestly.",
     faq: [
@@ -118,6 +141,14 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "What if I don't like the result?",
         a: "Adjust the prompt or sliders (sliders always win over keywords) and regenerate — no cost, no upload, instant.",
+      },
+      {
+        q: "Is there a community gallery or sky filters here?",
+        a: "No — the reference's page advertises a gallery of shared HDRIs with filters, and that surface is not reproduced in this clone. Your skies regenerate deterministically from their prompts instead: keep the prompt, keep the sky.",
+      },
+      {
+        q: "How is this different from the reference's 8K pack?",
+        a: "The reference unlocks an 8K PNG plus hdr.exr and depth.png behind a credit. This clone exports 2K and 4K equirectangular PNGs, both free, and does not ship the .exr or depth tiers — the gap is stated, not papered over.",
       },
     ],
     crossLinksTitle: "Explore more OmniCraft tools",
@@ -201,6 +232,42 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "Flat art assets become chunky game props with bevel character.",
       },
     ],
+    techCards: {
+      title: "Extrusion Depth and Bevel You Control — the Real Sliders",
+      intro:
+        "The reference's controls section, mirrored by this tool's actual slider set — every range below is the engine's real clamp, not marketing rounding.",
+      cards: [
+        {
+          title: "Geometry",
+          body: "Depth runs 0.05 to 4 in 0.05 steps for solidity; bevel size runs 0 to 0.5 in 0.01 steps and switches off entirely for hard extrusions; curve detail sets path tessellation from 4 to 32 segments for smoothing intricate splines. Every slider reshapes the solid live — undo is dragging back.",
+        },
+        {
+          title: "Materials",
+          body: "Each SVG path's fill color carries into its material, and a six-swatch palette restyles the whole model in one click. Flat-color materials by design — no texture synthesis is claimed, because none runs: the color you pick is the color the exporter writes.",
+        },
+        {
+          title: "Lighting",
+          body: "The preview runs the studio's standard viewer lighting so forms read clearly while you tune. This clone ships no dedicated lighting rig for vector extrusions, and this card says so instead of pretending — form and color are what you control; illumination is presentation.",
+        },
+        {
+          title: "Export",
+          body: "All six of the pipeline's standard formats, through the same exporter every studio model flows through. Normalization centers and uniformly scales the solid by translation rather than mutation — so the previewed model and the downloaded bytes agree exactly, a distinction the tests pin.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "Every Format the Exporter Serves",
+      intro:
+        "The download row offers exactly the pipeline's standard six — the same list the API page documents, generated from the same constant by the same exporter.",
+      formats: [
+        { name: "glb", note: "The default preview format — the exact bytes the 3D view streams while you tune." },
+        { name: "gltf", note: "The JSON twin for pipelines that diff or post-process the document." },
+        { name: "fbx", note: "DCC interchange for Maya, Blender, Unity, and Unreal, hierarchy intact." },
+        { name: "obj", note: "The plain-triangle classic with its material sidecar — the safest hand-off." },
+        { name: "stl", note: "Straight to slicing: extruded vector art is printable by construction." },
+        { name: "usdz", note: "Apple's AR package — drop the extruded solid into an iOS quick-look scene." },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "About this clone's converter.",
     faq: [
@@ -222,7 +289,19 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
       },
       {
         q: "Can I print the result?",
-        a: "Yes — take the GLB through the Format Convertor to STL for slicing.",
+        a: "Yes — take the GLB through the Format Convertor to STL for slicing, or export STL directly from the tool's own download row.",
+      },
+      {
+        q: "What do the sliders actually control?",
+        a: "Depth (0.05–4) sets how far the vector extrudes, bevel size (0–0.5) rounds the edge character and can be disabled entirely, and curve detail (4–32) sets how finely splines are tessellated — every value in the engine's real clamp range.",
+      },
+      {
+        q: "Which export formats does the converter serve?",
+        a: "All six standard formats — GLB, GLTF, FBX, OBJ, STL, and USDZ — through the same exporter pipeline as studio models, with the preview showing the exact GLB the download serves.",
+      },
+      {
+        q: "Does it cost credits?",
+        a: "No — the tool is entirely local and free; nothing about it touches the wallet. The reference's 'Free to All' pitch is one point where the clone matches it exactly.",
       },
     ],
     crossLinksTitle: "Explore more OmniCraft tools",
@@ -287,6 +366,25 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "No texture-painting model, no UV painting on uploaded meshes — and no mockup pretending otherwise.",
       },
     ],
+    promptExamples: {
+      title: "One Model, Any Material Direction — the Reference's Demo Looks",
+      intro:
+        "The reference's texture page sells material direction with six named looks (Retro Tin Robot, Carved Pumpkin, Painted Wood, Sci-Fi Robot, Blue Toy Robot, Sci-Fi Armor). These cards mirror that section's shape — and none of them paints anything here.",
+      cards: [
+        {
+          prompt: "retro tin robot, brushed metal panels with worn edges and riveted seams",
+          note: "The reference's material direction: prompt in, painted PBR out. Not here — no texture-painting model is wired into this clone, and this card will not pretend otherwise. The nearest real path is generating with a metal-leaning palette in the studio and refining it with material redo.",
+        },
+        {
+          prompt: "carved pumpkin, matte organic surface with cut marks and candle glow",
+          note: "On the reference, this prompt repaints a mesh's UVs in minutes. Here the honest equivalent is picking palette words at generation time — the studio plans materials into the model — and accepting flat-color surfaces instead of painted detail.",
+        },
+        {
+          prompt: "sci-fi armor, gunmetal plating with panel lines and subtle decals",
+          note: "Nothing in this clone turns these words into a texture; that transformation belongs to the reference's generative stack. What such words DO influence here is the palette and material planning of a freshly generated model — never a repaint of an uploaded mesh.",
+        },
+      ],
+    },
     useCasesTitle: "Who Uses a Texture Generator",
     useCasesIntro: "The reference's audiences.",
     useCases: [
@@ -306,6 +404,29 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "The reference iterates finishes (matte, brushed, patina) on the same mesh.",
       },
     ],
+    techCards: {
+      title: "The Reference's Production Controls — Stated as Its Features",
+      intro:
+        "The reference's page carries five control sections (production controls, Gen-2.5 speed presets, fine-tuning, version history, pack export). This clone ships none of them — these cards document what is being measured against, and where the local boundary runs.",
+      cards: [
+        {
+          title: "Production Controls, Not a Black Box",
+          body: "The reference exposes strength sliders and masking so art direction survives automation. Here there is no texture generation to control — the honest levers are the studio's generation-time palette planning and material redo on finished tasks, both stated on this page.",
+        },
+        {
+          title: "Native Speed Presets",
+          body: "The reference's Gen-2.5 engine advertises speed tiers per texture generation. This clone's material work is synchronous and browser-local — material redo applies instantly — so a speed preset would be solving a problem this side does not have.",
+        },
+        {
+          title: "Version History Built In",
+          body: "On the reference, every texture iteration is kept and diffable. The closest real thing here is the task history: every generated model stays openable, re-exportable, and re-paintable from the studio rail — but uploaded meshes have no version thread at all.",
+        },
+        {
+          title: "Pack Exactly What You Need",
+          body: "The reference exports curated texture packs per model. This clone's exports carry the model's planned materials and vertex colors in GLB/GLTF — a real, smaller thing — and generated PBR map packs are not among them, stated plainly.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "Honest answers for this clone.",
     faq: [
@@ -324,6 +445,22 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Will texture generation be added?",
         a: "Only if it can be real. Until then this page is the truthful record of the gap.",
+      },
+      {
+        q: "What are the reference's named material directions?",
+        a: "Six demo looks on its page — Retro Tin Robot, Carved Pumpkin, Painted Wood, Sci-Fi Robot, Blue Toy Robot, and Sci-Fi Armor — each a prompt-painted PBR pass. They are the reference's demo content, documented here as its feature, not as a local capability.",
+      },
+      {
+        q: "Does material redo count as texturing?",
+        a: "No — redo repaints a generated task's palette in-browser without regenerating geometry. It is a real color-material lever, but it is not prompt-painted PBR on arbitrary UVs, and that distinction is the whole point of this page.",
+      },
+      {
+        q: "Do any exports here include texture maps?",
+        a: "No. GLB and GLTF exports carry planned materials and vertex colors — colors on vertices, not painted image maps. No PBR channel sets ship from this clone today.",
+      },
+      {
+        q: "Why keep a page for a feature that does not exist here?",
+        a: "Nav parity with honesty: the reference's toolbag lists Texture Generator, so this route resolves — to the truth about what runs here and the nearest real paths, never to a mockup that fakes the paint.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",
@@ -407,6 +544,33 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "The reference revitalizes archive scans for modern pipelines.",
       },
     ],
+    techCards: {
+      title: "The Reference's Enhancement Controls — the Feature Set This Clone Declines to Fake",
+      intro:
+        "The reference's page documents its control set twice over under two headings (one of which reads 'Why Choose Hyper3D for AI Video Generation?' on the image enhancer page — a template quirk of the reference itself, faithfully noted). None of it runs here; the cards below record what is being measured against.",
+      cards: [
+        {
+          title: "Three Output Tiers",
+          body: "The reference's enhancer upscales to tiered resolutions with a credit cost per tier. This clone's uploads pass through at exactly the fidelity you provide — no tiers, no upscale, no charge — because no upscaler model is wired here at all.",
+        },
+        {
+          title: "Exact Ranges, Sane Defaults",
+          body: "The reference states its supported input and output ranges explicitly, which is good practice and worth mirroring as documentation. The equivalent honest range statement here: any resolution you upload is accepted and consumed unmodified at that resolution, in either direction.",
+        },
+        {
+          title: "Multi-Image Sidebar Queue",
+          body: "A batch surface for enhancing several references in sequence — a real workflow feature of the reference's tool. This clone has no enhancement queue because it has no enhancement step; images flow straight into captioning and generation as uploaded.",
+        },
+        {
+          title: "Part of the OmniCraft Suite",
+          body: "True on the reference, and true here too — with a different toolbox: this clone's OmniCraft toolbag is four live local tools (HDRI, Vector to 3D, Model Viewer, Format Convertor), and this page is one of the five stated gaps between the two toolbags.",
+        },
+        {
+          title: "Real Detail Recovery, Not Just Resizing",
+          body: "The reference's core claim: its model reconstructs plausible detail instead of interpolating pixels. That is generative upscaling, and it is precisely the capability this clone does not have — interpolating and calling it enhancement would be the dishonest version of this page.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "Honest answers for this clone.",
     faq: [
@@ -425,6 +589,22 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Where is the gap acknowledged in the app?",
         a: "On the OmniCraft toolbag page — the Image Enhancer card carries this exact note.",
+      },
+      {
+        q: "What are the reference's output tiers?",
+        a: "Its enhancer serves tiered upscale resolutions with per-tier credit pricing. Here there are no tiers because there is no upscaler — uploads keep exactly the resolution you bring, and nothing is silently resampled in either direction.",
+      },
+      {
+        q: "Why does the reference's page mention video generation?",
+        a: "Because its own section heading does — 'Why Choose Hyper3D for AI Video Generation?' appears on the image enhancer page in the reference's template. It is the reference's quirk, recorded here for fidelity; this clone's enhancer gap and video gap are separate pages.",
+      },
+      {
+        q: "Does pass-through hurt generation quality?",
+        a: "It removes a convenience, not a guarantee: the captioner reads whatever fidelity you upload. If a reference is too soft, enhance it with a dedicated tool first — the studio will consume the sharper file happily.",
+      },
+      {
+        q: "Is enhancement on the roadmap?",
+        a: "Only in the same sense as every gap on this site: if a real upscaler ever ships, this page's status flips with it. Until then the page is the truthful record, per the toolbag's honesty contract.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",
@@ -489,6 +669,25 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "No mockup, no placeholder canvas pretending to remix — the toolbag card states the gap plainly.",
       },
     ],
+    promptExamples: {
+      title: "Three References, One Prompt, One Scene — the Reference's Remix Shape",
+      intro:
+        "The reference's remix takes up to three images and a prompt that points at each. These cards mirror that grammar — as the description of a feature that does not run here.",
+      cards: [
+        {
+          prompt: "put the cabin from @1 into the snowy ridge of @2, keep @3's dusk lighting",
+          note: "A faithful example of the reference's multi-reference grammar — and nothing like it executes here. No image-to-image model is wired into this clone; the honest neighbors are prompt polish for wording and ControlNet constraints for shaping the next generation.",
+        },
+        {
+          prompt: "re-imagine @1 as a hand-painted style guide cover, keep the composition",
+          note: "On the reference, this returns a re-imagined bitmap in seconds. Here it returns nothing — there is no repaint path of any kind. The closest real transformation of an image this clone offers is the HDRI tool's palette extraction, which reads colors and writes no new image.",
+        },
+        {
+          prompt: "merge @1's product with @2's studio backdrop, cleaner shadows than either",
+          note: "Reference-only capability, stated as such: merging two images into a new one is generative image work this clone does not do. What you can do is bring an already-remixed image in as a generation reference — the pipeline accepts any image you own.",
+        },
+      ],
+    },
     useCasesTitle: "Who Uses Image Remix",
     useCasesIntro: "The reference's audiences.",
     useCases: [
@@ -508,6 +707,29 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "The reference spins one hero shot into campaign variants.",
       },
     ],
+    techCards: {
+      title: "Real Controls Behind Every Remix — the Reference's, Attributed",
+      intro:
+        "Four control cards anchor the reference's remix page. None of the four runs here — each card says what it is on the reference and what the local truth is instead.",
+      cards: [
+        {
+          title: "Multi-Reference Gen Mode",
+          body: "The reference composes from up to three input images under one prompt, with per-image addressing. This clone's generation reads one reference image at a time — image-to-3D captions it — and there is no multi-image composition mode to document.",
+        },
+        {
+          title: "Conversational Edit Mode",
+          body: "On the reference, follow-up prompts refine the remix in a conversation. The studio here has a real prompt-polish step before generation, but no conversational editing of any output — bitmap or mesh — exists in this clone.",
+        },
+        {
+          title: "Turbo Gen References",
+          body: "A fast-draft tier for cheap iteration on the reference's side of the fence. The nearest real speed story here is the fast engine track on 3D generation with its own watchdog fallback — a different feature, honestly labeled as such.",
+        },
+        {
+          title: "3D-Ready Style Presets",
+          body: "The reference ships presets tuned so remixed images work as generation references. This clone's style steering lives in the styles tree — real prompt recipes with honest status chips — rather than image presets feeding a repaint loop that does not exist.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "Honest answers for this clone.",
     faq: [
@@ -526,6 +748,22 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Why does this page exist?",
         a: "Link parity with honesty: the nav lists AI Image Remix, so the route resolves to the truth.",
+      },
+      {
+        q: "What is the reference's remix grammar?",
+        a: "Up to three reference images plus one prompt that addresses them individually — merge backdrops, swap styles, keep subjects. The prompt cards above mirror it so the shape of the missing feature is documented, not just its absence.",
+      },
+      {
+        q: "Could the HDRI tool remix my photo?",
+        a: "No — the HDRI generator reads a dropped image's palette to seed a procedural sky; it never outputs a modified version of your image. Reading pixels and repainting them are different capabilities, and only the first exists here.",
+      },
+      {
+        q: "What happens if I upload a remixed image?",
+        a: "Exactly what happens with any image: the captioner reads it and image-to-3D models from it. Remixing elsewhere and generating here is a fully supported path — the nearest real workflow this page can offer.",
+      },
+      {
+        q: "How many toolbag gaps are there?",
+        a: "Five stated gaps between the reference's toolbag and this clone's: Texture Generator, Image Enhancer, Image Remix, Rodin Search, and the Mesh Editor's hosted suite. Each has an honest page like this one; the four live tools have real tool pages.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",
@@ -590,6 +828,25 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "No web index, no third-party sources, no license filter — and no search box pretending otherwise.",
       },
     ],
+    promptExamples: {
+      title: "Describe It, Don't Keyword It — the Reference's Query Style",
+      intro:
+        "The reference's search pitch is semantic: describe the asset you want in plain words. These query cards mirror that style — as the grammar of an index that does not run here.",
+      cards: [
+        {
+          prompt: "a low-poly wooden chair that fits a cozy farming game",
+          note: "A semantic query the reference's index would answer with matching meshes. This clone has no web-wide index — no search box pretends otherwise. The nearest real path with this intent is text-to-3D: the compiler reads exactly this kind of description and builds a scene from it.",
+        },
+        {
+          prompt: "hard-surface ammo crate, worn military green, game-ready scale",
+          note: "Style-and-constraint language like this is search input on the reference and generation input here. Describing the asset you want and letting the studio build it is the honest local substitute for finding it — a different verb, and no index behind it.",
+        },
+        {
+          prompt: "stylized treasure chest similar to this model, but lower poly",
+          note: "Search-by-model — feeding a mesh to find kin — is one of the reference's three doors. It does not exist here; what this clone reads from images and models is for generation, and no similarity index ever forms.",
+        },
+      ],
+    },
     useCasesTitle: "Who Uses a Model Search Engine",
     useCasesIntro: "The reference's audiences.",
     useCases: [
@@ -609,6 +866,29 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "The reference's pitch is minutes-to-asset; search beats generation when it fits.",
       },
     ],
+    techCards: {
+      title: "Ask by Text, Image, or Model — the Reference's Three Doors",
+      intro:
+        "The reference's search accepts three query modalities. This clone's surfaces read text and images for a different purpose — generation — and the honest mapping is card by card.",
+      cards: [
+        {
+          title: "Ask With Text",
+          body: "On the reference, a description queries a web-wide model index. Here, a description compiles: the text-to-3D prompt path parses plain-language scenes into strict specs and builds them. Your words build an asset instead of finding one.",
+        },
+        {
+          title: "Ask With Image",
+          body: "The reference matches uploaded images against its index. This clone's image reading is generation-side: image-to-3D captions a reference and models from it, and the HDRI tool extracts palettes. No reverse-image model search exists here.",
+        },
+        {
+          title: "Ask With Model",
+          body: "Feeding a mesh to find similar meshes is the reference's third door. Nothing in this clone indexes similarity between models — the Model Viewer opens any local GLB for inspection, which is reading, not searching.",
+        },
+        {
+          title: "What Search Actually Runs Here",
+          body: "Search over your own work, for real: the studio's history rail, the task-list endpoint behind it, and the Format Convertor's task picker all query the tasks you have generated. The scope is your library — the reference's scope is the web.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "Honest answers for this clone.",
     faq: [
@@ -627,6 +907,22 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Is the gap permanent?",
         a: "A web-wide index is out of scope for this clone by construction — it is data, not code, that the reference owns.",
+      },
+      {
+        q: "What are the reference's three search modalities?",
+        a: "Text queries, image queries, and model queries — 'Ask by Text, Image, or Model' is its page's own headline. This clone reads text and images for generation only, never for retrieval; no modality here feeds an index.",
+      },
+      {
+        q: "Why does the page pitch 'describe it, don't keyword it'?",
+        a: "Because semantic description is the reference's query style — its index understands 'a low-poly wooden chair' as a concept. Documented here as its feature; the same descriptive language finds its real use in this clone's generation prompts.",
+      },
+      {
+        q: "Can the task history really replace search?",
+        a: "It replaces the part of search that matters for your own assets: every generated task stays openable, re-exportable, and redoable from the rail. It cannot find the world's models — that gap is the page's reason to exist.",
+      },
+      {
+        q: "Will a web index ever run here?",
+        a: "No — by construction. The reference's index is data it owns and crawls; this clone is code you run. The honest ceiling for local search is your own library, and that ceiling is already reached.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",
@@ -710,6 +1006,29 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
         body: "The Model Viewer opens any GLB locally for a full inspection pass — read-only by design.",
       },
     ],
+    techCards: {
+      title: "Optional Creative Control for Every Surface — Suite vs Subset",
+      intro:
+        "The reference's mesh editor promises sculpting, painting, masking, and remeshing on any mesh. This clone's editing surface is smaller and real — the four cards below hold both halves honestly.",
+      cards: [
+        {
+          title: "Sculpting",
+          body: "The reference hosts brush-based sculpting in the browser. Nothing sculpts here: the studio's model viewer rotates, inspects, and swaps material views, and geometry stays byte-identical from import to export — read-only by design, stated by design.",
+        },
+        {
+          title: "Painting and Masking",
+          body: "Vertex-color painting and region masks are reference-suite features. The closest real lever here is material redo — repaint a generated task's palette without touching geometry — which is a color pass, not surface painting.",
+        },
+        {
+          title: "Remeshing and Repair",
+          body: "The reference's repair pass fixes non-manifold geometry, holes, and normals on demand. This clone performs no mesh surgery of any kind; if a third-party mesh is broken, inspect it locally in the viewer and repair it in a real DCC.",
+        },
+        {
+          title: "The Subset That Is Real",
+          body: "Orientation adjustments that persist through every export, material redo on finished tasks, and ControlNet bbox/voxel constraints that shape the NEXT generation — prevention rather than repair. Three real levers, enumerated without inflation.",
+        },
+      ],
+    },
     faqTitle: "Frequently Asked Questions",
     faqIntro: "Honest answers for this clone.",
     faq: [
@@ -728,6 +1047,22 @@ export const OMNICRAFT_FEATURE_PAGES: FeaturePageDef[] = [
       {
         q: "Why state the boundary publicly?",
         a: "Because the toolbag's honesty contract applies site-wide: every listed tool either works here or says exactly why not.",
+      },
+      {
+        q: "What does the reference's suite actually do?",
+        a: "Hosted mesh-level operations — sculpt, paint, mask, remesh, repair — against uploaded meshes, per its page's own anatomy. Documented here as its feature set; nothing in this clone performs mesh-level surgery.",
+      },
+      {
+        q: "What exactly can I edit on a generated model?",
+        a: "Three things, all real: orientation (persists into every export format), materials (palette redo without regenerating geometry), and proportions of the next run (ControlNet constraints drawn before generation). Vertex positions are not on the list.",
+      },
+      {
+        q: "Is the Model Viewer an editor?",
+        a: "No — it is an inspector. It opens any local GLB/GLTF (and remote URLs) with material and wireframe views, and modifies nothing. Calling inspection 'editing' would be the kind of inflation this site exists to avoid.",
+      },
+      {
+        q: "Why offer ControlNet instead of repair?",
+        a: "Because generation-time prevention is what this clone's pipeline can do honestly: bbox and voxel constraints wrap the model you are about to make. Repairing an arbitrary mesh is a different capability with a different owner — the reference's.",
       },
     ],
     crossLinksTitle: "What this clone ships instead",

@@ -281,6 +281,9 @@ describe("features registry — t85 section anatomy", () => {
     expect(withSection((p) => p.promptExamples)).toEqual([
       "ai-image-generator",
       "ai-video-generator",
+      "omnicraft/3d-model-search-engine",
+      "omnicraft/ai-image-remix",
+      "omnicraft/ai-texture-generator",
       "text-to-3d",
     ]);
     expect(withSection((p) => p.researchNote)).toEqual(["image-to-3d", "worldgen"]);
@@ -288,11 +291,18 @@ describe("features registry — t85 section anatomy", () => {
       "chatavatar",
       "image-to-3d",
       "mcp",
+      "omnicraft/3d-mesh-editor",
+      "omnicraft/3d-model-search-engine",
+      "omnicraft/ai-hdri-generator",
+      "omnicraft/ai-image-enhancer",
+      "omnicraft/ai-image-remix",
+      "omnicraft/ai-texture-generator",
+      "omnicraft/svg-to-3d-converter",
       "text-to-3d",
       "worldgen",
     ]);
     expect(withSection((p) => p.codeExamples)).toEqual(["api", "mcp"]);
-    expect(withSection((p) => p.exportTypes)).toEqual(["api"]);
+    expect(withSection((p) => p.exportTypes)).toEqual(["api", "omnicraft/svg-to-3d-converter"]);
   });
 
   it("writes honest prompt cards — a real prompt plus a real note, never bare", () => {
@@ -337,7 +347,7 @@ describe("features registry — t85 section anatomy", () => {
     }
   });
 
-  it("lifted the FAQ floor on every touched page (t85 density contract)", () => {
+  it("lifted the FAQ floor on every touched page (t85/t86 density contract)", () => {
     const TOUCHED: Record<string, number> = {
       "text-to-3d": 8,
       "image-to-3d": 8,
@@ -347,6 +357,13 @@ describe("features registry — t85 section anatomy", () => {
       chatavatar: 8,
       "ai-image-generator": 8,
       "ai-video-generator": 8,
+      "omnicraft/ai-hdri-generator": 8,
+      "omnicraft/svg-to-3d-converter": 8,
+      "omnicraft/ai-texture-generator": 8,
+      "omnicraft/ai-image-enhancer": 8,
+      "omnicraft/ai-image-remix": 8,
+      "omnicraft/3d-model-search-engine": 8,
+      "omnicraft/3d-mesh-editor": 8,
     };
     for (const [slug, floor] of Object.entries(TOUCHED)) {
       expect(featureBySlug(slug)!.faq.length, `${slug} faq floor`).toBeGreaterThanOrEqual(floor);
@@ -360,6 +377,72 @@ describe("features registry — t85 section anatomy", () => {
       expect(text.includes("40 credits"), `${p.slug}`).toBe(false);
       expect(text.includes("40 at sign-up"), `${p.slug}`).toBe(false);
     }
+  });
+});
+
+describe("features registry — t86 omnicraft long tail anchors to real code", () => {
+  it("the live HDRI page pins the engine that really runs (src/lib/hdri.ts)", () => {
+    const p = featureBySlug("omnicraft/ai-hdri-generator")!;
+    const text = JSON.stringify(p).toLowerCase();
+    // The copy names the engine module — which must actually exist.
+    expect(text.includes("src/lib/hdri.ts")).toBe(true);
+    expect(existsSync(join(process.cwd(), "src/lib/hdri.ts"))).toBe(true);
+    // The real determinism story: FNV-1a + mulberry32, both in the engine source.
+    expect(text.includes("fnv-1a")).toBe(true);
+    expect(text.includes("mulberry32")).toBe(true);
+    const engine = readFileSync(join(process.cwd(), "src/lib/hdri.ts"), "utf8");
+    expect(engine.includes("mulberry32")).toBe(true);
+    expect(engine.includes("0x01000193")).toBe(true); // the FNV-1a prime
+    // The real export tiers, and the 8K tier only ever as a stated gap.
+    expect(text.includes("2k") && text.includes("4k")).toBe(true);
+    for (const m of JSON.stringify(p).matchAll(/[^.]*8K[^.]*\./g)) {
+      expect(m[0], "every 8K sentence is the reference's, not a claim").toMatch(
+        /reference|not|never|does not/i,
+      );
+    }
+  });
+
+  it("the live SVG page pins the converter's real slider ranges", () => {
+    const p = featureBySlug("omnicraft/svg-to-3d-converter")!;
+    const text = JSON.stringify(p);
+    // The copy states the engine's actual clamps: depth [0.05, 4], bevel [0, 0.5], curve [4, 32].
+    for (const range of ["0.05", "0.5", "32"]) {
+      expect(text.includes(range), `svg def mentions ${range}`).toBe(true);
+    }
+    const lib = readFileSync(join(process.cwd(), "src/lib/vector-to-3d.ts"), "utf8");
+    expect(lib.includes("0.05, 4")).toBe(true);
+    expect(lib.includes("0, 0.5")).toBe(true);
+    expect(lib.includes("4, 32") || lib.includes("[4, 32]")).toBe(true);
+    // The tool UI serves the same ranges the page states.
+    const tool = readFileSync(
+      join(process.cwd(), "src/components/hyper3d/omnicraft/vector-tool.tsx"),
+      "utf8",
+    );
+    expect(tool.includes('min={0.05} max={4}')).toBe(true);
+    expect(tool.includes('min={0} max={0.5}')).toBe(true);
+    expect(tool.includes('min={4} max={32}')).toBe(true);
+  });
+
+  it("the reference-only omnicraft pages attribute their cards to the reference", () => {
+    for (const p of FEATURE_PAGES) {
+      if (!p.slug.startsWith("omnicraft/")) continue;
+      if (p.status !== "reference-only") continue;
+      const sections = [p.techCards, p.promptExamples].filter(Boolean);
+      for (const s of sections) {
+        const text = JSON.stringify(s).toLowerCase();
+        expect(
+          text.includes("reference"),
+          `${p.slug}: tech/prompt sections attribute to the reference`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("the enhancer page records the reference's own video-heading quirk faithfully", () => {
+    const p = featureBySlug("omnicraft/ai-image-enhancer")!;
+    const text = JSON.stringify(p);
+    expect(text.includes("Why Choose Hyper3D for AI Video Generation?")).toBe(true);
+    expect(text.toLowerCase().includes("quirk")).toBe(true);
   });
 });
 
