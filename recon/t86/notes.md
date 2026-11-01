@@ -158,6 +158,13 @@ NO DEFECTS ×3.
 
 Vercel deploy attempted post-push; outcome below.
 
-## Vercel deploy outcome (2026-11-02, post-push)
+## Vercel deploy outcome (2026-11-02, post-push of c0b0467)
 
-Pending — appended after the attempt.
+Attempted on both surviving tokens: token-1 → 402 resource_creation_blocked
+("Your Team exceeded our fair use limits and has been blocked" — the same
+t80/t81/t82/t83/t84/t85 state); token-2 → 403 forbidden / invalidToken.
+The live domain answers 402 account-wide. Latest production deployment
+remains dpl_E6YXAjhq (commit 0d56c9b, the t77-era deploy). Production
+re-verification impossible — the local standalone build +
+verify-served.py (56/56) is the verification of record for t86, as it
+was for t81-t85.
