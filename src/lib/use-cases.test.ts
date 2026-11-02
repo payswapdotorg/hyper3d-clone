@@ -38,11 +38,12 @@ function isKnownRoute(href: string): boolean {
   return KNOWN_ROUTE_PREFIXES.some((p) => base.startsWith(p));
 }
 
-/** Flatten a page's text for content assertions. */
+/** Flatten a page's text for content assertions (t87: includes the new
+ * optional blocks, so the honesty contract covers them too). */
 function pageText(slug: string): string {
   const page = findUseCasePage(slug);
   if (!page) throw new Error(`no use-case page ${slug}`);
-  return [
+  const parts: string[] = [
     page.title,
     page.description,
     page.subline,
@@ -54,7 +55,20 @@ function pageText(slug: string): string {
     ...page.cards.flatMap((c) => [c.title, c.body]),
     ...page.faq.flatMap((f) => [f.q, f.a]),
     page.closingBody,
-  ].join("\n");
+  ];
+  if (page.promptExamples) {
+    parts.push(page.promptExamples.title, page.promptExamples.intro);
+    parts.push(...page.promptExamples.cards.flatMap((c) => [c.prompt, c.note]));
+  }
+  if (page.techCards) {
+    parts.push(page.techCards.title, page.techCards.intro);
+    parts.push(...page.techCards.cards.flatMap((c) => [c.title, c.body]));
+  }
+  if (page.exportTypes) {
+    parts.push(page.exportTypes.title, page.exportTypes.intro);
+    parts.push(...page.exportTypes.formats.flatMap((f) => [f.name, f.note]));
+  }
+  return parts.join("\n");
 }
 
 describe("use-cases registry — reference parity", () => {
@@ -250,6 +264,150 @@ describe("use-cases wiring — footer, sitemap, routes", () => {
     const others = ["/features", "/legal", "/workspace/omnicraft"];
     for (const route of USE_CASE_ROUTES) {
       expect(others.some((p) => route.startsWith(p)), route).toBe(false);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// t87 section anatomy — the reference's per-page bands the shared renderer
+// gained (promptExamples / techCards / exportTypes), carried honestly. Every
+// anchor below pins content to real code constants, mirroring the t85/t86
+// features-tree conventions.
+// ---------------------------------------------------------------------------
+
+describe("use-cases registry — t87 section anatomy", () => {
+  it("carries the reference's missing sections on exactly the right pages", () => {
+    const withSection = (sel: (p: (typeof USE_CASE_PAGES)[number]) => unknown) =>
+      USE_CASE_PAGES.filter(sel).map((p) => p.slug).sort();
+    expect(withSection((p) => p.promptExamples)).toEqual([
+      "3d-printing",
+      "animation",
+      "automotive-design",
+      "character-design",
+      "game-development",
+      "metaverse",
+      "nft-creation",
+      "vr-ar",
+    ]);
+    expect(withSection((p) => p.techCards)).toEqual([
+      "3d-printing",
+      "animation",
+      "character-design",
+      "e-commerce",
+      "game-development",
+      "jewelry-design",
+      "mechanical-engineering",
+      "metaverse",
+      "nft-creation",
+      "vr-ar",
+    ]);
+    expect(withSection((p) => p.exportTypes)).toEqual([
+      "3d-printing",
+      "animation",
+      "automotive-design",
+      "e-commerce",
+      "jewelry-design",
+      "mechanical-engineering",
+      "metaverse",
+      "vr-ar",
+    ]);
+  });
+
+  it("writes honest prompt cards — a real prompt plus a real note, never bare", () => {
+    for (const p of USE_CASE_PAGES) {
+      if (!p.promptExamples) continue;
+      expect(p.promptExamples.cards.length, `${p.slug} cards`).toBeGreaterThanOrEqual(3);
+      for (const card of p.promptExamples.cards) {
+        expect(card.prompt.length, `${p.slug} prompt`).toBeGreaterThanOrEqual(25);
+        // The honest note IS the section — 80+ chars of what really happens here.
+        expect(card.note.length, `${p.slug} note`).toBeGreaterThanOrEqual(80);
+      }
+      // The partial page must keep saying the rigging half is absent.
+      if (p.status === "partial") {
+        const joined = p.promptExamples.cards.map((c) => c.note).join(" ");
+        expect(/no skeleton|rigging|rig/i.test(joined), `${p.slug} rigging gap in cards`).toBe(
+          true,
+        );
+      }
+    }
+  });
+
+  it("writes substantive tech cards carrying the reference's own bands", () => {
+    for (const p of USE_CASE_PAGES) {
+      if (!p.techCards) continue;
+      expect(p.techCards.cards.length, `${p.slug} tech cards`).toBeGreaterThanOrEqual(4);
+      for (const card of p.techCards.cards) {
+        expect(card.body.length, `${p.slug}: ${card.title}`).toBeGreaterThanOrEqual(80);
+      }
+    }
+  });
+
+  it("exportTypes pins the format list to EXPORT_FORMATS exactly, per page", () => {
+    for (const p of USE_CASE_PAGES) {
+      if (!p.exportTypes) continue;
+      expect(p.exportTypes.formats.map((f) => f.name), `${p.slug} formats`).toEqual(
+        EXPORT_FORMATS,
+      );
+      for (const f of p.exportTypes.formats) {
+        expect(f.note.length, `${p.slug} .${f.name} note`).toBeGreaterThanOrEqual(40);
+      }
+    }
+  });
+
+  it("lifted the FAQ floor on every use-case page (t87 density contract)", () => {
+    for (const p of USE_CASE_PAGES) {
+      expect(p.faq.length, `${p.slug} faq floor`).toBeGreaterThanOrEqual(8);
+    }
+  });
+
+  it("states the polycount/LOD gap wherever the reference sells the controls", () => {
+    // Reference pages carrying "Target Polygon Count & Optional LODs" (or the
+    // Sim Ready panel): 3d-printing, character-design, game-development,
+    // metaverse. The gap must be stated, not blurred.
+    const CARRIES_CONTROLS = ["3d-printing", "character-design", "game-development", "metaverse"];
+    for (const slug of CARRIES_CONTROLS) {
+      const text = pageText(slug);
+      expect(text, `${slug} names the lever`).toMatch(/polycount/i);
+      expect(
+        text,
+        `${slug} states the gap`,
+      ).toMatch(/no target|no polycount|neither target|no budget slider|no LOD|does not expose a polycount/i);
+    }
+  });
+
+  it("the animation page pins the studio's real editing subset (orientation, material redo, ControlNet)", () => {
+    const text = JSON.stringify(findUseCasePage("animation")!);
+    expect(text).toMatch(/orientation/i);
+    expect(text).toMatch(/ControlNet/i);
+    expect(text).toMatch(/material/i);
+    // and the hosted-editor gap stays stated
+    expect(pageText("animation")).toMatch(/hosted (mesh )?editor is not here|not in this clone/i);
+  });
+
+  it("every OmniCraft route mentioned anywhere in a def is a LIVE tool route", () => {
+    for (const p of USE_CASE_PAGES) {
+      const text = JSON.stringify(p);
+      for (const m of text.match(/\/workspace\/omnicraft\/[a-z0-9]+/g) ?? []) {
+        expect(LIVE_TOOL_ROUTES, `${p.slug} → ${m}`).toContain(m);
+      }
+    }
+  });
+
+  it("pages naming the HDRI generator point at the real live tool", () => {
+    for (const p of USE_CASE_PAGES) {
+      const text = JSON.stringify(p);
+      if (/HDRI generator/i.test(text)) {
+        expect(text, `${p.slug} hdri route`).toContain("/workspace/omnicraft/hdri");
+      }
+    }
+  });
+
+  it("never claims a 40-credit wallet — the real signup grant is 50", () => {
+    for (const p of USE_CASE_PAGES) {
+      const text = JSON.stringify(p);
+      expect(text.includes("40-credit"), `${p.slug}`).toBe(false);
+      expect(text.includes("40 credits"), `${p.slug}`).toBe(false);
+      expect(text.includes("40 at sign-up"), `${p.slug}`).toBe(false);
     }
   });
 });

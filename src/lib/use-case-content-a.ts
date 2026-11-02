@@ -116,6 +116,18 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
         q: "How much does it cost?",
         a: "Generation is metered with granted credits: 1 credit for a standard task, 10 for agentic, your first task free — and pay-by-result engine tasks charge exactly 1 credit only at Confirm & Export.",
       },
+      {
+        q: "Can I print at a specific scale?",
+        a: "Not directly — there is no unit scaler in this clone. Export the STL and set the scale in your slicer, which is where print sizing belongs anyway (and where your printer's calibration lives).",
+      },
+      {
+        q: "How watertight is \"watertight\", exactly?",
+        a: "Watertight by construction: the mesh builder unions closed primitives into a single object with no open boundaries, which is what slicers want as input. It is still a concept-grade mesh, not an engineering-verified solid — the label means exactly what it says.",
+      },
+      {
+        q: "Why is there no gallery of finished prints?",
+        a: "Because there is no photo pipeline behind this clone to produce one honestly. The studio's poster preview is a real rasterization of the built geometry — that is the only preview truth on offer, and a gallery of prints we cannot show would be a claim we cannot back.",
+      },
     ],
     crossLinksTitle: "Explore more AI 3D use cases",
     crossLinks: [
@@ -131,6 +143,61 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "How image-to-3D works", href: "/features/image-to-3d" },
+    promptExamples: {
+      title: "Prompt recipes for the print queue",
+      intro:
+        "The reference's page walks makers from a prompt to a printed part. These cards are the same walk, honestly labeled: each prompt compiles here, and each note says what actually comes out.",
+      cards: [
+        {
+          prompt: "a tabletop miniature: a squat stone golem sentinel on a 32mm round base, shield on the left arm",
+          note: "Compiles into a closed single mesh you can export as STL and scale in the slicer. Concept-grade detail — the slicer sees manifold assembled primitives, not sculpted micro-detail, so prime it or finish by hand for table quality.",
+        },
+        {
+          prompt: "a cosplay shoulder pauldron, faceted low-poly style, one wearable shell with a strap lip",
+          note: "Builds a printable concept volume for prop finishing — sand, prime, and paint the print. The faceted style prints cleanly because the geometry is closed primitives unioned into one shell, not a scanned organic surface.",
+        },
+        {
+          prompt: "a desk cable clip: low arch with a slot, chamfered edges, thumb-flat base",
+          note: "A draft fixture to check fit-by-eye — the honest path to real brackets. Print it, test the fit, then model the final part in CAD with proper wall thickness and clearances; this clone will not pretend the draft is the part.",
+        },
+      ],
+    },
+    techCards: {
+      title: "Watertight or it doesn't print",
+      intro:
+        "The reference's own heading, and the one claim this clone can make from first principles. Here is how watertight actually happens here, card by card — with the reference's other print controls marked where they are absent.",
+      cards: [
+        {
+          title: "Watertight by construction",
+          body: "The mesh builder unions closed boxes, spheres, cylinders, and the rest of the primitive vocabulary into a single object with no open boundaries — a slicer sees manifold input, not a repair project. That is the whole trick, stated plainly.",
+        },
+        {
+          title: "The polycount lever the reference has",
+          body: "The reference's Target Polygon Count & Optional LODs controls are not in this clone — you print the mesh the pipeline built, at the resolution it was built. If the file is heavy for your printer, decimate in your DCC after OBJ or FBX export; no slider here pretends otherwise.",
+        },
+        {
+          title: "One mesh, materials per part",
+          body: "Materials are per-part PBR parameters — color, metalness, roughness — so color rides inside the GLB and OBJ exports rather than in separate map files. STL carries the shape alone; resin color prints need your slicer's own painting tools.",
+        },
+        {
+          title: "Cast with your own checklist",
+          body: "Ring blanks and pendant drafts print fine as concept volumes. Lost-wax casting is on you and your bench: wall thickness, sprue placement, and shrink compensation are slicer-and-foundry decisions this page will not fake confidence about.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "The export row a print workflow actually gets",
+      intro:
+        "The reference's page promises STL, 3MF and OBJ. This clone's exporter serves exactly these six formats — 3MF is not among them, stated plainly rather than padded, and STL is the one your slicer eats.",
+      formats: [
+        { name: "glb", note: "The web/AR twin of your print — send it to a viewer (the OmniCraft Model Viewer is live here) to check proportions before committing filament." },
+        { name: "gltf", note: "The readable JSON twin of GLB — diffable in version control when print revisions need a paper trail." },
+        { name: "fbx", note: "ASCII FBX 7.3 into DCC tools — the route to an edited or decimated copy before reprinting." },
+        { name: "obj", note: "The universal geometry hand-off — most slicers open OBJ directly, material references intact." },
+        { name: "stl", note: "The slicer format. Real bytes serialized from the same geometry the poster previewed — no render-to-mesh swaps between preview and download." },
+        { name: "usdz", note: "Drop the model into Quick Look on iOS to sanity-check scale in the room before printing it for real." },
+      ],
+    },
   },
   {
     slug: "animation",
@@ -227,6 +294,22 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
         q: "Do revisions stay consistent?",
         a: "With the seed pinned, yes — the same prompt rebuilds the same mesh. Change the seed or the prompt and you get a new take.",
       },
+      {
+        q: "What can I edit without leaving the browser?",
+        a: "The studio's honest subset: the orientation popup re-aims the mesh, per-part material parameters can be re-set and re-run, and ControlNet constraints steer proportions before generation. A hosted sculpt/paint/remesh editor is not in this clone.",
+      },
+      {
+        q: "Does the FBX import cleanly into Blender or Maya?",
+        a: "The exporter is ASCII FBX 7.3 with world transforms baked and layer normals/UVs/colors included — imports land where you expect, scene-ready for dressing. Rig-ready only after your own pass, since no skeleton ships.",
+      },
+      {
+        q: "How does this compare to the reference's rigging-ready pitch?",
+        a: "Plainly: the reference sells nearly-ready-to-use rigged assets. Here you get the geometry half — clean meshes, real six-format exports, deterministic reruns — and the rigging half stays in your DCC. The split is the page's whole honesty contract.",
+      },
+      {
+        q: "Can I check the mesh before export?",
+        a: "Yes, twice: the poster preview is a true rasterization of the built geometry, and the OmniCraft Model Viewer (live tool) opens the exported result in the browser. What you approve is what exports.",
+      },
     ],
     crossLinksTitle: "Keep the pipeline moving",
     crossLinks: [
@@ -242,6 +325,61 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text to 3D details", href: "/features/text-to-3d" },
+    promptExamples: {
+      title: "Prompt recipes for shot assets",
+      intro:
+        "The reference's page is built around characters, props, and set dressing. These cards are that anatomy, honestly translated: what each prompt compiles into here, and where the rigging line sits.",
+      cards: [
+        {
+          prompt: "a roadside diner booth set: two bench seats, laminate table, chrome leg, ketchup bottle on the table",
+          note: "Background set dressing that never touches a rig — generate, export GLB for previz, and dress the shot. Pin the seed and retakes rebuild the same booth, so the edit stays continuous.",
+        },
+        {
+          prompt: "a hero prop: brass pocket telescope, three-drawer body, ringed eyepiece, worn metal finish",
+          note: "Props the rig touches need clean geometry more than bones — this compiles a single closed mesh with per-part brass parameters for your own FK parenting in DCC. No skeleton ships from here, ever.",
+        },
+        {
+          prompt: "a previz city block: six mixed-height towers, rooftop water tanks, street-level storefronts",
+          note: "Block-in volumes for previz — generate per-block variations and bulk-export the keepers. Concept-grade by design; matte-paint over them freely and let the animatic carry the fidelity.",
+        },
+      ],
+    },
+    techCards: {
+      title: "Mesh inspection and creative editing — the real subset",
+      intro:
+        "The reference's page pitches its hosted OmniCraft mesh editor for inspection and creative edits. This clone's honest subset lives in the studio itself — here is exactly what exists and what does not.",
+      cards: [
+        {
+          title: "Orientation, for real",
+          body: "The studio's orientation popup re-aims the generated mesh before export — the same control the reference's editor sells for turning a model upright. It runs on the real geometry, not a faked preview.",
+        },
+        {
+          title: "Material redo, for real",
+          body: "Per-part material parameters — color, metalness, roughness — can be re-set and re-run in the studio: a repaint pass without leaving the pipeline. It is parameters, not texture-map painting, and it says so.",
+        },
+        {
+          title: "Aspect constraints, for real",
+          body: "ControlNet spatial constraints (bounding-box, voxel, and point-cloud modes) steer proportions before generation — the closest thing here to layout-directed editing, and it is wired into the real build.",
+        },
+        {
+          title: "The hosted editor is not here",
+          body: "The reference's sculpt/paint/mask/remesh suite is not in this clone — no tabbed editor page pretends otherwise. The mesh route stays generate, inspect, export, then edit in the DCC of your choice.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "Formats the animation half actually ships",
+      intro:
+        "The reference's page promises High-Quality FBX or GLB. This clone's exporter serves exactly these six — all byte-verified — and the rigging half stays in your DCC either way.",
+      formats: [
+        { name: "glb", note: "Engine previz and quick scene assembly — one binary file with materials and vertex colors, straight into most viewers." },
+        { name: "gltf", note: "The JSON twin — handy when a previz pipeline wants to post-process or diff scene documents." },
+        { name: "fbx", note: "ASCII FBX 7.3 with world transforms and layer normals/UVs/colors baked — the DCC hand-off for your own rigging pass." },
+        { name: "obj", note: "The neutral geometry hand-off — every rigger's fallback import, openable anywhere." },
+        { name: "stl", note: "Maquette printing — block-in volumes for desk reference while you rig the hero asset." },
+        { name: "usdz", note: "AR reference views on iPhone — check silhouette and proportion in the room before the shot." },
+      ],
+    },
   },
   {
     slug: "automotive-design",
@@ -338,6 +476,22 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
         q: "Will the same sketch give the same car?",
         a: "With the seed pinned, yes — the pipeline is deterministic per (prompt, seed). Change the seed for a new interpretation.",
       },
+      {
+        q: "Can I get PBR texture maps for lookdev?",
+        a: "Not here — materials are per-part parameters (color, metalness, roughness) carried inside the mesh export. There are no separate map images to download; the reference's PBR maps card is its product, not this clone's.",
+      },
+      {
+        q: "Can I configure trim variants in one model?",
+        a: "Not in one file — generate each variant as its own task with its own pinned seed, so the variants stay comparable. Deterministic reruns keep the theme family consistent where it matters.",
+      },
+      {
+        q: "How do AR walkarounds work?",
+        a: "Export USDZ and open it in Quick Look on iOS — real bytes, in the room, at whatever scale your viewer applies. There is no hosted AR showroom page here; the file is the showroom.",
+      },
+      {
+        q: "Does it ship clean topology and mesh controls?",
+        a: "Clean by construction — closed primitives unioned into a single mesh. Mesh controls are not here: no polycount slider, no remesh, no topology brush. Decimate after OBJ/FBX export in your DCC; the reference's controls card stays its product.",
+      },
     ],
     crossLinksTitle: "Explore more AI 3D use cases",
     crossLinks: [
@@ -353,6 +507,38 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
+    promptExamples: {
+      title: "Concept prompts that iterate",
+      intro:
+        "The reference's pitch is theme exploration at sketch speed — the loop here is fast because it is deterministic and seeded. These cards are the iteration mechanics, honestly labeled.",
+      cards: [
+        {
+          prompt: "a roadster concept: long hood, swept fenders, open cockpit, wire wheels, low stance",
+          note: "Compiles a closed concept volume — proportion and stance read clearly, surfacing stays concept-grade. Re-run with the seed pinned and vary only the wheel or fender words to compare takes side by side.",
+        },
+        {
+          prompt: "an off-road theme: raised suspension, boxy cabin, roof rack with spares, chunky all-terrain tires",
+          note: "Theme families arrive as separate tasks, not parametric reskins of one car — each prompt is a fresh compile. Pin a seed per theme and the theme stays itself across revision passes.",
+        },
+        {
+          prompt: "a streamliner study: teardrop canopy, skirted rear wheels, polished bare metal finish",
+          note: "The polished-metal read is per-part metalness and roughness parameters in the export — visual concept material, not a Class-A surface. Take OBJ into CAD when the theme wins the meeting.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "Exports that fit automotive pipelines",
+      intro:
+        "The reference's six-card band, mirrored with this clone's real six. Its PBR texture maps card has no twin here — materials are parameters, not baked maps, and every lane below is a genuine exporter.",
+      formats: [
+        { name: "glb", note: "Configurator drafts and web reviews — one binary file with materials in place, straight into a viewer." },
+        { name: "gltf", note: "The readable twin of GLB — diffable when a configurator pipeline post-processes the concept." },
+        { name: "fbx", note: "Surfacing reference into Maya or Blender — ASCII FBX 7.3 with transforms and layers intact." },
+        { name: "obj", note: "The neutral interchange for CAD-adjacent tools — geometry with material references, openable anywhere." },
+        { name: "stl", note: "Scale-model studies for the desk — real bytes sliced from the reviewed geometry." },
+        { name: "usdz", note: "AR design reviews on iPhone — Quick Look walkarounds of the concept volume, straight from the export row." },
+      ],
+    },
   },
   {
     slug: "character-design",
@@ -453,6 +639,18 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
         q: "What does a character generation cost?",
         a: "1 credit standard, 10 agentic, first task free; engine-tier tasks charge exactly 1 credit at Confirm & Export — the pay-by-result gate is real here.",
       },
+      {
+        q: "How do I steer stylized versus realistic?",
+        a: "Style lives in the prompt's keyword palettes — 'faceted low-poly', 'chunky toy proportions', 'flat-color palette' compile visibly different builds. 'Realistic' reads as per-part PBR parameters; hero-grade map sets are not here.",
+      },
+      {
+        q: "Can I re-skin one character for a lineup?",
+        a: "Yes, deterministically — pin the seed and change only the palette or outfit keywords: same silhouette, new skin. Change the seed instead and you get a new take, not a variant.",
+      },
+      {
+        q: "What is the fastest path to a posed character?",
+        a: "Export FBX or OBJ and pose in your DCC — there is no pose picker or skeleton here, so the pose pass is yours by design. The character-design loop ends honestly at clean, rigged-by-you geometry.",
+      },
     ],
     crossLinksTitle: "Explore more AI 3D use cases",
     crossLinks: [
@@ -468,6 +666,48 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
+    promptExamples: {
+      title: "Character prompts that compile",
+      intro:
+        "The reference's page sells stylized, realistic, and in-between from one sheet. These cards show the same range honestly: keyword palettes do the styling, and every note says where the pipeline's reach ends.",
+      cards: [
+        {
+          prompt: "a stylized scout: hooded cloak, crossbody satchel, lantern on the belt, faceted low-poly style",
+          note: "Keyword palettes steer the style for real — 'faceted low-poly' compiles flat, chunky forms with clean silhouettes. Export GLB for the engine, or FBX for your own rig pass; no skeleton ships either way.",
+        },
+        {
+          prompt: "a shopkeeper character: apron, rolled sleeves, friendly slouch, chunky toy proportions",
+          note: "Proportion keywords like 'chunky toy' push silhouette, not topology — the mesh stays closed primitives under the read. Parent and pose in DCC when the lineup needs a pose.",
+        },
+        {
+          prompt: "a knight, flat-color palette: steel plate, crimson tabard, closed helm, grounded stance",
+          note: "The same knight re-skins deterministically — new palette keywords, same seed, same silhouette. Variant sheets for your lineup without geometry drift between takes.",
+        },
+      ],
+    },
+    techCards: {
+      title: "Stylized, realistic, or in between — the honest controls",
+      intro:
+        "The reference sells style bands and a Sim Ready panel (pose, polycount, LODs). This clone's style levers are prompt keywords and material parameters; the gaps are stated where they sit.",
+      cards: [
+        {
+          title: "Stylized and toon, by keyword",
+          body: "Style lives in the prompt: 'faceted low-poly', 'chunky toy proportions', 'flat-color palette' are honored by the compiler's keyword palettes — the real style lever here, and it compounds with the seed for consistent families.",
+        },
+        {
+          title: "Game-ready realism, by parameters",
+          body: "'Realistic' reads as per-part PBR parameters — color, metalness, roughness — carried inside the export. Engines read them fine; baked map sets for close-up hero shots are not produced here.",
+        },
+        {
+          title: "Same character, new skin",
+          body: "Pin the seed, change the palette keywords: the same silhouette re-skinned. The reference's outfit-variant card, done deterministically — collectors compare skins, not geometry drift.",
+        },
+        {
+          title: "The Sim Ready panel is not here",
+          body: "No A-pose/T-pose picker, no target polycount, no LOD ladder — the reference's panel is its product, not this clone's. Export, decimate, and pose in your DCC; that path is stated instead of faked.",
+        },
+      ],
+    },
   },
   {
     slug: "e-commerce",
@@ -564,6 +804,22 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
         q: "What about AR on the web?",
         a: "USDZ covers Quick Look on iOS; GLB covers WebXR and web viewers. Both exports are real and tested byte-for-byte.",
       },
+      {
+        q: "Do I need a photo studio for input?",
+        a: "No — one clear catalog shot on a plain background is enough for the image door, or describe the product and skip photography entirely. The vision pass reads either input into the same spec compiler.",
+      },
+      {
+        q: "Can customers view the models in AR?",
+        a: "Yes, with the real USDZ export — open it in Quick Look on iOS, no custom app needed. GLB covers web viewers. What this clone does not have is a hosted AR showroom page; the files are the experience.",
+      },
+      {
+        q: "Does it connect to my store platform?",
+        a: "No — there is no platform integration, plugin, or product feed in this clone. Export the files and wire them into your storefront yourself; the pipeline ends honestly at real bytes.",
+      },
+      {
+        q: "Will the model match the photo exactly?",
+        a: "No — output is a concept-grade model of the photographed product: closed primitives with per-part materials, faithful to proportions and palette, not a photogrammetry reconstruction. For fabric and texture detail, keep your photography.",
+      },
     ],
     crossLinksTitle: "Explore other AI 3D workflows",
     crossLinks: [
@@ -579,6 +835,42 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
+    techCards: {
+      title: "The product page is your new showroom",
+      intro:
+        "The reference's showroom pitch, honest edition — the loop that actually runs here, card by card, with the platform gaps marked where they sit.",
+      cards: [
+        {
+          title: "Catalog shot to model",
+          body: "Upload the photo you already shot; the vision pass captions shapes and parts into the spec compiler and the mesh builds paced and visible. No rebooking the studio, no turntable rig — one frame reads fine.",
+        },
+        {
+          title: "Deterministic catalog consistency",
+          body: "Pin the seed and the same shot rebuilds the same model — the consistency a catalog needs across re-exports, fixes, and channel variants. Change the seed only when you want a new interpretation.",
+        },
+        {
+          title: "Quick Look on product pages",
+          body: "USDZ export is real: drop the file into an iOS Quick Look context and the product sits in the customer's room. The web twin is GLB in any viewer — both lanes ship from the same geometry.",
+        },
+        {
+          title: "No marketplace integration",
+          body: "There is no Shopify bridge, plugin directory, or marketplace feed in this clone — the files are yours to take and the storefront plumbing is yours to build. Stated plainly rather than papered over with a fake connect button.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "Every format the exporter row actually ships",
+      intro:
+        "The reference's format band names four storefront lanes. This clone's exporter serves all six below — real bytes, byte-verified — with the PBR maps lane honestly absent (materials are parameters, not baked maps).",
+      formats: [
+        { name: "glb", note: "Web product viewers — one binary file with materials and vertex colors, the default for storefront 3D." },
+        { name: "gltf", note: "The JSON twin for pipelines that post-process or diff product models between channel versions." },
+        { name: "fbx", note: "DCC interchange for hero-shot retouching — ASCII FBX 7.3 with transforms intact." },
+        { name: "obj", note: "The universal geometry exchange — legacy tools of any age open it." },
+        { name: "stl", note: "When a product needs a physical twin — real bytes for the slicer, straight from the reviewed geometry." },
+        { name: "usdz", note: "Apple Quick Look on product pages — the AR try-it-in-the-room moment, straight from the export row." },
+      ],
+    },
   },
   {
     slug: "game-development",
@@ -679,6 +971,18 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
         q: "How is generation billed?",
         a: "Credits: 1 per standard task, 10 per agentic, first task free. Engine-tier (pay-by-result) tasks generate and preview free, then charge exactly 1 credit at Confirm & Export.",
       },
+      {
+        q: "Can it build a whole modular kit in one go?",
+        a: "One task builds one mesh (within the compiler's 2-12 object span). Kits arrive piece by piece — pin a seed per piece for a consistent family, then assemble and dress the kit in your DCC.",
+      },
+      {
+        q: "Do characters and creatures work for games?",
+        a: "As static meshes, yes — clean closed geometry with per-part materials, no skeleton. Rig in your DCC after FBX/OBJ export; the character-design use case covers the honest path in detail.",
+      },
+      {
+        q: "How do skyboxes and lighting fit in?",
+        a: "The OmniCraft HDRI generator is live here — prompt-seeded procedural skies with real PNG downloads for your engine's lighting. It is a separate in-browser tool from the mesh pipeline, cross-linked below.",
+      },
     ],
     crossLinksTitle: "Explore more AI 3D use cases",
     crossLinks: [
@@ -695,5 +999,47 @@ export const USE_CASE_PAGES_A: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text-to-3D details", href: "/features/text-to-3d" },
+    promptExamples: {
+      title: "Prompt recipes for the asset pipeline",
+      intro:
+        "The reference's page promises one pipeline for every asset class. These cards are that promise, honestly scoped: each prompt compiles through the real spec compiler, and each note says where fidelity lands.",
+      cards: [
+        {
+          prompt: "a modular dungeon wall segment: stone blocks, arched top, torch sconce, flat-color palette",
+          note: "Compiles a closed single mesh — kit-ready proportions via keyword palettes. Re-run with the seed pinned so the wall set stays consistent, then decimate in your DCC to hit the engine budget (no polycount slider here).",
+        },
+        {
+          prompt: "a market stall prop: striped awning, crate display, hanging lantern, chunky proportions",
+          note: "'Chunky proportions' is the real silhouette lever — keywords push the read, not the topology. Export GLB straight into the engine, or FBX for a dress pass first.",
+        },
+        {
+          prompt: "a creature concept: squat moss golem, glowing eyes, bark plates, low-poly style",
+          note: "The compiler builds within its 2-12 object span — this golem lands as one closed mesh. No LOD ladder ships; the budget pass is your DCC's, and the creature-design fidelity ceiling is concept-grade.",
+        },
+      ],
+    },
+    techCards: {
+      title: "Target polygon count, strong silhouette",
+      intro:
+        "The reference's own band on budgets and silhouettes, answered honestly: the budget lever is not here — the silhouette lever is — and the path to budgets is stated instead of faked.",
+      cards: [
+        {
+          title: "The silhouette is real",
+          body: "Chunky, readable shapes are exactly what closed-primitive assembly does well — keyword palettes push proportions the way a prop silhouette wants, and the deterministic seed keeps the read stable across revisions.",
+        },
+        {
+          title: "The polycount slider is not",
+          body: "No target-polycount control and no LOD generation in this clone — the reference's budget card is its product, not ours. Export OBJ or FBX and decimate in your DCC; that is the honest budget path and it is written on the page.",
+        },
+        {
+          title: "Kit consistency by seed",
+          body: "Pin the seed per kit piece and revisions rebuild identically — modular sets that do not drift between re-exports. Cross-piece consistency is your art direction; per-piece consistency is the pipeline's promise.",
+        },
+        {
+          title: "Materials travel inside",
+          body: "Per-part PBR parameters ride in the GLB and OBJ exports — no separate map sets to manage. Flat-color and keyword-palette styles read as intended in-engine; hero-grade texturing is your DCC pass.",
+        },
+      ],
+    },
   },
 ];

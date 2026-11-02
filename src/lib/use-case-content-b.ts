@@ -103,6 +103,22 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
         q: "How do I keep a client's iteration consistent?",
         a: "Pin the seed and adjust only the words that matter — the pipeline is deterministic for (prompt, seed).",
       },
+      {
+        q: "Can I convert my export without leaving the browser?",
+        a: "Yes — the OmniCraft Format Convertor is a live tool here: take the GLB you exported and convert it into the other real formats in-browser. The reference's convert-in-the-browser card is genuinely mirrored by a working tool.",
+      },
+      {
+        q: "How high-fidelity is a jewelry model here?",
+        a: "Concept-grade, honestly: clean closed volumes with metal-and-stone parameter reads, not a jewelry CAD file. The reference's high-fidelity claim is its product — here the fidelity ceiling is a castable draft you verify before the burnout.",
+      },
+      {
+        q: "Where is the gallery of finished pieces?",
+        a: "There is none, and there won't be a faked one — no photo pipeline runs behind this clone. The poster preview is a real rasterization of the built geometry; that is the only preview truth offered.",
+      },
+      {
+        q: "What about client trust badges and testimonials?",
+        a: "The reference carries a trusted-by-creators band; this clone deliberately does not mirror it, because testimonials we cannot verify would be claims we cannot back. The status panel at the top of this page is the whole trust story.",
+      },
     ],
     crossLinksTitle: "Related features and use cases",
     crossLinks: [
@@ -118,6 +134,42 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Image-to-3D details", href: "/features/image-to-3d" },
+    techCards: {
+      title: "Castable STL for lost-wax printing",
+      intro:
+        "The reference's castable band, card by card, carried honestly: what genuinely runs here, and where the bench takes over. The reference's gallery and trusted-by bands are deliberately unmirrored — no images or testimonials this clone cannot back.",
+      cards: [
+        {
+          title: "Watertight for jewelry workflows",
+          body: "The mesh builder unions closed primitives — band, bezel, stone volumes — into a single object with no open boundaries, so the slicer sees manifold wax-ready input rather than a repair project. Concept-grade, stated on the label.",
+        },
+        {
+          title: "3D-printing-ready STL, with a checklist",
+          body: "The STL download is a genuine serialization of the poster-approved geometry. Printing-ready means the shape prints; casting-ready means you have checked wall thickness, sprue placement, and shrink compensation in your slicer and CAD first.",
+        },
+        {
+          title: "Convert formats in the browser",
+          body: "The OmniCraft Format Convertor is live here — take the GLB into the tool and convert to the other real formats without leaving the browser. The one reference tool-card this clone can mirror with working code, not a promise.",
+        },
+        {
+          title: "High-fidelity, honestly scoped",
+          body: "The reference's high-fidelity models card is its claim. Here the ceiling is a clean concept draft with yellow-gold metalness and glassy stone parameters — enough to sell the commission, with the fidelity pass remaining in jewelry CAD.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "The export row a bench actually gets",
+      intro:
+        "The reference's castable band names STL and format conversion. This clone's exporter serves exactly these six formats — STL leads the lost-wax lane, and the Format Convertor covers in-browser turns.",
+      formats: [
+        { name: "glb", note: "The client-review format — send the piece to a web viewer (the OmniCraft Model Viewer is live here) and turn it on a phone at the counter." },
+        { name: "gltf", note: "The readable JSON twin — diffable when a commission's revisions need a paper trail." },
+        { name: "fbx", note: "ASCII FBX 7.3 into jewelry CAD via DCC round-trip — the route to sizing and stone work." },
+        { name: "obj", note: "The universal hand-off — most CAD packages open OBJ as a mesh reference for the fidelity pass." },
+        { name: "stl", note: "The lost-wax lane. Real bytes from the poster-approved geometry — print the wax draft, verify, then cast." },
+        { name: "usdz", note: "Quick Look on iOS — show the client the piece on their own hand before the wax is printed." },
+      ],
+    },
   },
   {
     slug: "mechanical-engineering",
@@ -214,6 +266,22 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
         q: "What does a concept model cost in credits?",
         a: "1 credit standard, 10 agentic, first task free; pay-by-result engine tasks charge exactly 1 credit at Confirm & Export.",
       },
+      {
+        q: "Is the output really \"nearly production-ready\"?",
+        a: "No — and the reference's own spec sheet phrase stays the reference's. Here the output is a concept-volume mesh: closed, clean, and honest for reviews and check prints, with no dimensions, tolerances, or parametric features. CAD is the next step, not a synonym.",
+      },
+      {
+        q: "Can I review models without a CAD license?",
+        a: "Yes — export GLB and open it in the OmniCraft Model Viewer (live tool) or any web viewer, and rotate the part in the meeting. USDZ even drops it into Quick Look on the bench phone.",
+      },
+      {
+        q: "How do check prints fit the loop?",
+        a: "Export STL and print the handle, housing, or fixture concept for a fit-by-eye check before CAD time is spent. The shape is slicer-ready; ergonomics verdicts belong to the hand that holds it.",
+      },
+      {
+        q: "Does the pipeline remember my part across revisions?",
+        a: "Deterministically, not conversationally: pin the seed and the same description rebuilds the same concept mesh. There is no persistent project memory — the (prompt, seed) pair is the memory.",
+      },
     ],
     crossLinksTitle: "Explore more AI 3D use cases",
     crossLinks: [
@@ -229,6 +297,42 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text-to-3D details", href: "/features/text-to-3d" },
+    techCards: {
+      title: "The spec-sheet claims, answered",
+      intro:
+        "The reference's spec sheet leads with claims — output grade, format lanes, watertightness. This band answers each claim with what genuinely runs here, card by card.",
+      cards: [
+        {
+          title: "\"Nearly production-ready\", answered",
+          body: "The reference's spec sheet says nearly production-ready; this clone says concept-volume grade. Closed single mesh, per-part material reads, minutes from description — and no dimensions, tolerances, or GD&T anywhere in the output.",
+        },
+        {
+          title: "OBJ / FBX — into your DCC",
+          body: "Real lanes: ASCII FBX 7.3 with transforms and layers baked, OBJ with material references — the interchange pair that carries the concept into Blender, Maya, or a CAD mesh reference. Both byte-verified exporters.",
+        },
+        {
+          title: "STL — watertight for the slicer",
+          body: "Closed-primitive construction means manifold input for check prints: fit-by-eye fixtures, ergonomics handles, trade-show stand-ins. The engineering-verification half stays yours, and the page says so.",
+        },
+        {
+          title: "GLB reviews, USDZ on the bench",
+          body: "Browser reviews run on the real GLB export — no CAD license needed to look — and USDZ drops the same geometry into Quick Look for AR on the bench. Two more genuine lanes from one build.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "The export row on the spec sheet",
+      intro:
+        "The reference's spec sheet lists its format lanes; this clone's exporter serves exactly these six, every one a real exporter — the spec sheet below is the one that runs.",
+      formats: [
+        { name: "glb", note: "Browser reviews — rotate the concept in the meeting with the OmniCraft Model Viewer, no CAD license needed." },
+        { name: "gltf", note: "The readable twin — diffable when a review's revision history matters." },
+        { name: "fbx", note: "ASCII FBX 7.3 into DCC tools — the round-trip lane for a dress pass before CAD." },
+        { name: "obj", note: "The CAD mesh-reference lane — most packages open OBJ directly as reference geometry." },
+        { name: "stl", note: "Check prints — real slicer input for fit-by-eye and ergonomics fixtures." },
+        { name: "usdz", note: "AR on the bench — Quick Look the part on the shop-floor phone." },
+      ],
+    },
   },
   {
     slug: "metaverse",
@@ -325,6 +429,22 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
         q: "What formats does the export row cover?",
         a: "GLB, GLTF, OBJ, STL, USDZ, and FBX — six real exporters, byte-verified.",
       },
+      {
+        q: "How do LODs work for distant props?",
+        a: "They don't — no LOD generation in this clone. Build or decimate LOD chains in your DCC after export, the same honest path as the polycount budget. The reference's optional LODs card is its product.",
+      },
+      {
+        q: "Can I match my platform's style guide across props?",
+        a: "Per-prop, yes — pin the seed family and keep the palette keywords stable so the shelf reads as one set. Platform-wide style enforcement is your art direction; the pipeline's promise is determinism, not taste.",
+      },
+      {
+        q: "Where do skies and lighting come from?",
+        a: "The OmniCraft HDRI generator is live here — prompt-seeded procedural skies with real PNG downloads. It pairs with the mesh pipeline: props from the studio, skies from the tool, both real.",
+      },
+      {
+        q: "What about avatar rigs and wearables?",
+        a: "Wearables and hand props export as static meshes — no rigging in this clone. Your avatar pipeline takes the FBX/OBJ and does the fitting; the animation use case covers where that line sits.",
+      },
     ],
     crossLinksTitle: "More pipelines, same generator",
     crossLinks: [
@@ -340,6 +460,61 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Text-to-3D details", href: "/features/text-to-3d" },
+    promptExamples: {
+      title: "Prompts that stock a world",
+      intro:
+        "The reference's page promises everything a world needs. These cards are that shelf, honestly: each prompt compiles here, and each note says what the import actually lands as.",
+      cards: [
+        {
+          prompt: "a night market stall: striped canopy, hanging lanterns, crate displays, flat-color palette",
+          note: "Compiles a closed single mesh — dressing that reads at event scale. Pin the seed and the stall family stays consistent; import the GLB straight into the world builder.",
+        },
+        {
+          prompt: "an avatar hand prop: ornate lantern, warm glass panels, brass frame, chunky proportions",
+          note: "Arrives as a static mesh — no rigging here, so your avatar pipeline does the fitting. 'Chunky proportions' keeps the read at avatar scale, where fine detail dies anyway.",
+        },
+        {
+          prompt: "a seasonal re-skin: the same market stall, winter palette — deep reds, snow caps, ice lanterns",
+          note: "The re-skin mechanic is real: same seed, new palette keywords, same silhouette re-skinned. And the sky for the season comes from the live HDRI generator, not the mesh pipeline.",
+        },
+      ],
+    },
+    techCards: {
+      title: "Target polygon count & optional LODs — the honest status",
+      intro:
+        "The reference's page carries this band twice; here it is answered once, plainly: the budget levers are not in this clone — the consistency levers are — and the optimization path is written down.",
+      cards: [
+        {
+          title: "No budget slider, no LOD ladder",
+          body: "Neither target polycount nor LOD generation exists in this clone — the reference's controls are its product. The mesh imports at the resolution the pipeline built, and the page says so instead of shipping a fake optimize button.",
+        },
+        {
+          title: "The optimization path, stated",
+          body: "Export GLB for the platform, or OBJ/FBX for a DCC pass, and decimate to the budget on your side. It is one extra honest step — and it is yours, which is exactly what the page is for.",
+        },
+        {
+          title: "Seed-locked re-skins",
+          body: "Seasonal swaps are the reference's pitch and this clone's strength: pin the seed, change the color words, and the same prop re-skins with the same silhouette. Deterministic, repeatable, no drift.",
+        },
+        {
+          title: "Skies from the live HDRI tool",
+          body: "Environment lighting pairs with the OmniCraft HDRI generator — a real in-browser tool with prompt-seeded procedural skies and PNG downloads. Environments & skyboxes is a two-tool workflow here, both halves real.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "The export row a world platform gets",
+      intro:
+        "The reference's format story is GLB-first with flexible export — this clone's exporter serves exactly these six, GLB leading, all byte-verified. No KTX2 or Draco packing on the GLB; plain and honest.",
+      formats: [
+        { name: "glb", note: "The platform currency — one binary file with materials and vertex colors, imported by virtually every world builder." },
+        { name: "gltf", note: "The readable twin for platforms and pipelines that want the text form of the same asset." },
+        { name: "fbx", note: "ASCII FBX 7.3 — the DCC round-trip lane when a prop needs an edit pass before import." },
+        { name: "obj", note: "The universal hand-off — legacy importers of any age open it." },
+        { name: "stl", note: "When an event prop needs a physical twin — real bytes for the slicer." },
+        { name: "usdz", note: "Quick Look on iOS — preview the prop in the room before it goes into the world." },
+      ],
+    },
   },
   {
     slug: "nft-creation",
@@ -440,6 +615,22 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
         q: "Are skins separate texture files?",
         a: "No — skins are per-part material parameters (color, metalness, roughness) baked into each export. No albedo/normal map images ship from this clone.",
       },
+      {
+        q: "What actually happens on mint day?",
+        a: "The asset half happens here: you export the per-tier GLB/USDZ files, real bytes from the seed-locked base. The chain half — contract, mint, reveal — is your pipeline; this clone has no wallet, no minting, and no button pretending otherwise.",
+      },
+      {
+        q: "How do I keep the base mesh identical across tiers?",
+        a: "Pin one seed for the whole ladder and vary only the material words per tier. Collectors compare finishes, not geometry drift — determinism is the rarity ladder's backbone here.",
+      },
+      {
+        q: "Can holders view the NFT in AR?",
+        a: "Yes, with the real USDZ export — drop it into Quick Look on iOS, no custom app. The GLB twin covers web and marketplace viewers; both lanes come from the same geometry.",
+      },
+      {
+        q: "What about the physical edition tier?",
+        a: "STL export is real — the printed-tier path is genuinely open: download, slice, print. Quality is concept-grade, honestly the same ceiling as the 3D-printing use case.",
+      },
     ],
     crossLinksTitle: "AI 3D workflows beyond NFT art",
     crossLinks: [
@@ -455,6 +646,48 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "Output license terms", href: "/legal/copyright-license" },
+    promptExamples: {
+      title: "Rarity-ladder prompts",
+      intro:
+        "The reference's rarity ladder is the page's own idea — one base mesh, a ladder of finishes. These cards are the ladder, compiled honestly: one seed, three skins, stated gaps.",
+      cards: [
+        {
+          prompt: "a vinyl-toy mascot: round guardian spirit, stubby limbs, sealed eyes, matte finish",
+          note: "The Common tier — the base mesh the whole ladder hangs from. Pin this prompt's seed; every tier below reuses it so collectors compare finishes, never geometry drift.",
+        },
+        {
+          prompt: "the same guardian spirit, wooden-toy skin: warm oak tones, visible grain read, carved feel",
+          note: "The Uncommon tier is a re-skin: same seed, new material words. The 'wooden grain' arrives as parameter reads — color and roughness — not a scanned wood texture, and no map images ship.",
+        },
+        {
+          prompt: "the same guardian spirit, legendary edition: polished chrome, glowing seams, dark core",
+          note: "The Legendary tier is the same trick at full gloss — metalness high, emissive-look core. Export GLB per tier and the drop's files are real bytes; minting them stays your half.",
+        },
+      ],
+    },
+    techCards: {
+      title: "What happens on mint day",
+      intro:
+        "The reference's own heading, answered with the clone's honest split: the asset half runs here, the chain half never did — and the page says exactly where the line sits.",
+      cards: [
+        {
+          title: "The asset half, ready",
+          body: "Per-tier exports are real: GLB for marketplaces, USDZ for holder AR, STL for the printed tier — all six formats live, all byte-verified. The files are the drop's assets, generated from the seed-locked base.",
+        },
+        {
+          title: "The chain half, yours",
+          body: "No wallet, no contract deploy, no mint button, no reveal mechanic — nothing on this clone touches a chain, and nothing pretends to. Your mint pipeline consumes the exported files; that is the whole interface.",
+        },
+        {
+          title: "Rarity as parameters",
+          body: "Tiers differ by per-part material parameters — color, metalness, roughness — not by separate texture files. The ladder is honest and cheap to walk: same seed, new words, new finish.",
+        },
+        {
+          title: "No marketplace wiring",
+          body: "There is no marketplace integration, listing feed, or sales analytics here — the reference's downstream cards stay its product. The export row plus your pipeline is the entire shipping surface.",
+        },
+      ],
+    },
   },
   {
     slug: "vr-ar",
@@ -551,6 +784,22 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
         q: "What about USDZ on Android?",
         a: "USDZ is the iOS/Quick Look lane; Android AR and web viewers consume the GLB export. Both are real here — use the right lane per platform.",
       },
+      {
+        q: "How do I hit a frame budget?",
+        a: "You don't, at generation time — no polycount targeting or LODs here. Export OBJ or FBX, decimate to budget in your DCC, then bring the GLB back. The reference's optimization card is its product; the honest path is written on this page.",
+      },
+      {
+        q: "Can I convert formats without a DCC?",
+        a: "Yes — the OmniCraft Format Convertor is live here: turn the GLB into the other real formats in-browser. It is the no-DCC lane for platform format juggling.",
+      },
+      {
+        q: "How do I light a WebXR scene?",
+        a: "The OmniCraft HDRI generator is live here — prompt a sky (sunset, starfield, storm) and download a real PNG environment map for your scene's lighting. Skies and props from the same toolchain.",
+      },
+      {
+        q: "Do exports survive at arm's length?",
+        a: "Per-part metalness and roughness reads hold up at AR scale, where flat decals fall apart. Fine surface detail beyond parameter materials is not here — hero-grade texturing stays your DCC pass.",
+      },
     ],
     crossLinksTitle: "Related use cases and tools",
     crossLinks: [
@@ -567,5 +816,60 @@ export const USE_CASE_PAGES_B: UseCasePageDef[] = [
     closingCta: { label: "Open the studio", href: STUDIO_PATH },
     cta: { label: "Open the studio", href: STUDIO_PATH },
     ctaSecondary: { label: "HDRI Generator", href: "/workspace/omnicraft/hdri" },
+    promptExamples: {
+      title: "Prompts that build scenes",
+      intro:
+        "The reference's page sells scenes, not just props — a night sky from one sentence, surfaces that hold up close. These cards compile both halves honestly, with the real tools named.",
+      cards: [
+        {
+          prompt: "a night sky for a WebXR campfire scene: deep indigo gradient, low starfield, faint horizon glow",
+          note: "This one compiles in the live HDRI generator, not the mesh pipeline — prompt-seeded procedural skies with real PNG downloads. The tool is linked from this page and genuinely runs in the browser.",
+        },
+        {
+          prompt: "an AR furniture try-on: a low-slung lounge chair, cream boucle fabric read, warm walnut legs, chunky silhouette",
+          note: "The boucle read is a roughness-and-color parameter mix, not a woven texture image — parameters carry it at room scale, where flat decals fall apart anyway. The chunky silhouette reads in AR, and USDZ drops the chair into Quick Look for the placement moment.",
+        },
+        {
+          prompt: "a training-scene prop: safety helmet with visor, workshop bench clamp, high-visibility palette",
+          note: "AR work-instruction drafts — concept meshes with high-read palettes. Export GLB for the web scene, USDZ for the phone; the instruction logic is your platform's half.",
+        },
+      ],
+    },
+    techCards: {
+      title: "Frame rate is the real art director",
+      intro:
+        "The reference's own heading — and the honest place to say what this clone does and does not do about budgets. The art director is real; the budget buttons are not.",
+      cards: [
+        {
+          title: "Budgets are yours, stated plainly",
+          body: "No polycount targeting, no LOD chains, no Draco/KTX2 compression in this clone — the optimization pass happens after export in your DCC. The page refuses to ship an optimize button it cannot back.",
+        },
+        {
+          title: "What already runs lean",
+          body: "Closed-primitive meshes import clean and single, per-part parameters ride in-file, and GLB lands plain and uncompressed — predictable inputs for your budget math, with no hidden remesh surprises.",
+        },
+        {
+          title: "Skies from one sentence",
+          body: "The reference's card is mirrored by a live tool here: the OmniCraft HDRI generator builds prompt-seeded procedural skies — sunset, starfield, storm — with real PNG downloads for scene lighting.",
+        },
+        {
+          title: "Convert without leaving the browser",
+          body: "The OmniCraft Format Convertor is live: turn the GLB into the other real formats in-browser — the no-DCC lane the reference's card promises, delivered as working code.",
+        },
+      ],
+    },
+    exportTypes: {
+      title: "The full export row for AR/VR pipelines",
+      intro:
+        "The reference's band leads with GLB and USDZ; this clone's exporter serves all six below — the AR/VR pair first-class, every lane a genuine exporter, no compression packing pretended.",
+      formats: [
+        { name: "glb", note: "WebXR and web viewers — the web's 3D default, one binary file with materials in place." },
+        { name: "gltf", note: "The readable twin — for pipelines that post-process or diff scene assets." },
+        { name: "fbx", note: "Unity and Unreal round-trips when a scene needs a DCC pass first — ASCII FBX 7.3." },
+        { name: "obj", note: "The universal fallback every engine importer opens." },
+        { name: "stl", note: "Physical twins for training props and fixtures — real bytes for the slicer." },
+        { name: "usdz", note: "Apple Quick Look — the AR lane that puts the model in the room on iOS." },
+      ],
+    },
   },
 ];

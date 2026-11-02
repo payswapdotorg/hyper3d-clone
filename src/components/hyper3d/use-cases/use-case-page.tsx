@@ -197,6 +197,34 @@ export function UseCasePage({ def }: { def: UseCasePageDef }) {
           </div>
         </section>
 
+        {/* t87: prompt examples — copy-paste cards in bordered mono boxes (t60/t85 recipes shape) */}
+        {def.promptExamples && (
+          <section className="mt-12">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.promptExamples.title}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.promptExamples.intro}
+            </p>
+            <ul className="mt-6 grid gap-3 lg:grid-cols-2">
+              {def.promptExamples.cards.map((card) => (
+                <li
+                  key={card.prompt}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <p className="rounded-xl border border-violet-400/25 bg-black/40 p-3 font-mono text-xs leading-relaxed text-violet-200/90">
+                    {card.prompt}
+                  </p>
+                  <p className="mt-2.5 text-xs leading-relaxed text-white/45">
+                    <span className="font-bold text-white/60">Here: </span>
+                    {card.note}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {/* discipline cards */}
         <section className="mt-12">
           <h3 className="text-xl font-black tracking-tight sm:text-2xl">{def.cardsTitle}</h3>
@@ -218,6 +246,52 @@ export function UseCasePage({ def }: { def: UseCasePageDef }) {
             ))}
           </ul>
         </section>
+
+        {/* t87: the reference's extra card bands, carried honestly */}
+        {def.techCards && (
+          <section className="mt-12">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.techCards.title}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.techCards.intro}
+            </p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+              {def.techCards.cards.map((card) => (
+                <li
+                  key={card.title}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <h4 className="text-sm font-bold text-white">{card.title}</h4>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/45">{card.body}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* t87: export-format cards pinned to EXPORT_FORMATS */}
+        {def.exportTypes && (
+          <section className="mt-12">
+            <h3 className="text-xl font-black tracking-tight sm:text-2xl">
+              {def.exportTypes.title}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+              {def.exportTypes.intro}
+            </p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {def.exportTypes.formats.map((f) => (
+                <li
+                  key={f.name}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <p className="font-mono text-sm font-bold text-violet-200">.{f.name}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-white/45">{f.note}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* FAQ */}
         <section className="mt-12">
