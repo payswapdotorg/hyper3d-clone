@@ -116,8 +116,11 @@ fresh post-reset eslint install — file-level disable with a comment
 - VLM layout: NO DEFECTS x3 (features-article full-stack, credit-hub
   guide anatomy, help-index reading-guide) — screenshots in
   download/t88-verify/.
-- Vercel deploy attempt on the pushed commit, both tokens, per the
-  t80-t87 pattern: outcome below.
+- Vercel deploy attempt on the pushed commit (29bb529), both tokens,
+  per the t80-t87 pattern: token-1 HTTP 402 resource_creation_blocked
+  (fair-use block), token-2 HTTP 403 forbidden/invalidToken, live
+  domain 402 account-wide. Local build verification (199/199) is the
+  record of note.
 
 ## Next (per the t84 arc)
 
