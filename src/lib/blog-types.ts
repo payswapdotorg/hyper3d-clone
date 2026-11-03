@@ -75,6 +75,17 @@ export interface BlogLink {
   href: string;
 }
 
+/** One band of the reference's own article at the same URL — its verbatim
+ * h2 heading (captured from the live page by recon/t89) answered by this
+ * clone's honest note. The title is the reference's text, attributed; the
+ * note is this clone's own copy, never the reference's prose. */
+export interface ReferenceBand {
+  /** The reference's own h2 heading, verbatim. */
+  title: string;
+  /** This clone's real answer under that heading. */
+  note: string;
+}
+
 /** A written article — the only pages with real prose. */
 export interface BlogArticleDef {
   /** Path segment under /blog/ (the reference sitemap slug, kept verbatim). */
@@ -97,6 +108,11 @@ export interface BlogArticleDef {
   faqs: BlogFaq[];
   /** 2-5 cross-links to routes that genuinely exist here. */
   related: BlogLink[];
+  /** t89: the reference's own section skeleton at this URL — each band
+   * kept verbatim-titled and answered honestly here. Optional; the
+   * deepening rolls out per batch (phase 1: the 23 deepest-thin articles
+   * plus the review). */
+  referenceBands?: ReferenceBand[];
 }
 
 /** One row of the blog catalog — every one of the 778 reference routes. */

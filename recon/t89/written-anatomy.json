@@ -1,0 +1,1170 @@
+{
+ "what-is-hyper3d": {
+  "words": 1040,
+  "bands": [
+   "What Is Hyper3D",
+   "What can you create with Hyper3D?",
+   "How does the workflow work?",
+   "More than a 3D generator"
+  ],
+  "subs": [],
+  "cloneBase": 586,
+  "class": "product"
+ },
+ "what-features-does-hyper3d-have": {
+  "words": 1112,
+  "bands": [
+   "What Features Does Hyper3D Have",
+   "Rodin Image to 3D",
+   "Rodin Text to 3D",
+   "Mesh, material, and texture controls",
+   "Preview, refine, and export",
+   "OmniCraft creative tools",
+   "ChatAvatar",
+   "API and add-ons"
+  ],
+  "subs": [],
+  "cloneBase": 558,
+  "class": "product"
+ },
+ "how-to-use-hyper3d-beginners-guide": {
+  "words": 1284,
+  "bands": [
+   "How to Use Hyper3D: Complete Beginner's Tutorial",
+   "1. Open the workspace",
+   "2. Choose Image to 3D or Text to 3D",
+   "3. Confirm Your Model",
+   "4. Add Textures to Your Model",
+   "5. Download Your Model",
+   "Where to go next"
+  ],
+  "subs": [
+   "Use Image to 3D when appearance matters",
+   "Choose Text to 3D or Generate an Image First"
+  ],
+  "cloneBase": 477,
+  "class": "product"
+ },
+ "how-many-credits-does-each-hyper3d-generation-cost": {
+  "words": 1171,
+  "bands": [
+   "How Many Credits Does Each Hyper3D Generation Cost",
+   "Web workspace",
+   "Current Rodin API examples",
+   "Use the displayed cost as the source of truth",
+   "Why two similar tasks can cost different amounts"
+  ],
+  "subs": [],
+  "cloneBase": 481,
+  "class": "product"
+ },
+ "how-much-do-hyper3d-plans-cost": {
+  "words": 1179,
+  "bands": [
+   "How Much Do Hyper3D Plans Cost",
+   "Free: $0",
+   "Creator: $30 monthly or $280 yearly",
+   "Business: $120 monthly or $1,152 yearly",
+   "Enterprise: custom pricing",
+   "What to confirm before subscribing"
+  ],
+  "subs": [],
+  "cloneBase": 456,
+  "class": "product"
+ },
+ "how-to-check-hyper3d-credit-history": {
+  "words": 997,
+  "bands": [
+   "How to Check Hyper3D Credit History",
+   "Open your credit history",
+   "If a record looks wrong"
+  ],
+  "subs": [],
+  "cloneBase": 437,
+  "class": "product"
+ },
+ "how-to-purchase-hyper3d-credits": {
+  "words": 1073,
+  "bands": [
+   "How to Purchase Hyper3D Credits",
+   "Purchase direct credits from Wallet",
+   "Get credits through a subscription",
+   "If purchased credits do not appear"
+  ],
+  "subs": [],
+  "cloneBase": 359,
+  "class": "product"
+ },
+ "do-hyper3d-credits-expire": {
+  "words": 1038,
+  "bands": [
+   "Do Hyper3D Credits Expire",
+   "Subscription credits",
+   "Directly purchased credits",
+   "Frozen credits are not expired credits",
+   "How to protect an expiring balance"
+  ],
+  "subs": [],
+  "cloneBase": 445,
+  "class": "product"
+ },
+ "why-did-my-hyper3d-generation-fail": {
+  "words": 1136,
+  "bands": [
+   "Why Did My Hyper3D Generation Fail",
+   "Common causes",
+   "What to try",
+   "Credits and failed tasks",
+   "When to contact support"
+  ],
+  "subs": [],
+  "cloneBase": 404,
+  "class": "product"
+ },
+ "are-credits-deducted-when-a-generation-fails": {
+  "words": 1014,
+  "bands": [
+   "Web generation",
+   "API generation",
+   "How to verify a suspected deduction"
+  ],
+  "subs": [],
+  "cloneBase": 396,
+  "class": "evergreen"
+ },
+ "are-credits-returned-after-canceling-a-generation": {
+  "words": 1180,
+  "bands": [
+   "Are Credits Returned After Canceling a Generation",
+   "Unconfirmed web results",
+   "After confirmation",
+   "Accepted API tasks",
+   "What to do when credits look wrong"
+  ],
+  "subs": [],
+  "cloneBase": 456,
+  "class": "evergreen"
+ },
+ "what-happens-to-credits-when-changing-plans": {
+  "words": 1090,
+  "bands": [
+   "How Subscription Changes Affect Credits"
+  ],
+  "subs": [
+   "Upgrading Your Subscription",
+   "Downgrades and Cancellations",
+   "Need Help?"
+  ],
+  "cloneBase": 433,
+  "class": "evergreen"
+ },
+ "how-to-get-support-from-hyper3d": {
+  "words": 1169,
+  "bands": [
+   "How to Get Support From Hyper3D",
+   "Start with self-service resources",
+   "Contact product and account support",
+   "Enterprise and production inquiries",
+   "API and community questions",
+   "Include useful details in a support request"
+  ],
+  "subs": [],
+  "cloneBase": 406,
+  "class": "evergreen"
+ },
+ "how-to-get-hyper3d-enterprise-support": {
+  "words": 1279,
+  "bands": [
+   "How to get Hyper3D Enterprise support",
+   "When to contact the Enterprise team",
+   "Contact Hyper3D",
+   "Include these details in your request",
+   "What happens after you make contact",
+   "Enterprise inquiry or ordinary product support?"
+  ],
+  "subs": [],
+  "cloneBase": 404,
+  "class": "product"
+ },
+ "how-to-request-a-hyper3d-refund": {
+  "words": 1237,
+  "bands": [
+   "How to Request a Hyper3d Refund",
+   "When a refund may be considered",
+   "How to Request a Refund",
+   "Timing and payment processor fees",
+   "If you disagree with the decision"
+  ],
+  "subs": [
+   "Contact AI Customer Support",
+   "If You Need Further Assistance"
+  ],
+  "cloneBase": 424,
+  "class": "product"
+ },
+ "how-to-reset-hyper3d-password": {
+  "words": 1107,
+  "bands": [
+   "How to Reset My Hyper3D Password",
+   "Request a password reset",
+   "If the message does not arrive",
+   "Google, GitHub, and SSO accounts",
+   "Can I switch from Google sign-in to email and password?",
+   "When recovery still fails"
+  ],
+  "subs": [],
+  "cloneBase": 394,
+  "class": "product"
+ },
+ "can-i-log-in-to-hyper3d-with-a-verification-code": {
+  "words": 1081,
+  "bands": [
+   "Can I Log In to Hyper3D With a Verification Code",
+   "Choose the method linked to your account",
+   "When a verification code appears",
+   "If you cannot use your password",
+   "Get help with the correct identity"
+  ],
+  "subs": [],
+  "cloneBase": 430,
+  "class": "product"
+ },
+ "does-hyper3d-support-languages-besides-english": {
+  "words": 1070,
+  "bands": [
+   "Does Hyper3D Support Languages Besides English",
+   "Change the website language",
+   "Language coverage can vary",
+   "Workspace and generated content",
+   "If a translation is missing or unclear"
+  ],
+  "subs": [],
+  "cloneBase": 431,
+  "class": "product"
+ },
+ "official-hyper3d-links-and-scam-safety": {
+  "words": 1090,
+  "bands": [
+   "Official Hyper3D Links: How to Avoid Fake Apps and Scams",
+   "Official product and documentation links",
+   "Official community channels",
+   "How to recognize a suspicious page or message",
+   "If you may have shared information with an impersonator"
+  ],
+  "subs": [],
+  "cloneBase": 418,
+  "class": "product"
+ },
+ "hyper3d-review": {
+  "words": 1993,
+  "bands": [
+   "Summary: Hyper3D Pros & Cons",
+   "My First-Hand Experience with AI 3D Generators",
+   "Rodin: The Core AI 3D Generator",
+   "ChatAvatar: Realistic Human Avatars",
+   "OmniCraft: The Editing and Conversion Suite",
+   "Frequently Asked Questions (FAQ)",
+   "Conclusion"
+  ],
+  "subs": [
+   "What makes Hyper3D different from other AI 3D generators?",
+   "Is Hyper3D suitable for beginners?",
+   "Can I use Hyper3D models for 3D printing?",
+   "How much does Hyper3D cost?",
+   "What file formats does Hyper3D support?",
+   "GLB vs GLTF: Which 3D Format is Best for Web & AR/VR?",
+   "Best AI 3D Model Generator: Top Picks for 2026",
+   "Photogrammetry vs AI 3D: Which Is Right for You in 2026?"
+  ],
+  "cloneBase": 461,
+  "class": "product"
+ },
+ "fix-common-hyper3d-export-problems": {
+  "words": 1033,
+  "bands": [
+   "Fix Common Hyper3D Export Problems",
+   "Model appears white or untextured",
+   "Scale or orientation is incorrect",
+   "Faces are dark, transparent, or missing",
+   "Download or import fails"
+  ],
+  "subs": [],
+  "cloneBase": 466,
+  "class": "product"
+ },
+ "create-3d-models-from-text-with-rodin": {
+  "words": 1150,
+  "bands": [
+   "Create 3D Models From Text in Rodin Workspace",
+   "Choose a Text-to-Image Mode",
+   "Write one object at a time",
+   "Use the workspace controls for generation behavior",
+   "Refine the source before rebuilding everything"
+  ],
+  "subs": [],
+  "cloneBase": 455,
+  "class": "product"
+ },
+ "create-3d-models-from-images-with-rodin": {
+  "words": 1324,
+  "bands": [
+   "Create 3D Models From Images in Rodin Workspace",
+   "Start in Image to 3D",
+   "Add references only when they add information",
+   "Choose the generation setup",
+   "Keep every image consistent",
+   "Assign Image Directions (Optional)",
+   "Remove conflicting evidence",
+   "Review the generated task"
+  ],
+  "subs": [],
+  "cloneBase": 435,
+  "class": "product"
+ },
+ "create-editable-scenes-with-hyper3d-worldgen": {
+  "words": 1170,
+  "bands": [
+   "Create 3D Scenes With WorldGen in Rodin Workspace",
+   "Upload a readable scene image",
+   "Choose the creation mode",
+   "Validate the downstream package"
+  ],
+  "subs": [],
+  "cloneBase": 335,
+  "class": "product"
+ },
+ "create-3d-avatars-with-chatavatar": {
+  "words": 949,
+  "bands": [
+   "Create 3D Avatars With ChatAvatar",
+   "Prepare the identity reference",
+   "Generate the complete avatar",
+   "Review more than likeness",
+   "Business Lisence"
+  ],
+  "subs": [],
+  "cloneBase": 382,
+  "class": "product"
+ },
+ "create-hdri-skyboxes-with-omnicraft": {
+  "words": 959,
+  "bands": [
+   "Create HDRI Skyboxes With OmniCraft",
+   "Describe the whole environment",
+   "Inspect the 360-degree preview",
+   "Understand the package"
+  ],
+  "subs": [],
+  "cloneBase": 406,
+  "class": "evergreen"
+ },
+ "edit-3d-models-with-omnicraft-mesh-editor": {
+  "words": 924,
+  "bands": [
+   "Edit Meshes Locally With OmniCraft Mesh Editor",
+   "Import a mesh or start from a primitive",
+   "Sculpt and inspect geometry"
+  ],
+  "subs": [],
+  "cloneBase": 376,
+  "class": "evergreen"
+ },
+ "edit-3d-models-in-rodin-workspace": {
+  "words": 1043,
+  "bands": [
+   "Edit Existing 3D Models in Rodin Workspace",
+   "Open 3D Editing and upload the model",
+   "Add a reference only when it clarifies the edit",
+   "Choose the editing intent",
+   "Preview before committing"
+  ],
+  "subs": [],
+  "cloneBase": 467,
+  "class": "product"
+ },
+ "use-bang-and-partial-edit": {
+  "words": 1069,
+  "bands": [
+   "Use BANG, Parts, and Partial Editing in Rodin",
+   "Use BANG or Parts for component structure",
+   "Use Partial Edit for a local change",
+   "Tips for Partial Editing",
+   "Inspect the edited result"
+  ],
+  "subs": [],
+  "cloneBase": 446,
+  "class": "evergreen"
+ },
+ "choose-rodin-model-and-generation-settings": {
+  "words": 1126,
+  "bands": [
+   "Choose Models and Generation Settings in Rodin Workspace",
+   "Choose between Gen-2.5 and Gen-1.5",
+   "Set privacy and batch size before generation",
+   "Use presets for repeatable input",
+   "Leave topology and texture decisions for the correct stage"
+  ],
+  "subs": [],
+  "cloneBase": 429,
+  "class": "product"
+ },
+ "use-rodin-agentic-mode-for-image-to-3d": {
+  "words": 1084,
+  "bands": [
+   "Use Agentic Mode in Rodin Workspace",
+   "Prepare a clear image task",
+   "Turn on Agentic Mode before generation",
+   "Follow the generated task",
+   "Know when to use manual controls"
+  ],
+  "subs": [],
+  "cloneBase": 392,
+  "class": "product"
+ },
+ "connect-hyper3d-rodin-mcp-to-ai-agents": {
+  "words": 1156,
+  "bands": [
+   "Connect Hyper3D Rodin MCP to AI Agents",
+   "Connect the MCP server",
+   "Ask for one clear asset",
+   "Keep the Agent Workflow Reliable",
+   "Troubleshoot the connection"
+  ],
+  "subs": [],
+  "cloneBase": 385,
+  "class": "product"
+ },
+ "what-is-glb-file": {
+  "words": 3081,
+  "bands": [
+   "What Is GLB File? The Web 3D Format Explained",
+   "What is a GLB File?: What Is Glb File",
+   "How GLB Files Work",
+   "Top Tools for Working with GLB Files",
+   "My First-Hand Experience",
+   "A Step-by-Step Guide to Creating and Using GLB Files",
+   "Advanced Tips for Working with GLB Files",
+   "FAQ"
+  ],
+  "subs": [
+   "What Is Glb File: The Power of a Single File",
+   "Choosing the Right Tool for the Job",
+   "What is the difference between GLB and glTF?",
+   "Can GLB files be edited?",
+   "Are GLB files good for 3D printing?",
+   "How do I open a GLB file?",
+   "What are the limitations of the GLB format?",
+   "What Is OBJ File? Guide for 3D Artists (2026)",
+   "What Is DXF File? CAD & 3D Modeling Guide (2026)",
+   "Video to 3D Model: How AI Converts Video to 3D (2026)"
+  ],
+  "cloneBase": 436,
+  "class": "evergreen"
+ },
+ "what-is-obj-file": {
+  "words": 3511,
+  "bands": [
+   "What is an OBJ file?: What Is Obj File",
+   "How Do OBJ Files Work?",
+   "Top Tools for Working with OBJ Files",
+   "Step-by-Step Guide: Opening and Using an OBJ File",
+   "My First-Hand Experience with OBJ Files",
+   "Advanced Tips for Working with OBJ Files",
+   "FAQ"
+  ],
+  "subs": [
+   "What Is Obj File: What is an OBJ file: A Deeper Dive",
+   "The History of the OBJ file",
+   "The Structure of an OBJ file",
+   "The Role of the MTL File",
+   "How to Open an OBJ File",
+   "How to Edit an OBJ File",
+   "Optimizing OBJ Files for Performance",
+   "Understanding UV Mapping",
+   "What is the difference between OBJ and FBX?",
+   "Are OBJ files good for 3D printing?",
+   "Can OBJ files be animated?",
+   "How do I convert an OBJ file to another format?",
+   "What is the best software for opening OBJ files?",
+   "3D Virtual Tour Real Estate: A Seller's Guide (2026)",
+   "What Is PLY File? Point Cloud Format Explained",
+   "What Is DXF File? CAD & 3D Modeling Guide (2026)"
+  ],
+  "cloneBase": 436,
+  "class": "evergreen"
+ },
+ "what-is-stl-file": {
+  "words": 2616,
+  "bands": [
+   "What Is an STL File?",
+   "What is an STL File?: What Is Stl File",
+   "How Do STL Files Work?: What Is Stl File",
+   "Top STL File Viewers and Editors",
+   "Step-by-Step Guide: From 3D Model to STL File",
+   "My First-Hand Experience with STL Files",
+   "Advanced Tips for Working with STL Files",
+   "FAQ about STL Files",
+   "Conclusion"
+  ],
+  "subs": [
+   "Hyper3D",
+   "MeshLab",
+   "Blender",
+   "Microsoft 3D Builder",
+   "What is the difference between STL and OBJ?",
+   "Can STL files be colored?",
+   "How do I open an STL file?",
+   "What is the best software for editing STL files?",
+   "How can I convert an image to an STL file?",
+   "Text to STL: How AI Creates 3D Printable Files in 2026",
+   "STL Converter: Convert 3D Models to STL Online (2026)",
+   "What Is 3MF File? 3D Printing Format Explained"
+  ],
+  "cloneBase": 459,
+  "class": "evergreen"
+ },
+ "what-is-fbx-file": {
+  "words": 2584,
+  "bands": [
+   "What Is an FBX File? Autodesk Format Explained",
+   "What is an FBX file? And what is fbx file?",
+   "How Do FBX Files Work?",
+   "Top Tools for Working with FBX Files",
+   "Step-by-Step Guide to Using FBX Files",
+   "My First-Hand Experience with FBX Files",
+   "Advanced Tips for Working with FBX Files",
+   "FAQ"
+  ],
+  "subs": [
+   "The Origins of the FBX Format",
+   "So, what is fbx file used for?",
+   "The Anatomy of an FBX File",
+   "Why Choose FBX Over Other Formats?",
+   "Exporting from Blender",
+   "Importing into Unity",
+   "What is the difference between FBX and OBJ?",
+   "Can I open an FBX file in any 3D software?",
+   "Are FBX files good for 3D printing?",
+   "How do I reduce the size of an FBX file?",
+   "Is FBX a good format for web-based 3D?",
+   "What Is PLY File? Point Cloud Format Explained",
+   "Video to 3D Model: How AI Converts Video to 3D (2026)",
+   "Vox File Voxel \u2014 Practical Guide (2026)"
+  ],
+  "cloneBase": 545,
+  "class": "evergreen"
+ },
+ "what-is-3mf-file": {
+  "words": 2411,
+  "bands": [
+   "What Is 3MF File? Next-Gen 3D Printing Format",
+   "So, What is a 3MF file? A Deeper Look",
+   "What Is 3MF File: Key Features of the 3MF Format",
+   "3MF vs. STL: A Head-to-Head Comparison",
+   "My First-Hand Experience with 3MF Files",
+   "How to Open and Use 3MF Files",
+   "The Future of 3D Printing and the Role of 3MF",
+   "Frequently Asked Questions (FAQ)"
+  ],
+  "subs": [
+   "All-in-One Package",
+   "Human-Readable XML",
+   "Clear and Unambiguous",
+   "Support for Modern 3D Printing",
+   "What is a 3MF file used for?",
+   "Is 3MF better than STL?",
+   "What programs can open a 3MF file?",
+   "Can I convert a 3MF file to another format?",
+   "Why is understanding 'what is 3mf file' important for 3D printing?",
+   "Blender 3D Printing \u2014 Practical Guide (2026)",
+   "What Is STL File? Format Guide for 3D Printing (2026)",
+   "3D Printing Guide for Beginners (2026): Your First Print"
+  ],
+  "cloneBase": 434,
+  "class": "evergreen"
+ },
+ "what-is-dxf-file": {
+  "words": 2751,
+  "bands": [
+   "What Is DXF File? CAD Format for 3D Design",
+   "What Is DXF File: The Origins and Evolution of the DXF Format",
+   "What is DXF file and its primary applications?",
+   "A Closer Look at DXF vs. DWG",
+   "Working with DXF Files: Software and Tools",
+   "My First-Hand Experience with DXF Files",
+   "Frequently Asked Questions (FAQ)",
+   "Conclusion"
+  ],
+  "subs": [
+   "Architectural and Engineering Drawings",
+   "CNC Machining and Manufacturing",
+   "Geographic Information Systems (GIS)",
+   "Free and Open-Source Options",
+   "Commercial Software",
+   "What is the difference between a DXF and a PDF file?",
+   "Can I 3D print a DXF file?",
+   "Is the DXF format still being updated?",
+   "Why do some DXF files not open correctly?",
+   "What is the future of the DXF format?",
+   "3D Virtual Tour Real Estate: A Seller's Guide (2026)",
+   "What Is FBX File? Guide for 3D & Animation (2026)",
+   "What Is PLY File? Point Cloud Format Explained"
+  ],
+  "cloneBase": 446,
+  "class": "evergreen"
+ },
+ "what-is-ply-file": {
+  "words": 2716,
+  "bands": [
+   "What Is PLY File? Point Cloud 3D Format Guide",
+   "What is PLY file and what is it used for?",
+   "Key Features of the PLY Format",
+   "How to Open and View a PLY File",
+   "My First-Hand Experience with PLY Files",
+   "PLY vs. Other 3D Formats",
+   "FAQ Section"
+  ],
+  "subs": [
+   "Storing 3D Data",
+   "ASCII vs. Binary",
+   "What is PLY file in terms of flexibility?",
+   "PLY vs. STL",
+   "PLY vs. OBJ",
+   "PLY vs. FBX/GLB",
+   "What is PLY file in simple terms?",
+   "What is PLY file used for in 3D printing?",
+   "Can a PLY file contain animation?",
+   "Is PLY a good format for web-based 3D?",
+   "How large can a PLY file be?",
+   "What is the future of the PLY format?",
+   "What is 3D Rendering? How AI Creates Realistic Images (2026)",
+   "Interior Design 3D Model: AI Room Design for Free (2026)",
+   "What Is FBX File? Guide for 3D & Animation (2026)"
+  ],
+  "cloneBase": 447,
+  "class": "evergreen"
+ },
+ "what-is-usdz": {
+  "words": 2590,
+  "bands": [
+   "What Is USDZ? Apple AR File Format Explained",
+   "What is the USDZ File Format?: What Is Usdz",
+   "How Does USDZ Work?: What Is Usdz",
+   "Top USDZ Tools Compared",
+   "My First-Hand Experience",
+   "Step-by-Step Guide to Creating a USDZ File",
+   "Frequently Asked Questions (FAQ)"
+  ],
+  "subs": [
+   "USDZ Viewers",
+   "USDZ Converters",
+   "What is the difference between USDZ and GLB?",
+   "Can I use USDZ files on Android devices?",
+   "How do I create a USDZ file with a transparent background?",
+   "Can I animate a USDZ file?",
+   "Where can I find free USDZ files?",
+   "Free AI Avatar Generator: Create Your 3D Character (2026)",
+   "Stunning Apple Vision Pro 3D Models: USDZ Guide (2026)",
+   "Create USDZ Files with AI: Your 2026 Guide to AR Models"
+  ],
+  "cloneBase": 408,
+  "class": "evergreen"
+ },
+ "glb-vs-gltf": {
+  "words": 2735,
+  "bands": [
+   "GLB vs GLTF: What Is the Difference?",
+   "What are these 3D File Formats?: Glb Vs Gltf",
+   "How They Work: A Tale of Two Containers",
+   "Top Tools for these Formats",
+   "My First-Hand Experience with these Tools",
+   "Step-by-Step Guide: Converting with Blender",
+   "Advanced Tips for 3D Artists",
+   "FAQ",
+   "Conclusion"
+  ],
+  "subs": [
+   "Glb Vs Gltf: The Text-Based Format: A Look Inside",
+   "The Binary Format: An All-in-One Package",
+   "The Text-Based File Structure",
+   "The Binary File Structure",
+   "Converters",
+   "Editors",
+   "Optimizing File Size",
+   "When to Use Which Format",
+   "Is the binary format always better?",
+   "Can I edit a binary file?",
+   "Which format is better for AR?",
+   "Do I lose quality when converting?",
+   "What is the best viewer?",
+   "How does Hyper3D's Rodin tool fit into this?",
+   "Best Image to 3D Converter: Top AI Tools for 2026",
+   "FBX vs GLB: Which 3D Format is Best for Games? (2026)",
+   "High Poly vs Low Poly: For Games, Film & 3D Printing"
+  ],
+  "cloneBase": 425,
+  "class": "evergreen"
+ },
+ "obj-vs-stl": {
+  "words": 3356,
+  "bands": [
+   "OBJ vs STL: Which Format Is Better for 3D Printing?",
+   "What is an STL File in the OBJ vs STL Debate?",
+   "What is an OBJ File in the OBJ vs STL Debate?",
+   "OBJ vs STL: A Head-to-Head Comparison in the Great OBJ vs STL Debate",
+   "Top Tools for the OBJ vs STL Workflow",
+   "OBJ vs STL: A Step-by-Step Guide to Choosing",
+   "My First-Hand Experience with OBJ vs STL",
+   "OBJ vs STL: Frequently Asked Questions"
+  ],
+  "subs": [
+   "Key Characteristics of STL",
+   "Key Characteristics of OBJ",
+   "Blender",
+   "Autodesk Meshmixer",
+   "Online Converters",
+   "Step 1: What is the primary purpose of your model?",
+   "Step 2: Will you need to edit the model later?",
+   "Step 3: Are you collaborating with others?",
+   "In the OBJ vs STL discussion, can I convert an STL file to an OBJ file?",
+   "In the OBJ vs STL debate, is OBJ always better?",
+   "In the world of OBJ vs STL, do all 3D printers support OBJ files?",
+   "When discussing OBJ vs STL, what is an MTL file?",
+   "For game development, which side of the OBJ vs STL debate is better?",
+   "STL vs OBJ vs FBX: Which 3D Format is Best in 2026?",
+   "GLB vs GLTF: Which 3D Format is Best for Web & AR/VR?",
+   "Best Image to 3D Converter: Top AI Tools for 2026"
+  ],
+  "cloneBase": 463,
+  "class": "evergreen"
+ },
+ "stl-vs-obj-vs-fbx": {
+  "words": 2358,
+  "bands": [
+   "STL vs OBJ vs FBX: Which 3D Format to Use?",
+   "What are STL, OBJ, and FBX?: Stl Vs Obj Vs Fbx",
+   "Head-to-Head Comparison: STL vs. OBJ vs. FBX",
+   "Which Format Should You Use?",
+   "My First-Hand Experience",
+   "Top Tools for Converting 3D Files",
+   "Step-by-Step Guide: Converting Your Files with Blender",
+   "Advanced Tips for 3D File Management",
+   "Frequently Asked Questions (FAQ)",
+   "Conclusion"
+  ],
+  "subs": [
+   "Stl Vs Obj Vs Fbx: STL (Stereolithography)",
+   "OBJ (Wavefront)",
+   "FBX (Filmbox)",
+   "For 3D Printing",
+   "For Rendering and Visualization",
+   "For Animation and Game Development",
+   "Can I use FBX for 3D printing?",
+   "Does OBJ support animation?",
+   "What is the best format for web-based 3D viewers?",
+   "How do I view an STL file?",
+   "Can I edit an STL file?",
+   "FBX vs GLB: Which 3D Format is Best for Games? (2026)",
+   "Best Image to 3D Converter: Top AI Tools for 2026",
+   "Photogrammetry vs AI 3D: Which Is Right for You in 2026?"
+  ],
+  "cloneBase": 488,
+  "class": "evergreen"
+ },
+ "fbx-vs-glb": {
+  "words": 3100,
+  "bands": [
+   "FBX vs GLB: Best Format for Game Engines",
+   "What is the FBX File Format?",
+   "What is the GLB File Format?",
+   "FBX vs GLB: A Head-to-Head Comparison",
+   "Top Tools for Working with FBX and GLB",
+   "My First-Hand Experience: A Workflow Comparison",
+   "Step-by-Step Guide: Converting FBX to GLB",
+   "Advanced Tips for 3D Asset Optimization",
+   "FAQ: FBX vs GLB"
+  ],
+  "subs": [
+   "A Brief History of FBX",
+   "Key Features of FBX",
+   "Pros and Cons of Using FBX",
+   "The Rise of glTF and GLB",
+   "Key Features of GLB",
+   "Pros and Cons of Using GLB",
+   "File Size and Loading Speed",
+   "Animation and Rigging Support",
+   "Material and Texture Handling",
+   "Compatibility with Game Engines",
+   "Web and AR/VR Integration",
+   "Autodesk Maya",
+   "Blender",
+   "Hyper3D's OmniCraft",
+   "Other Converters",
+   "Mesh Optimization Techniques",
+   "Texture Compression Strategies",
+   "Is FBX or GLB better for Unity?",
+   "Can GLB replace FBX entirely?",
+   "What is the main advantage of GLB over FBX?",
+   "Do professional game studios use GLB?",
+   "How can I convert an image to a 3D model?",
+   "OBJ vs STL: What's the Difference for 3D Printing? (2026)",
+   "Photogrammetry vs AI 3D: Which Is Right for You in 2026?",
+   "Best Image to 3D Converter: Top AI Tools for 2026"
+  ],
+  "cloneBase": 546,
+  "class": "evergreen"
+ },
+ "3mf-vs-stl": {
+  "words": 2620,
+  "bands": [
+   "3MF vs STL: Which Is Better for 3D Printing?",
+   "What is a 3MF File?",
+   "What is an STL File?",
+   "3MF vs STL: A Detailed Comparison",
+   "My First-Hand Experience with 3MF vs STL",
+   "Top Tools for 3MF and STL",
+   "The Future of 3D Printing Formats",
+   "FAQ about 3MF vs STL"
+  ],
+  "subs": [
+   "Technical Advantages of 3MF",
+   "Key Features of 3MF",
+   "The Simplicity of STL",
+   "Limitations of STL",
+   "File Size and Compression",
+   "Color and Material Support",
+   "Complexity and Assemblies",
+   "Hyper3D (OmniCraft)",
+   "Autodesk Meshmixer",
+   "Ultimaker Cura",
+   "Is 3MF replacing STL?",
+   "Which format is better for color 3D printing?",
+   "Can I convert 3MF to STL?",
+   "What are the disadvantages of STL files?",
+   "Does Hyper3D support both 3MF and STL?",
+   "AI 3D Modeling vs Traditional: Which is Better in 2026?",
+   "Best Image to 3D Converter: Top AI Tools for 2026",
+   "High Poly vs Low Poly: For Games, Film & 3D Printing"
+  ],
+  "cloneBase": 464,
+  "class": "evergreen"
+ },
+ "image-to-3d": {
+  "words": 2769,
+  "bands": [
+   "Image to 3D: Complete AI Photo-to-3D Guide 2026",
+   "What is Image to 3D Conversion and How Does It Work?",
+   "Top AI Tools for Image to 3D Conversion in 2026",
+   "A Step-by-Step Guide to Creating Your First Image to 3D Model",
+   "Beyond the Basics: Advanced Image to 3D Techniques",
+   "Frequently Asked Questions (FAQ)"
+  ],
+  "subs": [
+   "The Technology Behind AI-Powered 3D Generation",
+   "From Pixels to Polygons: The Short Version",
+   "Meshy AI: Best for Texturing Workflows",
+   "Tripo AI: Best for Game Development Pipelines",
+   "Hyper3D (Rodin): Best for Multi-View Accuracy and Topology",
+   "Tencent Hunyuan3D: Best Free/Budget Option",
+   "My First-Hand Experience with Rodin Image-to-3D",
+   "Choosing the Right Image",
+   "Using the Tool",
+   "Exporting Your Model",
+   "PBR Textures and Realistic Materials",
+   "Cleaning Up the Mesh",
+   "Multi-View Input for Better Accuracy",
+   "What is image to 3D?",
+   "How do I convert an image to a 3D model?",
+   "Do I need 3D modeling experience or special software?",
+   "What images work best for image to 3D conversion?",
+   "What 3D file formats can I export?",
+   "Can I use the 3D models for commercial projects?",
+   "How to Convert Image to 3D Model: AI Methods (2026)",
+   "Image to 3D for Printing: AI Methods in 2026",
+   "2D Image to 3D Model: How AI Makes it Easy (2026)"
+  ],
+  "cloneBase": 443,
+  "class": "evergreen"
+ },
+ "text-to-3d-model": {
+  "words": 2859,
+  "bands": [
+   "Text to 3D Model: How AI Converts Text Descriptions Into 3D",
+   "What is Text-to-3D and How Does it Work?",
+   "Top Text to 3D Model Tools Compared",
+   "The Text to 3D Model Workflow: From Idea to Finished Asset",
+   "The Future of 3D Content Creation: The Role of AI",
+   "Frequently Asked Questions (FAQ)"
+  ],
+  "subs": [
+   "From Prompt to Polygon: How the AI Builds Your Model",
+   "Key Technologies Behind Text-to-3D Conversion",
+   "Meshy AI: Best for Texturing and UX",
+   "Tripo AI: Best for Game Developers",
+   "Hyper3D (Rodin): Best for Clean Topology and All-in-One Workflow",
+   "Luma AI (Genie): Best for Rapid Prototyping",
+   "My First-Hand Experience with Rodin Text-to-3D",
+   "Crafting the Perfect Prompt: Tips and Tricks",
+   "Refining Your Model: Texturing and Editing",
+   "Integrating with Your Favorite 3D Software",
+   "How This Changes Industries",
+   "What is the best AI for text-to-3D?",
+   "How do you make a 3D model from text?",
+   "Can I use text-to-3D models for commercial projects?",
+   "What file formats do text-to-3D generators support?",
+   "Do I need 3D modeling experience to use these tools?",
+   "How long does it take to generate a 3D model from text?",
+   "Free AI 3D Model Generator: Top Picks for 2026",
+   "Rodin Gen 2: The Future of AI 3D Model Editing (2026)",
+   "Text to 3D Game Assets: AI Generation Guide (2026)"
+  ],
+  "cloneBase": 425,
+  "class": "evergreen"
+ },
+ "free-text-to-3d-model": {
+  "words": 2369,
+  "bands": [
+   "Free Text to 3D Model Tools: A Full Comparison for 2025",
+   "What is Text-to-3D and How Does It Work?",
+   "Top Free Text to 3D Model Tools Compared",
+   "My First-Hand Experience with Hyper3D Rodin",
+   "Step-by-Step Guide to Creating a 3D Model from Text",
+   "Common Use Cases for Text-to-3D Models",
+   "FAQ"
+  ],
+  "subs": [
+   "The Technology Behind the Magic",
+   "From Prompt to Polygon",
+   "Meshy AI",
+   "Tripo AI",
+   "Hyper3D (Rodin)",
+   "Other Notable Tools",
+   "What is the best free text to 3D model generator?",
+   "Can I use the generated 3D models for commercial projects?",
+   "How detailed can the generated models be?",
+   "Do I need a powerful computer to use these tools?",
+   "What file formats are supported?",
+   "3D Architectural Visualization: AI-Powered Design in 2026",
+   "Free AI 3D Model Generator: Top Picks for 2026",
+   "Rodin Gen 2: The Future of AI 3D Model Editing (2026)"
+  ],
+  "cloneBase": 476,
+  "class": "evergreen"
+ },
+ "text-to-stl": {
+  "words": 2845,
+  "bands": [
+   "Text to STL: Generate 3D Print-Ready Models from Text",
+   "What is Text to STL and How Does It Work?",
+   "Top Text to STL Tools Compared",
+   "My First-Hand Experience with Hyper3D Rodin",
+   "Step-by-Step Guide: From Text to a 3D-Printed Object",
+   "Use Cases and Applications for Text-to-STL",
+   "Frequently Asked Questions (FAQ)"
+  ],
+  "subs": [
+   "From Prompt to Pixels: The AI's Role",
+   "Generating the Mesh: Creating a Solid Object",
+   "Meshy AI",
+   "Tripo AI",
+   "Hyper3D (Rodin)",
+   "Luma AI (Genie)",
+   "What is the best AI for text-to-3D?",
+   "Can I use an image to create an STL file?",
+   "Is text-to-STL free?",
+   "How detailed can the generated 3D models be?",
+   "Do I need a powerful computer to use a text-to-3D model generator?",
+   "What Is 3MF File? 3D Printing Format Explained",
+   "3D Printing Guide for Beginners (2026): Your First Print",
+   "STL File for 3D Printing: What It Is & How It Works 2026"
+  ],
+  "cloneBase": 465,
+  "class": "evergreen"
+ },
+ "image-to-stl": {
+  "words": 2783,
+  "bands": [
+   "Image to STL Converter: Turn Any Photo Into Printable 3D",
+   "What is an Image to STL Converter and How Does It Work?",
+   "Top Tools for Converting Images to STL Files",
+   "My First-Hand Experience: Testing Image to STL Converters",
+   "Objective Comparison of Image to STL Converters",
+   "Frequently Asked Questions (FAQ)",
+   "Conclusion"
+  ],
+  "subs": [
+   "Understanding the Conversion Process",
+   "Key Features to Look for in a Converter",
+   "Hyper3D's Image to STL Tool",
+   "Other Popular Online Converters",
+   "What is the best image format for converting to STL?",
+   "Can I convert a color image to a color 3D model?",
+   "How can I edit or modify the STL file after conversion?",
+   "Are these online image to STL converters free to use?",
+   "What's the difference between an STL file and other 3D formats like OBJ or FBX?",
+   "Free STL Files for 3D Printing: Top Sites & AI Tools (2026)",
+   "Blender 3D Printing \u2014 Practical Guide (2026)",
+   "FBX to STL Converter: Free & Online Tools (2026)"
+  ],
+  "cloneBase": 538,
+  "class": "evergreen"
+ },
+ "how-to-convert-image-to-3d-model": {
+  "words": 2602,
+  "bands": [
+   "How to Convert Image to 3D Model with AI",
+   "How AI Converts an Image to a 3D Model with How To Convert Image To 3D Model",
+   "Top AI Image-to-3D Model Converters Compared",
+   "My First-Hand Experience with Hyper3D Rodin",
+   "A Step-by-Step Guide to Convert Your Image to a 3D Model",
+   "Common Use Cases and Applications",
+   "Frequently Asked Questions (FAQ)"
+  ],
+  "subs": [
+   "How To Convert Image To 3D Model: Neural Radiance Fields (NeRF)",
+   "3D Gaussian Splatting",
+   "Diffusion Models",
+   "Meshy AI",
+   "Tripo AI",
+   "Hyper3D (Rodin)",
+   "What is the best free AI for image to 3D model conversion?",
+   "Can I turn a person's photo into a 3D model?",
+   "How accurate are the 3D models?",
+   "What file format should I use for 3D printing?",
+   "Do I need a powerful computer to use these tools?",
+   "2D Image to 3D Model: How AI Makes it Easy (2026)",
+   "Drawing to 3D Model: AI Art to 3D in Seconds (2026)",
+   "Sketch to 3D: How AI Converts Drawings to 3D Models (2026)"
+  ],
+  "cloneBase": 428,
+  "class": "evergreen"
+ },
+ "3d-text-prompt-guide": {
+  "words": 3019,
+  "bands": [
+   "3D Text Prompt Guide: How to Write Prompts for AI 3D Generation",
+   "3D Text Prompt Guide: What is a 3D Text Prompt?",
+   "Top AI 3D Generation Tools Compared",
+   "My First-Hand Experience with Hyper3D Rodin",
+   "A Step-by-Step Workflow for Text-to-3D Generation",
+   "Use Cases and Applications",
+   "FAQ"
+  ],
+  "subs": [
+   "Core Subject",
+   "Descriptive Modifiers",
+   "Style and Art Direction",
+   "Meshy AI",
+   "Tripo AI",
+   "Hyper3D (Rodin)",
+   "Luma AI (Genie)",
+   "1. Start with a Clear Concept",
+   "2. Write Your Initial Prompt",
+   "3. Generate and Evaluate",
+   "4. Refine and Iterate",
+   "5. Post-Processing and Export",
+   "Game Development",
+   "Prototyping and Concept Art",
+   "3D Printing and Hobbyists",
+   "Augmented and Virtual Reality",
+   "What is the best AI for text-to-3D?",
+   "How can I make my 3D prompts more detailed?",
+   "Can I use text-to-3D models in game engines like Unity or Unreal?",
+   "What's the difference between low-poly and high-poly models?",
+   "Do I need to know how to 3D model to use a text-to-3D generator?",
+   "How do I get started with a 3d text prompt guide?",
+   "AI 3D Prompts: How to Write for Better 3D Models (2026)",
+   "AI Face Generator: Create Realistic 3D Faces Free (2026)",
+   "AI Character Design: Create 3D Characters with AI (2026)"
+  ],
+  "cloneBase": 431,
+  "class": "evergreen"
+ },
+ "3d-prompt-engineering": {
+  "words": 2258,
+  "bands": [
+   "3D Prompt Engineering: Best Prompts for AI 3D Generation",
+   "What is 3D Prompt Engineering?",
+   "Top AI 3D Generation Tools Compared",
+   "My First-Hand Experience with Hyper3D Rodin",
+   "A Step-by-Step Guide to Effective 3D Prompting",
+   "Use Cases and Applications",
+   "FAQ"
+  ],
+  "subs": [
+   "How AI Models Interpret Prompts",
+   "Meshy AI",
+   "Tripo AI",
+   "Hyper3D (Rodin)",
+   "Luma AI (Genie)",
+   "What is the best AI for text-to-3D?",
+   "Can I use 3D prompt engineering for 3D printing?",
+   "How specific should my prompts be?",
+   "What are the most important keywords for 3D prompts?",
+   "Do I need to know 3D modeling to use these tools?",
+   "Free AI Character Generator: Create Custom 3D Models (2026)",
+   "AI 3D Prompts: How to Write for Better 3D Models (2026)",
+   "AI Character Design: Create 3D Characters with AI (2026)"
+  ],
+  "cloneBase": 431,
+  "class": "evergreen"
+ },
+ "how-to-make-3d-models-with-ai": {
+  "words": 2510,
+  "bands": [
+   "How to Make 3D Models with AI: Step-by-Step",
+   "How to Make 3D Models with AI: How it Works",
+   "Top AI 3D Model Generators Compared",
+   "My First-Hand Experience with Hyper3D",
+   "How to Make 3D Models with AI: A Step-by-Step Workflow",
+   "Common Use Cases and Applications",
+   "FAQ"
+  ],
+  "subs": [
+   "Neural Radiance Fields (NeRF)",
+   "Large Reconstruction Models (LRMs)",
+   "Diffusion Models",
+   "Meshy AI",
+   "Tripo AI",
+   "Hyper3D (Rodin)",
+   "What is the best AI for text-to-3D?",
+   "Can I turn a 2D image into a 3D model?",
+   "Are AI-generated 3D models ready for production?",
+   "What file formats do AI 3D generators support?",
+   "How much does it cost to make a 3D model with AI?",
+   "Free 3D Design Software Online: Top Picks for 2026",
+   "How to Use Blender: A Beginner's Guide to 3D in 2026",
+   "AI 3D Model Editor: Edit 3D Models With Text in 2026"
+  ],
+  "cloneBase": 472,
+  "class": "evergreen"
+ },
+ "generate-3d-game-assets": {
+  "words": 2328,
+  "bands": [
+   "How to Generate 3D Game Assets with AI (No Art Skills)",
+   "Why Use AI to Generate 3D Game Assets?",
+   "Top AI Tools to Generate 3D Game Assets",
+   "My First-Hand Experience: Generating a 3D Asset with AI",
+   "Objective Comparison of AI 3D Asset Generation Tools",
+   "FAQ: Generating 3D Game Assets with AI",
+   "Conclusion"
+  ],
+  "subs": [
+   "Hyper3D",
+   "Meshy",
+   "Ludo.ai",
+   "Sloyd",
+   "Can I use AI-generated 3D assets in commercial games?",
+   "What are the limitations of AI 3D asset generation?",
+   "How can I improve the quality of my AI-generated models?",
+   "What are the best AI tools for generating animated 3D models?",
+   "Can I convert a 2D image to a 3D model using AI?",
+   "AI-Powered Unity 3D Models: Create Game Assets Fast (2026)",
+   "Low Poly Game Assets: Create with AI for Unity & Roblox",
+   "AI Game Character Creator | Top Tools for 3D Design (2026)"
+  ],
+  "cloneBase": 452,
+  "class": "evergreen"
+ }
+}

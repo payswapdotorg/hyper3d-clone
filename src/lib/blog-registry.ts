@@ -20,6 +20,12 @@ import { BLOG_ARTICLES_B } from "./blog-content-b";
 import { BLOG_ARTICLES_C } from "./blog-content-c";
 import { BLOG_ARTICLES_D } from "./blog-content-d";
 import { BLOG_ARTICLES_E } from "./blog-content-e";
+import { BLOG_DEEPENING_A } from "./blog-deepening-a";
+import { BLOG_DEEPENING_B } from "./blog-deepening-b";
+import { BLOG_DEEPENING_C } from "./blog-deepening-c";
+import { BLOG_DEEPENING_D } from "./blog-deepening-d";
+import { BLOG_DEEPENING_E } from "./blog-deepening-e";
+import { BLOG_DEEPENING_F } from "./blog-deepening-f";
 import {
   CORE_3D_SLUGS,
   OFF_SCOPE_SLUGS,
@@ -28,14 +34,29 @@ import {
   WRITTEN_SLUGS,
 } from "./blog-registry-data";
 
-/** All 55 written articles, one array, slug-unique. */
+/** t89 deepening — the reference's own section skeleton answered per band,
+ * phase 1: the 24 deepest-thin written articles (23 at ratio ≤ 0.21 plus
+ * the review). One flat map so the merge below stays a lookup. */
+const DEEPENING_BY_SLUG = new Map(
+  [
+    ...BLOG_DEEPENING_A,
+    ...BLOG_DEEPENING_B,
+    ...BLOG_DEEPENING_C,
+    ...BLOG_DEEPENING_D,
+    ...BLOG_DEEPENING_E,
+    ...BLOG_DEEPENING_F,
+  ].map((d) => [d.slug, d.referenceBands] as const),
+);
+
+/** All 55 written articles, one array, slug-unique — with the t89
+ * deepening merged onto the phase-1 articles. */
 export const BLOG_ARTICLES: BlogArticleDef[] = [
   ...BLOG_ARTICLES_A,
   ...BLOG_ARTICLES_B,
   ...BLOG_ARTICLES_C,
   ...BLOG_ARTICLES_D,
   ...BLOG_ARTICLES_E,
-];
+].map((a) => (DEEPENING_BY_SLUG.has(a.slug) ? { ...a, referenceBands: DEEPENING_BY_SLUG.get(a.slug) } : a));
 
 const WRITTEN_BY_SLUG = new Map(BLOG_ARTICLES.map((a) => [a.slug, a]));
 
@@ -44,6 +65,11 @@ const writtenSlugs = new Set(WRITTEN_SLUGS);
 const articleSlugs = new Set(BLOG_ARTICLES.map((a) => a.slug));
 if (writtenSlugs.size !== articleSlugs.size || [...writtenSlugs].some((s) => !articleSlugs.has(s))) {
   throw new Error("blog registry: WRITTEN_SLUGS and BLOG_ARTICLES disagree");
+}
+for (const slug of DEEPENING_BY_SLUG.keys()) {
+  if (!writtenSlugs.has(slug)) {
+    throw new Error(`blog registry: deepening for non-written slug ${slug}`);
+  }
 }
 
 // -- family computation ----------------------------------------------------

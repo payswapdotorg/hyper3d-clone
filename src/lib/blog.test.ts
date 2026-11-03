@@ -43,6 +43,12 @@ function articleText(def: (typeof BLOG_ARTICLES)[number]): string {
     def.description,
     def.answer,
     ...def.sections.flatMap((s) => [s.heading, ...s.paragraphs]),
+    // t89: the deepening band NOTES join the honesty contract (credits /
+    // formats / no-filler-tells coverage); the band TITLES are the
+    // reference's verbatim headings and are deliberately excluded here —
+    // they are pinned instead, title-for-title, against the captured
+    // anatomy in blog-deepening.test.ts.
+    ...(def.referenceBands?.flatMap((b) => [b.note]) ?? []),
     ...def.faqs.flatMap((f) => [f.q, f.a]),
     ...def.related.map((r) => r.label),
   ].join("\n");

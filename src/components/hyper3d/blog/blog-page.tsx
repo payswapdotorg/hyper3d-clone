@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2, FileText, Mail, MessageCircle, MinusCircle, Rs
 
 import type { BlogArticleDef, BlogEntry, BlogFamily, BlogStatus } from "@/lib/blog-types";
 import { BLOG_CENSUS } from "@/lib/blog-registry";
+import { REFERENCE_ARTICLE_ANATOMY } from "@/lib/blog-reference-anatomy";
 import { findBlogCategory } from "@/lib/blog";
 import { cn } from "@/lib/utils";
 import { blogPostJsonLd, SITE_ORIGIN } from "@/lib/schema-org";
@@ -266,6 +267,42 @@ function RelatedSections({ def }: { def: BlogArticleDef }) {
   );
 }
 
+/** t89: the reference's own article skeleton at this URL, answered band by
+ * band. Every heading below is the reference's verbatim h2 (captured from
+ * its live page, quirks included); every note under it is this clone's own
+ * copy — what that band is at the reference and what is real here. The
+ * attribution line quotes the captured anatomy so the framing stays fact. */
+function ReferenceBandSection({ def }: { def: BlogArticleDef }) {
+  const anatomy = REFERENCE_ARTICLE_ANATOMY[def.slug];
+  return (
+    <section id="reference-bands" aria-label="The reference's article, answered here" className="mt-10 scroll-mt-20">
+      <h2 className="text-lg font-black tracking-tight sm:text-xl">The reference&rsquo;s article at this URL, answered here</h2>
+      <p className="mt-3 text-sm leading-relaxed text-white/55">
+        At this same URL the reference serves a {anatomy ? `${anatomy.words.toLocaleString("en-US")}-word ` : ""}
+        AI-generated article built from {def.referenceBands?.length ?? 0} section bands (captured from its live
+        page — the duplicated keyword phrases inside some headings are the reference&rsquo;s own). This clone keeps
+        that skeleton and answers each band with what is real here, in its own words — attribution, never
+        imitation.
+      </p>
+      <div className="mt-4 space-y-2">
+        {def.referenceBands?.map((band) => (
+          <details
+            key={band.title}
+            className="group rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 open:border-violet-400/25"
+          >
+            <summary className="cursor-pointer list-none text-sm font-bold text-white/80 transition-colors group-open:text-violet-200">
+              {band.title}
+            </summary>
+            <p className="mt-2 text-sm leading-relaxed text-white/55">
+              <Prose paragraph={band.note} />
+            </p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /** The written-article page. */
 export function BlogArticlePage({
   def,
@@ -334,6 +371,17 @@ export function BlogArticlePage({
                 </a>
               </li>
             ))}
+            {def.referenceBands?.length ? (
+              <li className="text-sm">
+                <a
+                  href="#reference-bands"
+                  className="text-white/60 transition-colors hover:text-violet-200"
+                >
+                  <span className="mr-2 font-mono text-[11px] text-white/30">{def.sections.length + 1}.</span>
+                  The reference&rsquo;s article, answered here
+                </a>
+              </li>
+            ) : null}
           </ol>
         </nav>
 
@@ -350,6 +398,9 @@ export function BlogArticlePage({
             </div>
           </section>
         ))}
+
+        {/* t89: the reference's own article skeleton, answered here */}
+        {def.referenceBands?.length ? <ReferenceBandSection def={def} /> : null}
 
         {/* FAQ */}
         <section className="mt-12">

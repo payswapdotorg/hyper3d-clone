@@ -43,6 +43,7 @@ export function isKnownRoute(href: string): boolean {
   if (
     base === "/pricing" ||
     base === "/help" ||
+    base === "/3d-prompts" ||
     base === "/workspace/omnicraft" ||
     ["/help/getting-started", "/help/account-settings", "/help/billing", "/help/credit", "/help/features", "/help/enterprise"].includes(base)
   )
