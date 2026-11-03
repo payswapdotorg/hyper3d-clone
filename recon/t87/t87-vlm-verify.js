@@ -1,5 +1,8 @@
 // t87 VLM verification — analyze use-cases screenshots for layout defects.
 // Uses z-ai-web-dev-sdk vision (same flow as t59-t61/t85/t86 verifications).
+// (t88: file-level disable — the require() is intentional in this Node script;
+// flagged by the fresh eslint install that linted this tree after Reset #11.)
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("node:fs");
 
 async function main() {

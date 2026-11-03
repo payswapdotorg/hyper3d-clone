@@ -3,7 +3,13 @@ import { ArrowLeft, CheckCircle2, MessageCircle, MinusCircle, XCircle } from "lu
 
 import { HelpSearch, type HelpSearchItem } from "@/components/hyper3d/help/help-search";
 import type { HelpArticleDef, HelpStatus } from "@/lib/help-types";
-import { HELP_CATEGORIES, HELP_ARTICLES, POPULAR_HELP_SLUGS, helpArticlesByCategory } from "@/lib/help";
+import {
+  HELP_CATEGORIES,
+  HELP_ARTICLES,
+  HELP_READING_GUIDE,
+  POPULAR_HELP_SLUGS,
+  helpArticlesByCategory,
+} from "@/lib/help";
 import { cn } from "@/lib/utils";
 import { helpIndexJsonLd } from "@/lib/schema-org";
 import { JsonLd } from "@/components/hyper3d/json-ld";
@@ -170,6 +176,42 @@ export function HelpCenterPage() {
               );
             })}
           </ul>
+        </section>
+
+        {/* t88: how to read these answers — the three-way contract in
+            prose + the index's own FAQ band */}
+        <section className="mt-12">
+          <h3 className="text-lg font-black tracking-tight sm:text-xl">{HELP_READING_GUIDE.heading}</h3>
+          <div className="mt-3 space-y-4">
+            {HELP_READING_GUIDE.paragraphs.map((paragraph, i) => (
+              <p key={i} className="text-sm leading-relaxed text-white/60">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+          {HELP_READING_GUIDE.faq.length > 0 && (
+            <div className="mt-5 space-y-2">
+              {HELP_READING_GUIDE.faq.map((item) => (
+                <details
+                  key={item.q}
+                  className="group rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+                >
+                  <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold text-white/80 marker:content-none">
+                    {item.q}
+                    <span
+                      className="shrink-0 text-white/30 transition-transform group-open:rotate-45"
+                      aria-hidden="true"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-2.5 border-t border-white/5 pt-2.5 text-xs leading-relaxed text-white/50">
+                    {item.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* support block — the reference's "Live Chat Support", honestly */}

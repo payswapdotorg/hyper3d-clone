@@ -14,6 +14,7 @@ import {
   HELP_ARTICLES,
   HELP_CATEGORIES,
   HELP_CATEGORY_SLUGS,
+  HELP_READING_GUIDE,
   HELP_ROUTES,
   HELP_STATUS_META,
   POPULAR_HELP_SLUGS,
@@ -57,7 +58,9 @@ function isKnownRoute(href: string): boolean {
   return false;
 }
 
-/** Flatten an article's text for content assertions. */
+/** Flatten an article's text for content assertions. t88: the faq band
+ * flattens too — the honesty contract (credits/formats/mcp/routes) covers
+ * the new blocks, same as t87's pageText extension. */
 function articleText(slug: string): string {
   const article = findHelpArticle(slug);
   if (!article) throw new Error(`no help article ${slug}`);
@@ -71,6 +74,7 @@ function articleText(slug: string): string {
       ...(s.steps ?? []).flatMap((st) => [st.title, st.body]),
       ...(s.note ? [s.note] : []),
     ]),
+    ...article.faq.flatMap((f) => [f.q, f.a]),
   ].join("\n");
 }
 
@@ -379,5 +383,143 @@ describe("help wiring — footer, sitemap, routes", () => {
     expect(HELP_STATUS_META.live.chip).toBe("WORKS HERE");
     expect(HELP_STATUS_META.partial.chip).toBe("PARTIAL HERE");
     expect(HELP_STATUS_META["not-in-clone"].chip).toBe("NOT IN THIS CLONE");
+  });
+});
+
+describe("t88 — the help tree's body density", () => {
+  it("every article carries the FAQ band: >=4 items, every answer substantive (>=80 chars)", () => {
+    for (const article of HELP_ARTICLES) {
+      expect(article.faq.length, article.slug).toBeGreaterThanOrEqual(4);
+      for (const item of article.faq) {
+        expect(item.a.length, `${article.slug} :: ${item.q}`).toBeGreaterThanOrEqual(80);
+        expect(item.q.trim().endsWith("?"), `${article.slug} :: ${item.q}`).toBe(true);
+      }
+    }
+  });
+
+  it("every article's band count now mirrors the reference's own anatomy (>=4 sections)", () => {
+    for (const article of HELP_ARTICLES) {
+      expect(article.sections.length, article.slug).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it("the reference's un-mirrored h2 bands ride verbatim-titled on the right articles", () => {
+    // spot-pinned per family, the t86/t87 convention
+    expect(articleText("what-is-hyper3d")).toContain("What can you create with Hyper3D?");
+    expect(articleText("what-is-hyper3d")).toContain("More than a 3D generator");
+    expect(articleText("how-to-use-hyper3d-beginners-guide")).toContain("Add Textures to Your Model");
+    expect(articleText("what-features-does-hyper3d-have")).toContain("Rodin Text to 3D");
+    expect(articleText("what-features-does-hyper3d-have")).toContain("Rodin Image to 3D");
+    expect(articleText("what-features-does-hyper3d-have")).toContain("ChatAvatar");
+    expect(articleText("what-features-does-hyper3d-have")).toContain("API and add-ons");
+    expect(articleText("does-hyper3d-support-languages-besides-english")).toContain("Change the website language");
+    expect(articleText("how-to-get-support-from-hyper3d")).toContain("Start with self-service resources");
+    expect(articleText("official-hyper3d-links-and-scam-safety")).toContain("How to recognize a suspicious page or message");
+    expect(articleText("can-i-log-in-to-hyper3d-with-a-verification-code")).toContain("When a verification code appears");
+    expect(articleText("how-to-reset-hyper3d-password")).toContain("If the message does not arrive");
+    expect(articleText("how-much-do-hyper3d-plans-cost")).toContain("What to confirm before subscribing");
+    expect(articleText("how-to-purchase-hyper3d-credits")).toContain("Purchase direct credits from Wallet");
+    expect(articleText("how-to-request-a-hyper3d-refund")).toContain("When a refund may be considered");
+    expect(articleText("what-happens-to-credits-when-changing-plans")).toContain("Upgrading Your Subscription");
+    expect(articleText("are-credits-deducted-when-a-generation-fails")).toContain("How to verify a suspected deduction");
+    expect(articleText("are-credits-returned-after-canceling-a-generation")).toContain("What to do when credits look wrong");
+    expect(articleText("do-hyper3d-credits-expire")).toContain("Frozen credits are not expired credits");
+    expect(articleText("how-many-credits-does-each-hyper3d-generation-cost")).toContain("Use the displayed cost as the source of truth");
+    expect(articleText("how-many-credits-does-each-hyper3d-generation-cost")).toContain("Why two similar tasks can cost different amounts");
+    expect(articleText("how-to-check-hyper3d-credit-history")).toContain("If a record looks wrong");
+    expect(articleText("why-did-my-hyper3d-generation-fail")).toContain("Common causes");
+    expect(articleText("choose-rodin-model-and-generation-settings")).toContain("Choose between Gen-2.5 and Gen-1.5");
+    expect(articleText("choose-rodin-model-and-generation-settings")).toContain("Use presets for repeatable input");
+    expect(articleText("choose-rodin-model-and-generation-settings")).toContain("Set privacy and batch size before generation");
+    expect(articleText("connect-hyper3d-rodin-mcp-to-ai-agents")).toContain("Connect the MCP server");
+    expect(articleText("connect-hyper3d-rodin-mcp-to-ai-agents")).toContain("Troubleshoot the connection");
+    expect(articleText("control-topology-polycount-and-lods")).toContain("Choose face count from the use case");
+    expect(articleText("control-topology-polycount-and-lods")).toContain("Build LODs as a downstream set");
+    expect(articleText("create-3d-avatars-with-chatavatar")).toContain("Prepare the identity reference");
+    expect(articleText("create-3d-avatars-with-chatavatar")).toContain("Review more than likeness");
+    expect(articleText("create-3d-models-from-images-with-rodin")).toContain("Assign Image Directions (Optional)");
+    expect(articleText("create-3d-models-from-images-with-rodin")).toContain("Keep every image consistent");
+    expect(articleText("create-3d-models-from-text-with-rodin")).toContain("Write one object at a time");
+    expect(articleText("create-editable-scenes-with-hyper3d-worldgen")).toContain("Upload a readable scene image");
+    expect(articleText("create-editable-scenes-with-hyper3d-worldgen")).toContain("Validate the downstream package");
+    expect(articleText("create-hdri-skyboxes-with-omnicraft")).toContain("Inspect the 360-degree preview");
+    expect(articleText("create-hdri-skyboxes-with-omnicraft")).toContain("Understand the package");
+    expect(articleText("edit-3d-models-in-rodin-workspace")).toContain("Preview before committing");
+    expect(articleText("edit-3d-models-in-rodin-workspace")).toContain("Choose the editing intent");
+    expect(articleText("edit-3d-models-with-omnicraft-mesh-editor")).toContain("Sculpt and inspect geometry");
+    expect(articleText("fix-common-hyper3d-export-problems")).toContain("Model appears white or untextured");
+    expect(articleText("fix-common-hyper3d-export-problems")).toContain("Scale or orientation is incorrect");
+    expect(articleText("fix-common-hyper3d-export-problems")).toContain("Download or import fails");
+    expect(articleText("import-models-into-hyper3d-tools")).toContain("Choose the destination tool");
+    expect(articleText("use-bang-and-partial-edit")).toContain("Inspect the edited result");
+    expect(articleText("use-rodin-agentic-mode-for-image-to-3d")).toContain("Turn on Agentic Mode before generation");
+    expect(articleText("use-rodin-agentic-mode-for-image-to-3d")).toContain("Know when to use manual controls");
+    expect(articleText("how-to-get-hyper3d-enterprise-support")).toContain("Enterprise inquiry or ordinary product support?");
+    expect(articleText("how-to-get-hyper3d-enterprise-support")).toContain("What happens after you make contact");
+  });
+
+  it("the reference's price ladder appears only as attribution, never as this clone's offer", () => {
+    const plans = articleText("how-much-do-hyper3d-plans-cost");
+    // the reference's own numbers may ride as attributed context…
+    expect(plans).toContain("the reference");
+    // …and the local boundary is stated in the same article
+    expect(plans).toMatch(/no plans and no prices/i);
+    // no other billing/credit article quotes reference prices as its own
+    for (const slug of [
+      "how-to-purchase-hyper3d-credits",
+      "how-to-request-a-hyper3d-refund",
+      "what-happens-to-credits-when-changing-plans",
+      "do-hyper3d-credits-expire",
+    ]) {
+      expect(articleText(slug), slug).not.toMatch(/\$\d/);
+    }
+  });
+
+  it("the ChatAvatar quirk band records the reference's own typo faithfully", () => {
+    const quirk = articleText("create-3d-avatars-with-chatavatar");
+    expect(quirk).toContain("Business Lisence");
+    expect(quirk).toMatch(/typo it ships on its own help page/i);
+  });
+
+  it("every topic hub carries its guide: >=2 paragraphs and >=3 FAQ items", () => {
+    for (const category of HELP_CATEGORIES) {
+      expect(category.guide.paragraphs.length, category.slug).toBeGreaterThanOrEqual(2);
+      expect(category.guide.faq.length, category.slug).toBeGreaterThanOrEqual(3);
+      for (const item of category.guide.faq) {
+        expect(item.a.length, `${category.slug} :: ${item.q}`).toBeGreaterThanOrEqual(80);
+      }
+      expect(category.guide.heading.length, category.slug).toBeGreaterThan(10);
+    }
+  });
+
+  it("the index's reading guide explains the three-way contract and answers honestly", () => {
+    expect(HELP_READING_GUIDE.heading).toBe("How to read these answers");
+    expect(HELP_READING_GUIDE.paragraphs.length).toBeGreaterThanOrEqual(2);
+    expect(HELP_READING_GUIDE.faq.length).toBeGreaterThanOrEqual(4);
+    const text = [...HELP_READING_GUIDE.paragraphs, ...HELP_READING_GUIDE.faq.flatMap((f) => [f.q, f.a])].join("\n");
+    expect(text).toContain("Works here");
+    expect(text).toContain("Partial here");
+    expect(text).toContain("Not in this clone");
+    expect(text).toMatch(/no live chat|There is none/i);
+  });
+
+  it("the multi-view facts match the real API schema (primary + up to 4 tagged views)", () => {
+    const img = articleText("create-3d-models-from-images-with-rodin");
+    expect(img).toMatch(/up to four direction-tagged extra views/i);
+    expect(img).toMatch(/PNG, JPEG and WebP/i);
+    const route = readFileSync(join(process.cwd(), "src", "app", "api", "task", "route.ts"), "utf8");
+    expect(route).toContain("mvImages: z.array(z.string().min(8).max(4_000_000)).max(4)");
+  });
+
+  it("the seed statement is accurate: the presets panel really carries a lockable seed", () => {
+    const settings = articleText("choose-rodin-model-and-generation-settings");
+    expect(settings).toMatch(/lockable seed|numeric seed/i);
+    expect(settings).not.toMatch(/no seed/i);
+    const studio = readFileSync(
+      join(process.cwd(), "src", "components", "hyper3d", "studio", "studio.tsx"),
+      "utf8",
+    );
+    expect(studio).toContain("lockSeed");
+    expect(studio).toContain('aria-label="Seed"');
   });
 });

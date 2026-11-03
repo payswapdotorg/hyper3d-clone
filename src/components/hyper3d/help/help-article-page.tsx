@@ -136,6 +136,35 @@ export function HelpArticlePage({ def }: { def: HelpArticleDef }) {
           </section>
         ))}
 
+        {/* related questions — t88, the reference's follow-up-question
+            anatomy; same accordion family as the use-cases tree's FAQ */}
+        {def.faq.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-lg font-black tracking-tight">Related questions</h2>
+            <div className="mt-4 space-y-2">
+              {def.faq.map((item) => (
+                <details
+                  key={item.q}
+                  className="group rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+                >
+                  <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold text-white/80 marker:content-none">
+                    {item.q}
+                    <span
+                      className="shrink-0 text-white/30 transition-transform group-open:rotate-45"
+                      aria-hidden="true"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-2.5 border-t border-white/5 pt-2.5 text-xs leading-relaxed text-white/50">
+                    {item.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* related */}
         <section className="mt-12">
           <h2 className="text-lg font-black tracking-tight">Related</h2>

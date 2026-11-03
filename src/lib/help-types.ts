@@ -40,6 +40,9 @@ export interface HelpCategoryDef {
   name: string;
   /** One-line honest description of what this topic covers HERE. */
   blurb: string;
+  /** t88: the topic's own honest walkthrough + FAQ, rendered on the hub
+   * after the article list. */
+  guide: HelpCategoryGuide;
 }
 
 export interface HelpStep {
@@ -64,6 +67,24 @@ export interface HelpLink {
   href: string;
 }
 
+/** One adjacent question in an article's "Related questions" band (t88).
+ * The reference's help articles end their anatomy with follow-up
+ * question bands; this clone's equivalent carries the questions a reader
+ * most plausibly asks next — answered with the same three-way honesty
+ * as the article itself. */
+export interface HelpFaqItem {
+  q: string;
+  a: string;
+}
+
+/** The per-category guide on each topic hub (t88): a short honest walk
+ * of what this topic covers HERE plus the topic's own FAQ band. */
+export interface HelpCategoryGuide {
+  heading: string;
+  paragraphs: string[];
+  faq: HelpFaqItem[];
+}
+
 export interface HelpArticleDef {
   /** Path segment under /help/articles/ (reference sitemap slugs). */
   slug: string;
@@ -78,8 +99,12 @@ export interface HelpArticleDef {
   status: HelpStatus;
   /** "The short answer" box — the direct verdict, up front. */
   answer: string;
-  /** 2-4 body sections. */
+  /** 3-8 body sections (t88: the reference's own per-article anatomy
+   * carries 3-6 content bands; the count now mirrors it per page). */
   sections: HelpSection[];
+  /** t88: adjacent questions rendered as an accordion band after the
+   * body — every article carries >=4. */
+  faq: HelpFaqItem[];
   /** 2-5 cross-links to routes that genuinely exist. */
   related: HelpLink[];
   /** Last-reviewed stamp (YYYY-MM-DD). */

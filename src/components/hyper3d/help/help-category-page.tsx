@@ -108,6 +108,47 @@ export function HelpCategoryPage({
           ))}
         </ul>
 
+        {/* t88: the topic's own honest guide — a walkthrough of what this
+            topic covers here, plus its FAQ band (same accordion family as
+            the article pages) */}
+        {category.guide && (
+          <section className="mt-12">
+            <h3 className="text-lg font-black tracking-tight sm:text-xl">
+              {category.guide.heading}
+            </h3>
+            <div className="mt-3 space-y-4">
+              {category.guide.paragraphs.map((paragraph, i) => (
+                <p key={i} className="text-sm leading-relaxed text-white/60">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+            {category.guide.faq.length > 0 && (
+              <div className="mt-5 space-y-2">
+                {category.guide.faq.map((item) => (
+                  <details
+                    key={item.q}
+                    className="group rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+                  >
+                    <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold text-white/80 marker:content-none">
+                      {item.q}
+                      <span
+                        className="shrink-0 text-white/30 transition-transform group-open:rotate-45"
+                        aria-hidden="true"
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="mt-2.5 border-t border-white/5 pt-2.5 text-xs leading-relaxed text-white/50">
+                      {item.a}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
         {/* other topics */}
         <section className="mt-12">
           <h3 className="text-lg font-black tracking-tight">Other topics</h3>

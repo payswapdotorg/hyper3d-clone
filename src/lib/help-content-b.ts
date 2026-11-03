@@ -45,6 +45,42 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
         ],
         note: "50 to start · 0 to preview · 1 per standard confirm · 10 per agentic run. Those four numbers are the entire pricing model.",
       },
+      {
+        heading: "Use the displayed cost as the source of truth",
+        paragraphs: [
+          "The studio tells you the price before you can pay it: the confirm step presents the charge, and when a balance cannot cover it the refusal names both numbers — the credits the task needs and the credits you have. Those strings come from the metering code itself, so the number on screen and the number in the ledger are the same number.",
+          "There is no separate pricing page to drift out of date, because the prices live in one constant module and every surface that mentions them — the pricing overlay, these articles, the feature pages' tests — reads from the same source.",
+        ],
+      },
+      {
+        heading: "Why two similar tasks can cost different amounts",
+        paragraphs: [
+          "Here they cannot. The price depends on exactly one thing — the tier of the run: 1 credit for a standard confirm, 10 for an agentic one — and nothing else about the task moves it: not prompt length, not effort level, not image count, not which version you picked, and not how long the engine took.",
+          "The reference's pricing varies by model and settings, and its own help article explains those mechanics; that is its product's truth. This clone's truth is a flat table, and the flatness is test-enforced — the tests pin the 1 and the 10 and forbid any other number appearing as a price.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Does the agentic tier cost more because it is better?",
+        a: "It costs 10 instead of 1 because it runs a different, heavier pipeline on the image-to-3D path. Whether it is 'better' is your call after comparing previews — both tiers preview for free, so you can compare without spending.",
+      },
+      {
+        q: "Do effort levels change the price?",
+        a: "No. Effort changes how long the engine works — roughly 4 seconds on the fastest level up to about 80 on the highest — but the confirm charge stays 1 credit standard, 10 agentic, regardless.",
+      },
+      {
+        q: "What if my balance is not enough?",
+        a: "The confirm is refused with HTTP 402, and the refusal message names the required credits and your current balance. Your balance never goes negative and the task simply waits for you to decide.",
+      },
+      {
+        q: "Do exports cost extra?",
+        a: "No — the confirm charge covers the export. Once a task is confirmed, all six formats are served from the stored model with no further metering.",
+      },
+      {
+        q: "Where do I see what I have spent?",
+        a: "The studio's credit readout always shows the current balance, and the credit-history article covers what is visible: the balance live, and the per-entry ledger server-side with every movement carrying a reason.",
+      },
     ],
     related: [
       { label: "Failed generations cost 0", href: "/help/articles/are-credits-deducted-when-a-generation-fails" },
@@ -77,6 +113,48 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
         ],
         note: "No expiry logic exists here. Spend them today or spend them next month — the ledger does not care.",
       },
+      {
+        heading: "Frozen credits are not expired credits",
+        paragraphs: [
+          "The reference distinguishes expiring subscription credits from directly-purchased ones, and mentions credits a plan change can freeze. None of those states exist here: a balance is one plain integer per account, with no tiers, no freezing, no thawing, and no categories that behave differently. If you can see a number, that number is spendable, full stop.",
+        ],
+      },
+      {
+        heading: "How to protect an expiring balance",
+        paragraphs: [
+          "There is nothing to protect — no date approaches. The only real ways to lose credits here are spending them (which is their purpose) and losing the account's password with no reset path existing, which strands the balance along with the task history. The reset article covers that case honestly: finish what matters inside a signed-in session, because the session — not the balance — is what expires.",
+        ],
+      },
+      {
+        heading: "Subscription credits",
+        paragraphs: [
+          "The reference's first category — credits granted by a recurring plan, expiring with the cycle — cannot exist here because neither half of the definition can: there is no subscription to grant them and no expiry logic anywhere in the ledger. The signup grant is the only inflow, and it is indistinguishable from any other credit the moment it lands: same integer, same spendability, same immortality.",
+        ],
+      },
+      {
+        heading: "Directly purchased credits",
+        paragraphs: [
+          "The reference's second category — bought outright, longer-lived — is equally absent, for the simpler reason that nothing here can be bought. No credit in this clone has a provenance distinction, because there is exactly one provenance: the 50-credit grant at signup. That uniformity is why this article can be this short and still be the whole truth.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Is there an expiry date anywhere on my account?",
+        a: "No. The ledger entry carries a timestamp for when a movement happened, but no credit ever carries a deadline — nothing in the code computes one.",
+      },
+      {
+        q: "What happens to credits in a dormant account?",
+        a: "They sit. No inactivity rule, no dormancy fee, no sweep — the balance is the same integer whenever you return.",
+      },
+      {
+        q: "Do promotional or bonus credits behave differently?",
+        a: "There are none. The signup grant is the only inflow, and it behaves exactly like every other credit: one integer, no expiry, no categories.",
+      },
+      {
+        q: "If credits never expire, why track them at all?",
+        a: "Because metering still needs accounting: the ledger keeps every grant, spend and refund with a reason so the balance is auditable rather than a mutable number someone could edit. Expiry was never the point — correctness was.",
+      },
     ],
     related: [
       { label: "Credit costs", href: "/help/articles/how-many-credits-does-each-hyper3d-generation-cost" },
@@ -107,6 +185,37 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
           "There is no wallet-history page: the ledger's individual entries — signup grants, confirm spends, cancel refunds — exist in the database and are asserted by the test suite, but no route renders them as a browsable list. That is a UI gap, not a data gap, and we would rather call it a gap than dress the task list up as an account statement.",
         ],
         note: "Balance: always visible. Per-entry ledger page: not rendered in this clone — the entries exist, the surface doesn't.",
+      },
+      {
+        heading: "If a record looks wrong",
+        paragraphs: [
+          "Check it against the rules the ledger actually follows: the only inflow is the 50-credit signup grant, the only outflows are confirm charges (1 standard, 10 agentic), and the only credit return is the automatic cancel refund. Every movement carries one of those machine-readable reasons — free_preview bookkeeping, standard_generation, agentic_generation, cancel_refund — so an entry that does not fit a reason is worth a second look, and an entry that fits one is almost certainly correct.",
+          "The balance itself is always live in the studio's credit readout, and it is the running total of exactly those entries — the code never mutates it independently. What you cannot do here is browse the entry list as its own page; that surface is not rendered, and this article says so instead of linking something that does not exist.",
+        ],
+      },
+      {
+        heading: "Open your credit history",
+        paragraphs: [
+          "The honest version of this step: there is no history page to open — the balance in the studio's credit readout is the live, always-current total, and watching it across your own actions is the real history surface this clone renders. The reference's version is a browsable ledger page; this clone's is a number that moves only when the documented rules move it, which trades the browsable list for a number you can trust in place.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Where exactly is my balance shown?",
+        a: "In the studio's top-bar credit readout, live. It updates on every confirm and refund without a manual refresh of the page.",
+      },
+      {
+        q: "Is there a statement or receipt page?",
+        a: "No — the per-entry ledger surface is not rendered in this clone. The entries exist server-side with reasons on every one; the page that would list them does not.",
+      },
+      {
+        q: "Can I export my ledger?",
+        a: "No export surface exists here. The balance and the movement rules are documented in these articles, which is the honest extent of it.",
+      },
+      {
+        q: "Who do I contact about a wrong entry?",
+        a: "There is no support inbox. The practical check is behavioral: confirm a fresh task and watch the readout move by exactly the documented amount — the metering is deterministic, so the same actions always produce the same entries.",
       },
     ],
     related: [
@@ -145,6 +254,42 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
         ],
         note: "Failed generation, aborted neural run, canceled task — all of them cost 0 under the current flow. The 1-credit charge needs your confirm and a finished preview.",
       },
+      {
+        heading: "How to verify a suspected deduction",
+        paragraphs: [
+          "Verification here is behavioral and free: read the balance before the action, take the action, read it after. A confirm moves it by exactly 1 (or 10 on the agentic tier); everything else — creation, previewing, retrying, failing, canceling before confirm — moves it by exactly 0. The refusal case is even louder: an underfunded confirm is refused with HTTP 402 and a message that names the required amount and your balance, so you see the arithmetic the code would have performed.",
+        ],
+      },
+      {
+        heading: "Web generation",
+        paragraphs: [
+          "The reference splits its answer by where the generation ran — web or API — because its two surfaces meter differently. Here the split collapses: the studio is the only generation surface this clone ships, and its rule is the single one stated above — 0 until confirm, then the tier price, never on failure. There is no second web pricing tier, no session-based discount, and no difference between your first generation and your hundredth.",
+        ],
+      },
+      {
+        heading: "API generation",
+        paragraphs: [
+          "The honest version of this section: this clone exposes no public generation API for your account — the studio's own routes drive the pipeline, and they enforce the same pay-by-result rules as the UI. The API the MCP sheet documents belongs to the real service, with its own metering; nothing you do there touches this clone's ledger, and nothing here can answer for its billing.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Can a bug charge me silently?",
+        a: "The charge path is narrow by construction — one route, one constant per tier, one ledger write — and the tests pin the amounts. The failure modes this codebase knows about end before the charge, not after it.",
+      },
+      {
+        q: "What about the neural fallback — does that count as failure?",
+        a: "No. A stalled neural run falls back to the fast tier, the task completes, and you still have a preview to judge. Nothing is charged until you confirm that preview, whichever tier produced it.",
+      },
+      {
+        q: "If I confirm and then regret it, is that a failure refund?",
+        a: "No — confirm is deliberate and final: the export unlocks, the cancel route answers 409 already_complete, and the refund article explains why that refusal is the honest behavior.",
+      },
+      {
+        q: "Do failed tasks appear in my history?",
+        a: "Yes, with their failure state visible — the task rail shows what actually happened rather than hiding it, which is part of how you can audit the behavior described here.",
+      },
     ],
     related: [
       { label: "Canceling and refunds", href: "/help/articles/are-credits-returned-after-canceling-a-generation" },
@@ -181,6 +326,46 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
           "Once a task is complete or confirmed, the cancel endpoint answers 'already complete' with a 409 and changes nothing. The preview was delivered, the credit was spent on a real result, and the export remains available — undoing a delivered result would make the 1-credit promise meaningless.",
         ],
         note: "Pay-by-result cancel: 0 taken, 0 to return. Legacy cancel: refunded in full, automatically. Post-confirm: refused (409) — the model is yours.",
+      },
+      {
+        heading: "What to do when credits look wrong",
+        paragraphs: [
+          "Run the free checks in order: refresh the studio so the credit readout re-reads the ledger; check the task's state in the rail (a done task was charged, a failed or canceled one was not); and re-read the refusal case — a 402 never deducts anything, it only refuses. If a number still looks wrong after that, the deterministic metering means the entry list server-side holds the answer, and the credit-history article states exactly how much of it is visible.",
+        ],
+      },
+      {
+        heading: "Unconfirmed web results",
+        paragraphs: [
+          "An unconfirmed result is the free state by definition: the preview exists, the task is inspectable, and the balance has not moved. Canceling such a task returns nothing because nothing was taken — the reference's phrase for this stage maps exactly, and the only honest advice is to treat the unconfirmed state as the free look it is: orbit it, wireframe it, and confirm only the keepers.",
+        ],
+      },
+      {
+        heading: "Accepted API tasks",
+        paragraphs: [
+          "The reference's third case — tasks submitted through its API, which meter on acceptance — has no counterpart here: this clone exposes no public generation API, so no task of yours can exist in that state. The nearest real thing is the legacy creation-charged task from this codebase's own past, and that one refunds in full on cancel — the ledger reason is cancel_refund, and the mechanism is the same automatic grant-back either way.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Why is cancel refused after confirm?",
+        a: "Because there is nothing left to cancel: the confirm charge covered the export, the file is already yours, and refunding it would be unmetering a delivered result. The 409 already_complete answer is the code saying precisely that.",
+      },
+      {
+        q: "Does the automatic refund need a request?",
+        a: "No. The legacy cancel and the cancel_refund ledger entry are the same transaction — pressing cancel IS the request, and the credit lands immediately.",
+      },
+      {
+        q: "Can I cancel a queued task?",
+        a: "Yes — and under pay-by-result it costs nothing, because nothing was charged: the task simply stops before a preview ever exists.",
+      },
+      {
+        q: "What if I cancel exactly while a confirm is in flight?",
+        a: "The ledger writes are ordered — a cancel that lands after the confirm finds a complete task and answers 409 already_complete, and one that lands before it finds nothing charged and simply stops the task. Either ordering is safe; there is no half-state where credits vanish.",
+      },
+      {
+        q: "Is there a cancel time limit?",
+        a: "The boundary is state, not time: cancelable until confirm, refused after. There is no window in minutes because there is nothing to race — the charge has not happened until you trigger it.",
       },
     ],
     related: [
@@ -237,6 +422,35 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
         ],
         note: "Failed tasks cost 0 under pay-by-result. Retry freely — the 1-credit charge cannot happen until a preview exists and you confirm it.",
       },
+      {
+        heading: "Common causes",
+        paragraphs: [
+          "The causes that actually occur in this pipeline, in rough frequency order. A prompt the spec compiler cannot accept — objects out of the 2-to-12 range, dimensions outside 0.05 to 4, unknown keys — is rejected up front with the validator's own message, which is the fastest failure to fix: rephrase toward the documented vocabulary. An image that cannot be read (wrong type, undecodable, oversized) fails at intake with its own error, before any engine work.",
+          "Then the soft cases: a neural run that stalls past its watchdog window falls back to the fast tier automatically — stamped with the fallback reason rather than failed — and a total backend outage degrades to the deterministic fallback spec so you still see a composition. Neither of those is your fault, and neither costs anything. Balance shortfalls are not failures at all: they are 402 refusals at confirm time, named with the exact numbers.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Is a rejected prompt the same as a failed task?",
+        a: "Close — the task fails fast, before engine work, with the validator's message telling you exactly which rule broke. Fixing the prompt and regenerating is free, since the charge only exists at confirm.",
+      },
+      {
+        q: "How do I know whether the fallback ran?",
+        a: "The task carries the engine actually used and the fallback reason on it — the task rail surfaces what really happened rather than relabeling it.",
+      },
+      {
+        q: "Does retrying use more credits?",
+        a: "No. Every retry runs the free path: create, preview, decide. The 1-credit (or 10-credit) charge happens only on the confirm you choose to press.",
+      },
+      {
+        q: "When should I stop retrying and change approach?",
+        a: "When the failure repeats with the same message — that is the code telling you the input breaks the same rule every time. A different phrasing, fewer objects, or a cleaner reference image changes the input; pressing generate again does not.",
+      },
+      {
+        q: "Are failures visible anywhere besides the task state?",
+        a: "The failure article is the map, and the studio's own surfaces — the generation toast and the task rail — show the real state transitions as they happen, so you can watch the pipeline tell the truth about itself.",
+      },
     ],
     related: [
       { label: "Failed generations & credits", href: "/help/articles/are-credits-deducted-when-a-generation-fails" },
@@ -267,9 +481,55 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
       {
         heading: "The settings that are not on the panel",
         paragraphs: [
-          "There is no polycount slider, no face-count target, no LOD chain and no seed field — geometry here is prompt-steered and pipeline-built, not budgeted. The topology article explains why and what to do instead, and the styles pages state the same limit per style (the low-poly page says 'no polycount slider' in plain words).",
+          "There is no polycount slider, no face-count target and no LOD chain — geometry here is prompt-steered and pipeline-built, not budgeted. The topology article explains why and what to do instead, and the styles pages state the same limit per style (the low-poly page says 'no polycount slider' in plain words).",
         ],
-        note: "Two live modes, two versions, five efforts. No polycount, no LOD, no seeds — absence stated on the panel itself.",
+        note: "Two live modes, two versions, five efforts, a lockable seed, a privacy toggle. No polycount, no LOD — absence stated on the panel itself.",
+      },
+      {
+        heading: "Choose between Gen-2.5 and Gen-1.5",
+        paragraphs: [
+          "The model picker mirrors the reference's split: Gen-2.5, labeled 'The most capable model yet.', and Gen-1.5, 'Faster, better on simple models.' The choice is real here — Gen-2.5 unlocks the neural image-to-3D tier and agentic mode, while Gen-1.5 keeps generation on the lighter path and maps legacy mode picks onto it.",
+        ],
+      },
+      {
+        heading: "Set privacy and batch size before generation",
+        paragraphs: [
+          "Privacy is real: a toggle marks a task private, which hides it from the gallery — public is the default, and the toggle's own tooltip states both sides. Batch size is the honest absence: one generate press produces one task, and there is no batch field anywhere in the request schema.",
+        ],
+      },
+      {
+        heading: "Use presets for repeatable input",
+        paragraphs: [
+          "The Presets panel is live: geometry presets append a style hint to the prompt (the hint text is visible, not hidden), saved presets persist locally in your browser, and a 'Use Recommended' toggle rides the header. It is a repeatability tool, not a quality tool — the preset changes the prompt, and the prompt remains the steering surface.",
+        ],
+      },
+      {
+        heading: "Leave topology and texture decisions for the correct stage",
+        paragraphs: [
+          "The reference's advice maps cleanly here: topology (face counts, LODs) and texture work are downstream decisions this clone deliberately does not put on the generation panel. The prompt steers geometry within the spec's rules; your DCC handles decimation, retopology and painting after export. The settings panel carrying no such sliders is the honest version of that division of labor.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "What is the default version?",
+        a: "Gen-2.5 — the capable tier, and the only one that unlocks the neural image-to-3D pipeline and agentic mode. Switching to Gen-1.5 is the faster lane for simple subjects.",
+      },
+      {
+        q: "What do the effort levels actually change?",
+        a: "How long the engine works — roughly 4 seconds on the fastest level to about 80 on the highest — and therefore how refined the result is. Price stays flat: effort never changes the 1-credit (or 10-credit agentic) confirm charge.",
+      },
+      {
+        q: "Can I pin a seed?",
+        a: "Yes — the presets panel carries a numeric seed (0 to 65535) with a lock toggle. Locked, the same seed reproduces the same run; unlocked, each generation rolls a fresh one. It is the reproducibility lever, not a quality control.",
+      },
+      {
+        q: "Does private mean encrypted or hidden?",
+        a: "Hidden from the gallery surface — that is the toggle's stated effect. The task and its files behave identically either way; there is no additional encryption tier in this clone.",
+      },
+      {
+        q: "Where do these settings live?",
+        a: "On the generation panel itself: the version pill opens the model picker, the effort pill opens the effort cards, and the presets button (labeled 'Prompt presets and seed') opens the presets and seed panel.",
       },
     ],
     related: [
@@ -317,6 +577,37 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
         ],
         note: "The sheet is this clone's; the MCP endpoint is the public Hyper3D service. Two different backends, one honest modal.",
       },
+      {
+        heading: "Connect the MCP server",
+        paragraphs: [
+          "The connect sheet carries the constants an agent needs, byte-pinned to the modal that renders them: the public endpoint at https://api.hyper3d.com/api/mcp, the CLI install (npm install --global @hyper3d/cli), and a paste-ready agent instruction. Open the studio's MCP button, copy the block, and drop it into any MCP-capable client's config.",
+        ],
+      },
+      {
+        heading: "Troubleshoot the connection",
+        paragraphs: [
+          "The honest scope first: the connection under test is between your agent and the real Hyper3D service — this clone renders the instructions but is not the endpoint, so it cannot see, proxy or debug your agent's session. If the agent cannot reach the endpoint, check the endpoint URL exactly as printed, the CLI's own authentication against the real service, and your client's config syntax.",
+          "What this clone can verify is its own half: the sheet's constants are pinned in tests against the modal's source, so the URL and package name you copied are the ones intended. If a paste fails because of a typo, the sheet is the thing to re-copy from.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Does this clone proxy or host the MCP server?",
+        a: "No — the modal documents the real service's public endpoint as a connection fact. Your agent talks to api.hyper3d.com directly; this clone's backend is not in that path at all.",
+      },
+      {
+        q: "Do I need an API key from this clone?",
+        a: "No key exists here to issue. Authentication against the real service belongs to that service's own account system — this clone shares nothing with those accounts.",
+      },
+      {
+        q: "Which agents can use the sheet?",
+        a: "Any MCP-capable client — the sheet is client-agnostic because it documents a standard MCP endpoint and a CLI, not a particular vendor's protocol extension.",
+      },
+      {
+        q: "Where is the connect sheet?",
+        a: "In the studio — the MCP button opens the modal with the endpoint, the CLI install line, and the paste-ready agent instruction, the same constants pinned in the tests.",
+      },
     ],
     related: [
       { label: "What is Hyper3D", href: "/help/articles/what-is-hyper3d" },
@@ -347,6 +638,48 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
           "If your target engine needs a specific budget or LOD set, treat this workspace as the generator and your DCC as the finisher: export GLB (the most faithful of the six formats), import into Blender, and use its remesher and decimate tools — then build your LOD chain there. The low-poly style page covers the same limit from the styling side and says 'no polycount slider' in exactly those words.",
         ],
         note: "No polycount slider. No face-count targeting. No LODs. Geometry is prompt-steered — budget it in your DCC, not here.",
+      },
+      {
+        heading: "Choose face count from the use case",
+        paragraphs: [
+          "The reference's guidance — pick a face-count band for the destination (games, print, film) — transfers here as downstream advice, because the generation step exposes no face-count control at all. What you steer at generation is composition: the spec's objects, their dimensions (0.05 to 4), and the prompt's form vocabulary. The face count you end up with is what the engine produced; adjusting it is a decimate-after-export step in your DCC, where the target band for the destination actually gets enforced.",
+        ],
+      },
+      {
+        heading: "Build LODs as a downstream set",
+        paragraphs: [
+          "Same boundary: no LOD generation exists here — no chain, no automatic simplification pass, no LOD preview. The honest workflow is to export the full-detail mesh and build the LOD set in the receiving tool, which is where LODs get judged in context anyway (screen size, distance bands, platform budget). What this clone guarantees is a stable source mesh: same task, same stored model, six formats from identical geometry.",
+        ],
+      },
+      {
+        heading: "Choose the supported mesh output deliberately",
+        paragraphs: [
+          "The reference advises picking your mesh flavor (quad vs tri, tessellated vs baked) to match the pipeline; this clone's honest equivalent is picking among the six real formats with their known behaviors. All six serialize the same stored geometry, but destinations care: GLB for the web and configurators, FBX and OBJ for DCCs and engines, STL for slicers, USDZ for AR. That choice — plus whatever your DCC's importer does with it — is the entire 'mesh output' decision available here, stated at its real size.",
+        ],
+      },
+      {
+        heading: "Bake normals for efficient delivery",
+        paragraphs: [
+          "Normal baking — packing surface detail into normal maps so the mesh can stay light — is not implemented here: there are no texture maps of any kind, so there is nothing to bake into. Materials are flat parameters. The honest delivery-efficiency levers that do exist are the format choice (above), the effort level that shapes how refined the base geometry is, and the decimation you do downstream — everything else on this front belongs to the DCC pipeline that receives the export.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Is there any topology control at all?",
+        a: "Composition-level only: object count (2 to 12 per spec), dimensions (0.05 to 4), and the prompt's form words. Face count, edge flow and retopology are downstream, by design.",
+      },
+      {
+        q: "Can I at least see the mesh density before paying?",
+        a: "Yes — the preview's wireframe display mode shows exactly the geometry you would be confirming, and the preview is free. Density judgment happens before the 1-credit charge, not after.",
+      },
+      {
+        q: "Do any export formats change the topology?",
+        a: "No — all six formats serialize the same stored mesh. Format choice changes packaging (and which DCC accepts it most happily), not the geometry itself.",
+      },
+      {
+        q: "What is the nearest tool for decimation?",
+        a: "Your DCC — Blender's decimate modifier, or engine-native import settings. This clone's job ends at a clean, honestly-described mesh; the topology budget belongs to the tool that will live with it.",
       },
     ],
     related: [
@@ -379,6 +712,42 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
           "Text to 3D runs end-to-end here and handles character subjects as happily as any other: a prompt like 'a friendly cartoon mascot character with a round head' previews in the studio viewer for free, and confirming spends the standard 1 credit for a six-format export. What you get is a static mesh with flat parameter materials — no rig, no blendshapes — and the character-design use-case page sets that expectation in the same words.",
         ],
         note: "No ChatAvatar, no rigs, no blendshapes here. Character meshes from Text to 3D are real — everything avatar-specific is not.",
+      },
+      {
+        heading: "Prepare the identity reference",
+        paragraphs: [
+          "For the nearest real path — a character mesh from Text to 3D — 'preparing the reference' means preparing the description: subject, build, costume, pose, and the style band (stylized, low poly, flat-color). There is no photo-to-identity stage here: no upload becomes 'the person', and likeness is not a concept this engine has. Writing the description as if you were briefing a sculptor is the working method.",
+        ],
+      },
+      {
+        heading: "Review more than likeness",
+        paragraphs: [
+          "The reference's review checklist — likeness, topology, blendshapes — reduces honestly here to what a static mesh can be reviewed for: silhouette (orbit the preview), proportions (against your description), and mesh density (the wireframe mode). Likeness cannot be reviewed because it was never generated; saying that plainly beats pretending a likeness score exists.",
+        ],
+      },
+      {
+        heading: "Business Lisence",
+        paragraphs: [
+          "That heading is the reference's own — a typo it ships on its own help page ('Lisence' for 'License'), recorded here faithfully rather than corrected silently, because the clone's rule is to state facts as they are. The substance under it: on the reference, commercial avatar licensing is its product's terms; here, the terms are this clone's own documents — generated models are your output, this codebase claims no ownership over them, and the copyright-license document in /legal carries the details.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Can a photo become an avatar here?",
+        a: "No — the image-to-3D path produces a mesh of what the image shows, not an identity-bound avatar with a face rig. Portrait-to-avatar is the reference's ChatAvatar feature, which does not exist in this clone.",
+      },
+      {
+        q: "Can I rig the character mesh afterwards?",
+        a: "Yes — export in your DCC's preferred format and rig there. The mesh is a normal static model; rigging is downstream work by design.",
+      },
+      {
+        q: "Can I use the output commercially?",
+        a: "The terms state it plainly: your prompts and reference images are your input, the generated models are your output, and this codebase claims no ownership over either. Verify fitness for your purpose — the terms also say results vary and you are responsible for use.",
+      },
+      {
+        q: "What is ChatAvatar, exactly?",
+        a: "The reference's portrait-to-avatar generator — multi-angle identity input, a rigged, blendshaped avatar out. This clone deliberately ships none of that pipeline; the honest equivalent is a described character via Text to 3D.",
       },
     ],
     related: [
@@ -423,7 +792,53 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
         paragraphs: [
           "This is a single-image pipeline: there is no multi-view consistency of the kind multi-camera products offer, so occluded backs are the pipeline's best inference, not a second photo's truth. Materials arrive as flat parameters rather than baked textures — the model exports with geometry and parameter materials, and painting happens in your DCC if you need more.",
         ],
-        note: "One image in, one mesh out, 0 credits to look, 1 to keep. No multi-view capture, no baked textures — stated, not hidden.",
+        note: "One mesh out, 0 credits to look, 1 to keep. Multi-view input is real on the neural tier — multi-view capture is not.",
+      },
+      {
+        heading: "Add references only when they add information",
+        paragraphs: [
+          "The upload strip accepts PNG, JPEG or WebP, up to eight files, and the first image is the primary — the one the caption builds from. Beyond it, extra views only help on the neural tier and only when they show something the primary cannot: the back, the sides, the underside. A second angle of the same face adds nothing but contradiction risk; a photo of the hidden back adds real information.",
+        ],
+      },
+      {
+        heading: "Keep every image consistent",
+        paragraphs: [
+          "Consistency rules carry over with real stakes here: same subject, same scale framing, same lighting story. The vision stage builds one spec from the evidence it is given, and images that disagree — different objects, zoom levels that imply different sizes — produce a spec that compromises between them. If two views conflict, drop the weaker one rather than letting the engine arbitrate.",
+        ],
+      },
+      {
+        heading: "Assign Image Directions (Optional)",
+        paragraphs: [
+          "This is real and worth doing on the neural tier: each extra view can carry a direction label from the reference's own set — front, back, left, right and the diagonal corners — via the direction picker, and the labeled views ride along as tagged multiview images (up to four beyond the primary). Direction-tagged evidence steers the reconstruction far better than unlabeled hope.",
+        ],
+      },
+      {
+        heading: "Review the generated task",
+        paragraphs: [
+          "The review costs nothing: orbit the preview, switch to wireframe to judge density, check the silhouette against the primary image. Only a confirm charges — 1 credit standard, 10 agentic — and until then every regeneration is free, so 'review' here can genuinely mean 'look, adjust, look again' without metering pressure.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "How many images can I upload?",
+        a: "The strip holds up to eight files, but the request the server accepts is one primary image plus up to four direction-tagged extra views on the neural tier — the API schema's own caps, stated as they are.",
+      },
+      {
+        q: "Which file types are accepted?",
+        a: "PNG, JPEG and WebP. Anything else is refused at the door with an explicit message, before any engine work or credit implications.",
+      },
+      {
+        q: "Does the background matter?",
+        a: "Clean and uncluttered helps, because the caption describes what it sees. There is no automatic background removal here — the honest expectation is that clutter becomes part of the evidence.",
+      },
+      {
+        q: "What if I only have one photo?",
+        a: "That is the common case and it works — the primary image alone drives the whole pipeline. Extra views are an optional accuracy boost for the neural tier, not a requirement.",
+      },
+      {
+        q: "Can I generate from a screenshot or drawing?",
+        a: "Yes — concept sketches and screenshots are ordinary images to this pipeline. The caption stage describes what is visibly there, which is exactly what a sketch has to offer.",
       },
     ],
     related: [
@@ -467,9 +882,43 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
       {
         heading: "What 'from text' honestly means here",
         paragraphs: [
-          "The prompt steers real geometry through this codebase's own pipeline — it is not a gateway to an external model farm, and there is no style-lock, seed or polycount control attached to it (the settings and topology articles say why). Materials come out as flat parameters; if you need a specific art style, the styles pages tell you which looks are steerable with prompts alone and which need finishing in a DCC.",
+          "The prompt steers real geometry through this codebase's own pipeline — it is not a gateway to an external model farm, and there is no style-lock or polycount control attached to it (the settings and topology articles say why; a lockable seed does exist on the presets panel for reproducible runs). Materials come out as flat parameters; if you need a specific art style, the styles pages tell you which looks are steerable with prompts alone and which need finishing in a DCC.",
         ],
         note: "Prompt in, mesh out, preview free, 1 credit to keep it. The polish button is real — and so is every limit listed above.",
+      },
+      {
+        heading: "Write one object at a time",
+        paragraphs: [
+          "The reference's advice, checked against this engine: the spec accepts 2 to 12 objects, so small compositions are legal — but clarity still wins. Fewer objects, each named precisely with its form, beats a crowded prompt where every object fights for attention. The engine composes ground-level by design; describing a coherent small arrangement ('a mug beside a stack of two books') reads better than inventorying a room.",
+        ],
+      },
+      {
+        heading: "Refine the source before rebuilding everything",
+        paragraphs: [
+          "This maps to real mechanics: the prompt is the source, and refining it — tightening the subject, swapping form words, fixing typos with the polish button — then regenerating is the free loop. Nothing partial exists to preserve: no 'keep this part, redo that part', because editing at that granularity is not implemented. The honest iteration unit is the whole prompt, and its cost is zero until you confirm a result worth 1 credit.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "How many objects can one prompt hold?",
+        a: "Between 2 and 12 — the spec's hard rules. Dimensions clamp between 0.05 and 4, positions within -4 to 4, and anything outside is rejected with the validator's own message rather than silently guessed.",
+      },
+      {
+        q: "What happens to a vague prompt?",
+        a: "It degrades to the deterministic fallback — a composed set of primitives named from your prompt's first words, inspectable like any preview. It is a visible signal that the prompt was too vague, and re-prompting is free.",
+      },
+      {
+        q: "Can I write prompts in another language?",
+        a: "You can type anything — nothing rejects it — but the compiler's keyword vocabulary is English tokens, so English steers reliably. The languages article covers the clone's English-only stance in full.",
+      },
+      {
+        q: "Does the prompt have a length limit?",
+        a: "The request schema caps the prompt at 2000 characters — a real, stated bound rather than an invisible truncation.",
+      },
+      {
+        q: "How do I get a specific style?",
+        a: "Style words steer: low poly, voxel, flat-color and their kin work as levers, and the /styles tree documents per-style which levers are real and which are texture-dependent finishes that belong to your DCC.",
       },
     ],
     related: [
@@ -502,6 +951,46 @@ export const HELP_ARTICLES_B: HelpArticleDef[] = [
           "Compose instead of generating a scene: produce the individual assets (each with its own free preview and 1-credit confirm), export them, and assemble the scene in Blender, Unity or Unreal — where editing is real. The use-case pages for game development and VR/AR describe exactly this asset-by-asset workflow and its limits, so the expectation is set before you spend a credit.",
         ],
         note: "WorldGen: listed, disabled, labeled. Single assets are real; scenes are your DCC's job — and the picker says so.",
+      },
+      {
+        heading: "Upload a readable scene image",
+        paragraphs: [
+          "Here is exactly what happens if you try: Image to 3D accepts the image and produces one asset from it. A busy scene photo yields one merged mesh of whatever the caption could resolve — not a scene graph, not separate movable objects, not an editable reconstruction. The reference's WorldGen reads a scene image and builds an editable multi-object package; that pipeline is not in this codebase, and no upload here will behave as though it were.",
+        ],
+      },
+      {
+        heading: "Validate the downstream package",
+        paragraphs: [
+          "The reference's validation step — checking the package's objects, materials and export readiness — has its honest analog in what this clone does ship: the free preview (orbit, wireframe, normal modes), the six-format export from the stored model, and the DCC round-trip where real scene assembly happens. Validation for a scene happens in the tool that can actually hold a scene.",
+        ],
+      },
+      {
+        heading: "Choose the creation mode",
+        paragraphs: [
+          "The reference's WorldGen offers creation modes (image-to-scene, text-to-scene and the like); this clone's mode picker carries the WorldGen entry in a permanently honest state — listed, disabled, labeled not implemented — so there is no mode to choose and no ambiguity about it. The choices that do exist for building a world here are the two live generation modes, used asset by asset, and the composition your DCC or engine provides for assembling them.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "What does the disabled WorldGen entry actually say?",
+        a: "That it is not implemented here — the mode picker labels its non-running entries honestly instead of rendering a dead button. The label is the clone's first line of honesty about the boundary.",
+      },
+      {
+        q: "Can I still get multiple objects in one generation?",
+        a: "Yes — via Text to 3D, whose spec carries 2 to 12 objects with their own transforms. What you cannot get is the editable scene graph: objects in one mesh-level composition, not independently editable scene nodes.",
+      },
+      {
+        q: "Can I at least generate a background environment for a scene?",
+        a: "Yes — the OmniCraft HDRI tool generates environment skies locally and free (2K or 4K PNG), which covers the backdrop and lighting half of scene-building while your DCC holds the geometry half.",
+      },
+      {
+        q: "Will WorldGen be added?",
+        a: "Nothing in this codebase says so, and this article will not speculate. The picker's label is the current truth, and it is labeled not implemented.",
+      },
+      {
+        q: "What is the nearest real path for scene work?",
+        a: "Generate the individual assets (each its own task, free previews until you confirm the good ones), export them, and assemble the scene in Blender or Unity — where scene semantics actually exist.",
       },
     ],
     related: [
